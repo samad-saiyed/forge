@@ -1,0 +1,39 @@
+{
+  "name": "forge",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Experimental TypeScript-first backend framework",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "packageManager": "pnpm@9.10.0",
+  "scripts": {
+    "build": "tsc --build",
+    "test": "vitest run",
+    "prepare": "pnpm build",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "eslint .",
+    "typecheck": "tsc --build --pretty",
+    "check": "pnpm lint && pnpm format:check && pnpm test && pnpm exec tsc --build",
+    "clean": "node -e \"import('node:fs').then(({readdirSync, rmSync}) => readdirSync('packages', {withFileTypes:true}).filter(e => e.isDirectory()).forEach(e => { rmSync('packages/' + e.name + '/dist', {recursive:true, force:true}); rmSync('packages/' + e.name + '/tsconfig.tsbuildinfo', {force:true}); }))\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/samad-saiyed/forge.git"
+  },
+  "author": "Samad Saiyed",
+  "license": "MIT",
+  "devDependencies": {
+    "@typescript/native": "npm:typescript@^7.0.2",
+    "typescript": "npm:@typescript/typescript6@^6.0.2",
+    "@vitest/coverage-v8": "^5.0.0",
+    "eslint": "^10.10.0",
+    "prettier": "^3.9.6",
+    "typescript-eslint": "^8.70.0",
+    "vitest": "^5.0.0"
+  }
+}

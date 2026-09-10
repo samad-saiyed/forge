@@ -1,0 +1,69 @@
+# Dependencies
+node_modules/
+/.pnp
+.pnp.js
+
+# Build output
+dist/
+build/
+out/
+.next/
+.nuxt/
+.output/
+.turbo/
+
+# Testing & Coverage
+coverage/
+*.lcov
+.nyc_output/
+
+# Environment files
+.env
+.env*.local
+*.env
+*.env.*
+!.env.example
+!.env.template
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Editor files & directories
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Temporary & Cache files
+.cache/
+.parcel-cache/
+.vite/
+*.tsbuildinfo
+.eslintcache
+.stylelintcache
+tmp/
+temp/
+
+# Agent Files
+.agent/
+.agents/
+skills-lock.json
