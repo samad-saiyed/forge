@@ -1,4 +1,7 @@
-import { createServer, type Server } from "node:http";
+import type { IncomingMessage, Server, ServerResponse } from "node:http";
+import { createServer } from "node:http";
+import { Request } from "./request.js";
+import { Response } from "./response.js";
 
 export type ApplicationState = "created" | "starting" | "running" | "stopping" | "stopped";
 
@@ -7,9 +10,17 @@ export class Application {
 
   private readonly settings = new Map<string, unknown>();
   private state: ApplicationState = "created";
-
+  private handleRequest(_request: Request, response: Response): void {
+    response.raw.statusCode = 404;
+    response.raw.end();
+  }
   constructor() {
-    this.server = createServer();
+    this.server = createServer((request: IncomingMessage, response: ServerResponse) => {
+      const req = new Request(request);
+      const res = new Response(response);
+
+      this.handleRequest(req, res);
+    });
   }
 
   protected getSetting<T>(key: string): T | undefined {
