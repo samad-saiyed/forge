@@ -30,17 +30,17 @@ These principles guide the implementation throughout the project.
 
 ## 0.1 Repository Initialization
 
-- [X] Create Forge repository
-- [X] Initialize Git
-- [X] Create `.gitignore`
-- [X] Create `README.md`
-- [X] Create `LICENSE`
-- [X] Create `CONTRIBUTING.md`
-- [X] Create `CHANGELOG.md`
-- [X] Create initial package metadata
-- [X] Decide Node.js minimum supported version
-- [X] Decide package manager
-- [X] Establish project naming conventions
+- [x] Create Forge repository
+- [x] Initialize Git
+- [x] Create `.gitignore`
+- [x] Create `README.md`
+- [x] Create `LICENSE`
+- [x] Create `CONTRIBUTING.md`
+- [x] Create `CHANGELOG.md`
+- [x] Create initial package metadata
+- [x] Decide Node.js minimum supported version
+- [x] Decide package manager
+- [x] Establish project naming conventions
 
 ## 0.2 Monorepo Structure
 
@@ -62,46 +62,46 @@ forge/
 
 Tasks:
 
-- [X] Configure workspace/monorepo
-- [X] Create `@forge/core`
-- [X] Create `@forge/cli`
-- [X] Create `@forge/benchmark`
-- [X] Configure package builds
-- [X] Configure package exports
-- [X] Configure internal package dependencies
-- [X] Configure development scripts
+- [x] Configure workspace/monorepo
+- [x] Create `@forge/core`
+- [x] Create `@forge/cli`
+- [x] Create `@forge/benchmark`
+- [x] Configure package builds
+- [x] Configure package exports
+- [x] Configure internal package dependencies
+- [x] Configure development scripts
 
 ## 0.3 TypeScript Infrastructure
 
-- [X] Configure root TypeScript configuration
-- [X] Configure package-level TypeScript configurations
-- [X] Configure strict mode
-- [X] Configure declaration generation
-- [X] Configure source maps
-- [X] Configure ESM/CJS strategy
-- [X] Determine module resolution strategy
-- [X] Test TypeScript package consumption
-- [X] Test JavaScript consumption
+- [x] Configure root TypeScript configuration
+- [x] Configure package-level TypeScript configurations
+- [x] Configure strict mode
+- [x] Configure declaration generation
+- [x] Configure source maps
+- [x] Configure ESM/CJS strategy
+- [x] Determine module resolution strategy
+- [x] Test TypeScript package consumption
+- [x] Test JavaScript consumption
 
 ## 0.4 Testing Infrastructure
 
-- [X] Choose test runner
-- [X] Configure unit tests
-- [X] Configure integration tests
-- [X] Configure test coverage
-- [X] Create initial test utilities
-- [X] Add CI test command
-- [X] Establish test naming conventions
+- [x] Choose test runner
+- [x] Configure unit tests
+- [x] Configure integration tests
+- [x] Configure test coverage
+- [x] Create initial test utilities
+- [x] Add CI test command
+- [x] Establish test naming conventions
 
 ## 0.5 Code Quality
 
-- [X] Configure ESLint
-- [X] Configure formatter
-- [X] Configure type checking
-- [X] Add pre-commit checks if appropriate
-- [X] Add CI linting
-- [X] Add CI type checking
-- [X] Add CI test execution
+- [x] Configure ESLint
+- [x] Configure formatter
+- [x] Configure type checking
+- [x] Add pre-commit checks if appropriate
+- [x] Add CI linting
+- [x] Add CI type checking
+- [x] Add CI test execution
 
 ## 0.6 Initial Developer Workflow
 
@@ -115,11 +115,11 @@ npm run lint
 npm run typecheck
 ```
 
-- [X] Verify clean clone works
-- [X] Verify build works
-- [X] Verify tests work
-- [X] Verify packages can import one another
-- [X] Create initial Hello World example
+- [x] Verify clean clone works
+- [x] Verify build works
+- [x] Verify tests work
+- [x] Verify packages can import one another
+- [x] Create initial Hello World example
 
 ---
 
@@ -135,9 +135,9 @@ Implement:
 const app = createApp();
 ```
 
-- [ ] Create application factory
-- [ ] Create application instance
-- [ ] Store application configuration
+- [x] Create application factory
+- [x] Create application instance
+- [x] Store application configuration
 - [ ] Implement application lifecycle
 - [ ] Implement `app.listen()`
 - [ ] Implement server startup
