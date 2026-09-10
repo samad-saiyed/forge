@@ -1,6 +1,6 @@
 # Forge — Master Development Roadmap
 
-> Temporary project codename: **Forge**  
+> Temporary project codename: **Forge**
 > Goal: Build an opinionated, TypeScript-first Node.js backend framework with an Express-like developer experience, strong project conventions, production-oriented tooling, and performance at least comparable to Express.
 
 ---
@@ -30,17 +30,17 @@ These principles guide the implementation throughout the project.
 
 ## 0.1 Repository Initialization
 
-- [ ] Create Forge repository
-- [ ] Initialize Git
-- [ ] Create `.gitignore`
-- [ ] Create `README.md`
-- [ ] Create `LICENSE`
-- [ ] Create `CONTRIBUTING.md`
-- [ ] Create `CHANGELOG.md`
-- [ ] Create initial package metadata
-- [ ] Decide Node.js minimum supported version
-- [ ] Decide package manager
-- [ ] Establish project naming conventions
+- [X] Create Forge repository
+- [X] Initialize Git
+- [X] Create `.gitignore`
+- [X] Create `README.md`
+- [X] Create `LICENSE`
+- [X] Create `CONTRIBUTING.md`
+- [X] Create `CHANGELOG.md`
+- [X] Create initial package metadata
+- [X] Decide Node.js minimum supported version
+- [X] Decide package manager
+- [X] Establish project naming conventions
 
 ## 0.2 Monorepo Structure
 
@@ -62,46 +62,46 @@ forge/
 
 Tasks:
 
-- [ ] Configure workspace/monorepo
-- [ ] Create `@forge/core`
-- [ ] Create `@forge/cli`
-- [ ] Create `@forge/benchmark`
-- [ ] Configure package builds
-- [ ] Configure package exports
-- [ ] Configure internal package dependencies
-- [ ] Configure development scripts
+- [X] Configure workspace/monorepo
+- [X] Create `@forge/core`
+- [X] Create `@forge/cli`
+- [X] Create `@forge/benchmark`
+- [X] Configure package builds
+- [X] Configure package exports
+- [X] Configure internal package dependencies
+- [X] Configure development scripts
 
 ## 0.3 TypeScript Infrastructure
 
-- [ ] Configure root TypeScript configuration
-- [ ] Configure package-level TypeScript configurations
-- [ ] Configure strict mode
-- [ ] Configure declaration generation
-- [ ] Configure source maps
-- [ ] Configure ESM/CJS strategy
-- [ ] Determine module resolution strategy
-- [ ] Test TypeScript package consumption
-- [ ] Test JavaScript consumption
+- [X] Configure root TypeScript configuration
+- [X] Configure package-level TypeScript configurations
+- [X] Configure strict mode
+- [X] Configure declaration generation
+- [X] Configure source maps
+- [X] Configure ESM/CJS strategy
+- [X] Determine module resolution strategy
+- [X] Test TypeScript package consumption
+- [X] Test JavaScript consumption
 
 ## 0.4 Testing Infrastructure
 
-- [ ] Choose test runner
-- [ ] Configure unit tests
-- [ ] Configure integration tests
-- [ ] Configure test coverage
-- [ ] Create initial test utilities
-- [ ] Add CI test command
-- [ ] Establish test naming conventions
+- [X] Choose test runner
+- [X] Configure unit tests
+- [X] Configure integration tests
+- [X] Configure test coverage
+- [X] Create initial test utilities
+- [X] Add CI test command
+- [X] Establish test naming conventions
 
 ## 0.5 Code Quality
 
-- [ ] Configure ESLint
-- [ ] Configure formatter
-- [ ] Configure type checking
-- [ ] Add pre-commit checks if appropriate
-- [ ] Add CI linting
-- [ ] Add CI type checking
-- [ ] Add CI test execution
+- [X] Configure ESLint
+- [X] Configure formatter
+- [X] Configure type checking
+- [X] Add pre-commit checks if appropriate
+- [X] Add CI linting
+- [X] Add CI type checking
+- [X] Add CI test execution
 
 ## 0.6 Initial Developer Workflow
 
@@ -115,11 +115,11 @@ npm run lint
 npm run typecheck
 ```
 
-- [ ] Verify clean clone works
-- [ ] Verify build works
-- [ ] Verify tests work
-- [ ] Verify packages can import one another
-- [ ] Create initial Hello World example
+- [X] Verify clean clone works
+- [X] Verify build works
+- [X] Verify tests work
+- [X] Verify packages can import one another
+- [X] Create initial Hello World example
 
 ---
 
