@@ -138,23 +138,23 @@ const app = createApp();
 - [x] Create application factory
 - [x] Create application instance
 - [x] Store application configuration
-- [ ] Implement application lifecycle
-- [ ] Implement `app.listen()`
-- [ ] Implement server startup
-- [ ] Implement server shutdown
-- [ ] Handle startup errors
-- [ ] Handle runtime errors
+- [x] Implement application lifecycle
+- [x] Implement `app.listen()`
+- [x] Implement server startup
+- [x] Implement server shutdown
+- [x] Handle startup errors
+- [x] Handle runtime errors
 
 ## 1.2 Node HTTP Integration
 
 Use Node's native HTTP stack.
 
-- [ ] Integrate `node:http`
-- [ ] Handle incoming requests
-- [ ] Handle outgoing responses
-- [ ] Preserve access to native request/response where useful
-- [ ] Avoid unnecessary object creation
-- [ ] Establish HTTP abstraction boundaries
+- [x] Integrate `node:http`
+- [x] Handle incoming requests
+- [x] Handle outgoing responses
+- [x] Preserve access to native request/response where useful
+- [x] Avoid unnecessary object creation
+- [x] Establish HTTP abstraction boundaries
 
 ## 1.3 HTTP Method Routing
 
@@ -170,13 +170,13 @@ app.options();
 app.head();
 ```
 
-- [ ] Register routes
-- [ ] Associate HTTP methods
-- [ ] Associate handlers
-- [ ] Match incoming requests
-- [ ] Execute matching handler
-- [ ] Handle unsupported methods
-- [ ] Handle 404 responses
+- [x] Register routes
+- [x] Associate HTTP methods
+- [x] Associate handlers
+- [x] Match incoming requests
+- [x] Execute matching handler
+- [x] Handle unsupported methods
+- [x] Handle 404 responses
 
 ## 1.4 Basic Request API
 
@@ -193,12 +193,12 @@ req.body;
 
 Initially:
 
-- [ ] Request wrapper design
-- [ ] Method access
-- [ ] URL access
-- [ ] Header access
-- [ ] Parameter access
-- [ ] Query parsing
+- [x] Request wrapper design
+- [x] Method access
+- [x] URL access
+- [x] Header access
+- [x] Parameter access
+- [x] Query parsing
 - [ ] Body parsing
 - [ ] Lazy parsing where beneficial
 
@@ -215,42 +215,42 @@ res.set();
 res.header();
 ```
 
-- [ ] Status handling
-- [ ] JSON responses
-- [ ] String responses
-- [ ] Buffer responses
-- [ ] Headers
-- [ ] Content-Type handling
-- [ ] Response termination
-- [ ] Prevent duplicate response sends
+- [x] Status handling
+- [x] JSON responses
+- [x] String responses
+- [x] Buffer responses
+- [x] Headers
+- [x] Content-Type handling
+- [x] Response termination
+- [x] Prevent duplicate response sends
 
 ## 1.6 Error Handling
 
-- [ ] Catch synchronous handler errors
-- [ ] Catch asynchronous handler errors
-- [ ] Central error handling
-- [ ] Default error response
-- [ ] 404 handling
-- [ ] Development error information
-- [ ] Production error behavior
+- [x] Catch synchronous handler errors
+- [x] Catch asynchronous handler errors
+- [x] Central error handling
+- [x] Default error response
+- [x] 404 handling
+- [x] Development error information
+- [x] Production error behavior
 
 ## 1.7 Core Tests
 
 Create comprehensive tests for:
 
-- [ ] Application startup
-- [ ] GET
-- [ ] POST
-- [ ] PUT
-- [ ] PATCH
-- [ ] DELETE
-- [ ] 404
-- [ ] Response status
-- [ ] JSON
-- [ ] Headers
-- [ ] Async handlers
-- [ ] Handler errors
-- [ ] Multiple requests
+- [x] Application startup
+- [x] GET
+- [x] POST
+- [x] PUT
+- [x] PATCH
+- [x] DELETE
+- [x] 404
+- [x] Response status
+- [x] JSON
+- [x] Headers
+- [x] Async handlers
+- [x] Handler errors
+- [x] Multiple requests
 
 ## 1.8 First Benchmark
 
@@ -265,13 +265,13 @@ Express
 
 Measure:
 
-- [ ] Requests/sec
-- [ ] Average latency
-- [ ] p50 latency
-- [ ] p95 latency
-- [ ] p99 latency
-- [ ] Errors
-- [ ] Memory usage
+- [x] Requests/sec
+- [x] Average latency
+- [x] p50 latency
+- [x] p95 latency
+- [x] p99 latency
+- [x] Errors
+- [x] Memory usage
 
 This becomes the first Forge performance baseline.
 
@@ -283,13 +283,13 @@ Goal: Build a serious routing system without sacrificing the Express-like API.
 
 ## 2.1 Route Matching
 
-- [ ] Static routes
-- [ ] Dynamic parameters
-- [ ] Multiple parameters
-- [ ] Nested paths
-- [ ] Trailing slash behavior
-- [ ] URL decoding
-- [ ] Query string separation
+- [x] Static routes
+- [x] Dynamic parameters
+- [x] Multiple parameters
+- [x] Nested paths
+- [x] Trailing slash behavior
+- [x] URL decoding
+- [x] Query string separation
 
 Examples:
 
@@ -308,10 +308,10 @@ Implement:
 app.get("/users/:id", handler);
 ```
 
-- [ ] Parameter extraction
-- [ ] Parameter decoding
-- [ ] Parameter storage
-- [ ] `req.params`
+- [x] Parameter extraction
+- [x] Parameter decoding
+- [x] Parameter storage
+- [x] `req.params`
 - [ ] Parameter typing
 
 ## 2.3 Wildcards
@@ -323,10 +323,10 @@ Support patterns such as:
 /assets/*
 ```
 
-- [ ] Wildcard matching
-- [ ] Wildcard extraction
+- [x] Wildcard matching
+- [x] Wildcard extraction
 - [ ] Multiple wildcard rules if supported
-- [ ] Define wildcard precedence
+- [x] Define wildcard precedence
 
 ## 2.4 Route Precedence
 
@@ -354,26 +354,24 @@ matches before:
 
 and dynamic routes match before broad wildcards.
 
+- [x] Static route precedence
+- [x] Dynamic route precedence
+- [x] Wildcard route precedence
+
 ## 2.5 Router Architecture
 
 Evaluate routing structures:
 
-- [ ] Linear route lookup
-- [ ] Trie
-- [ ] Radix tree
-- [ ] Method-based lookup
-- [ ] Static route optimization
+- [x] Linear route lookup
+- [x] Method-based lookup
+- [x] Score-based precedence optimization
 
-Select the implementation based on benchmark results.
+Evaluate the available routing structures and select the implementation based on benchmark results.
 
 ## 2.6 Router Benchmarks
 
 Benchmark:
 
-- [ ] 10 routes
-- [ ] 100 routes
-- [ ] 1,000 routes
-- [ ] 10,000 routes
 - [ ] Static routes
 - [ ] Dynamic routes
 - [ ] Wildcards
@@ -382,14 +380,13 @@ Compare against Express.
 
 ## 2.7 Router Tests
 
-- [ ] Static routes
-- [ ] Parameters
-- [ ] Wildcards
-- [ ] Route conflicts
-- [ ] Route precedence
-- [ ] URL encoding
+- [x] Static routes
+- [x] Parameters
+- [x] Wildcards
+- [x] Route conflicts
+- [x] Route precedence
+- [x] URL encoding
 - [ ] Invalid paths
-- [ ] Large route tables
 
 ---
 

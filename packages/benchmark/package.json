@@ -12,5 +12,15 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     }
+  },
+  "scripts": {
+    "benchmark": "node ./dist/index.js"
+  },
+  "dependencies": {
+    "@forge/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "express": "^5.0.1"
   }
 }
