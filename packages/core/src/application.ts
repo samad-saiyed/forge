@@ -4,10 +4,13 @@ import * as path from "node:path";
 import { Request } from "./request.js";
 import { Response } from "./response.js";
 
+import * as fs from "node:fs";
 import { Router } from "./router.js";
 import { resolveConfig, type ForgeConfigInput, type ResolvedForgeConfig } from "./config.js";
-import { discoverRoutes } from "./file-router.js";
-import type { FileRouteHandler, RouteContext } from "./context.js";
+import type { RouteContext } from "./context.js";
+import { scanRouteFiles } from "./route-scanner.js";
+import { loadRouteModules } from "./route-loader.js";
+import { registerLoadedRoutes } from "./route-registrar.js";
 
 export interface ApplicationOptions {
   appDir?: string;
@@ -194,6 +197,7 @@ export class Application {
   private state: ApplicationState = "created";
   private startPromise?: Promise<void>;
   private stopPromise?: Promise<void>;
+  private fsRoutesLoaded = false;
 
   constructor(options?: ApplicationOptions | ResolvedForgeConfig | ForgeConfigInput) {
     let rawConfig: ResolvedForgeConfig | ForgeConfigInput | undefined = undefined;
@@ -319,35 +323,25 @@ export class Application {
       await this.onStart();
       this.transitionTo("running");
     } catch (error) {
+      this.fsRoutesLoaded = false;
       this.transitionTo("stopped");
       throw error;
     }
   }
 
   private async loadFilesystemRoutes(): Promise<void> {
-    const routes = await discoverRoutes({ root: this.appDir });
-    for (const route of routes) {
-      const rawHandler = route.handler;
-      const adaptedHandler: RouteHandler = (req, res, next) => {
-        if (rawHandler.length <= 1) {
-          return (rawHandler as FileRouteHandler)({
-            app: this,
-            request: req,
-            response: res,
-          });
-        }
-        return (rawHandler as RouteHandler)(req, res, next);
-      };
-
-      this.router.add(
-        route.method,
-        route.path,
-        adaptedHandler,
-        undefined,
-        undefined,
-        route.filePath,
-      );
+    if (this.fsRoutesLoaded) {
+      return;
     }
+    this.fsRoutesLoaded = true;
+
+    if (!fs.existsSync(this.appDir)) {
+      return;
+    }
+
+    const discoveredRoutes = scanRouteFiles({ appDir: this.appDir });
+    const loadedModules = await loadRouteModules(discoveredRoutes);
+    registerLoadedRoutes(this.router, loadedModules, this);
   }
 
   listen(port?: number, host?: string, callback?: () => void): Server;
@@ -401,6 +395,7 @@ export class Application {
           this.server.listen(targetPort, onListening);
         }
       } catch (err) {
+        this.fsRoutesLoaded = false;
         if (this.state === "starting") {
           this.transitionTo("stopped");
         }

@@ -25,40 +25,7 @@ const SUPPORTED_HTTP_METHODS = new Set([
   "HEAD",
 ]);
 
-const VALID_PARAM_NAME_REGEX = /^[a-zA-Z0-9_]+$/;
-
-function convertAndValidateSegment(segment: string, filePath: string): string {
-  if (segment.startsWith("[") || segment.endsWith("]")) {
-    if (segment.startsWith("[...") && segment.endsWith("]")) {
-      const paramName = segment.slice(4, -1);
-      if (VALID_PARAM_NAME_REGEX.test(paramName)) {
-        return `*${paramName}`;
-      }
-    } else if (segment.startsWith("[") && segment.endsWith("]")) {
-      const paramName = segment.slice(1, -1);
-      if (VALID_PARAM_NAME_REGEX.test(paramName)) {
-        return `:${paramName}`;
-      }
-    }
-
-    throw new Error(
-      `Invalid dynamic route segment "${segment}" in path "${filePath}". Dynamic segment syntax must be [paramName] or [...paramName] with valid identifier characters.`,
-    );
-  }
-
-  return segment;
-}
-
-function buildRoutePath(relDir: string, filePath: string): string {
-  if (!relDir || relDir === "." || relDir === "") {
-    return "/";
-  }
-
-  const segments = relDir.split(/[/\\]+/).filter(Boolean);
-  const convertedSegments = segments.map((seg) => convertAndValidateSegment(seg, filePath));
-
-  return "/" + convertedSegments.join("/");
-}
+import { isRouteFile, resolveRoutePath } from "./filesystem-router.js";
 
 async function collectRouteFiles(
   rootDir: string,
@@ -77,7 +44,7 @@ async function collectRouteFiles(
     if (entry.isDirectory()) {
       const subResults = await collectRouteFiles(rootDir, fullPath);
       results.push(...subResults);
-    } else if (entry.isFile() && entry.name === "route.ts") {
+    } else if (entry.isFile() && isRouteFile(entry.name)) {
       const relDir = path.relative(rootDir, currentDir);
       results.push({ filePath: fullPath, relDir });
     }
@@ -104,8 +71,8 @@ export async function discoverRoutes(options: FileRouterOptions): Promise<FileRo
   const routeFiles = await collectRouteFiles(root, root);
   const routes: FileRoute[] = [];
 
-  for (const { filePath, relDir } of routeFiles) {
-    const routePath = buildRoutePath(relDir, filePath);
+  for (const { filePath } of routeFiles) {
+    const routePath = resolveRoutePath(filePath, root)!;
     const fileUrl = pathToFileURL(filePath).href;
 
     let moduleExports: Record<string, unknown>;

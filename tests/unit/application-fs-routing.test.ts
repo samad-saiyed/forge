@@ -202,7 +202,7 @@ describe("Application Filesystem Routing Integration", () => {
     );
 
     const app = createTestApp({ appDir: tmpDir });
-    await expect(app.start()).rejects.toThrow(/Invalid route handler/);
+    await expect(app.start()).rejects.toThrow(/Invalid handler for HTTP method/);
     expect(app.readState).toBe("stopped");
   });
 
@@ -258,5 +258,45 @@ describe("Application Filesystem Routing Integration", () => {
     expect(resData).toEqual({ listen: true });
 
     await app.close();
+  });
+
+  test("starts cleanly when appDir does not exist", async () => {
+    const nonExistentDir = path.join(tmpDir, "non-existent-app-dir");
+    const app = createTestApp({ appDir: nonExistentDir });
+
+    app.get("/health", (_req, res) => {
+      res.status(200).json({ status: "ok" });
+    });
+
+    await expect(app.start()).resolves.toBeUndefined();
+    expect(app.readState).toBe("running");
+
+    const healthCall = makeMockReqRes("GET", "/health");
+    await app.processRequest(healthCall.req, healthCall.res);
+    expect(healthCall.getData()).toEqual({ status: "ok" });
+  });
+
+  test("handles concurrent app.start() calls without duplicate route registration errors", async () => {
+    const usersDir = path.join(tmpDir, "users");
+    await fs.mkdir(usersDir, { recursive: true });
+    await fs.writeFile(
+      path.join(usersDir, "route.ts"),
+      `export const GET = (req, res) => { res.status(200).json({ ok: true }); };`,
+      "utf-8",
+    );
+
+    const app = createTestApp({ appDir: tmpDir });
+
+    await expect(Promise.all([app.start(), app.start(), app.start()])).resolves.toEqual([
+      undefined,
+      undefined,
+      undefined,
+    ]);
+
+    expect(app.readState).toBe("running");
+
+    const { req, res, getData } = makeMockReqRes("GET", "/users");
+    await app.processRequest(req, res);
+    expect(getData()).toEqual({ ok: true });
   });
 });

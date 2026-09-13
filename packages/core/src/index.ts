@@ -35,4 +35,12 @@ export {
   type ResolvedForgeConfig,
 } from "./config.js";
 export { discoverRoutes, type FileRoute, type FileRouterOptions } from "./file-router.js";
+export { isRouteFile, resolveRoutePath } from "./filesystem-router.js";
 export { type ApplicationContext, type RouteContext, type FileRouteHandler } from "./context.js";
+export {
+  scanRouteFiles,
+  type DiscoveredRouteFile,
+  type RouteScannerOptions,
+} from "./route-scanner.js";
+export { loadRouteModule, loadRouteModules, type LoadedRouteModule } from "./route-loader.js";
+export { registerLoadedRoutes } from "./route-registrar.js";
