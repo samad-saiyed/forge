@@ -122,11 +122,18 @@ export class Application {
 
     if (match) {
       request.params = match.params;
+
       try {
         await match.handler(request, response);
       } catch (error) {
         this.handleError(error, request, response);
       }
+
+      return;
+    }
+
+    if (this.router.hasPath(pathname)) {
+      response.status(405).end();
       return;
     }
 

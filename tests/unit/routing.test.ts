@@ -42,18 +42,27 @@ describe("HTTP Method Routing", () => {
     expect(postHandler).toHaveBeenCalledTimes(1);
   });
 
-  it("should return 404 if no matching route or method exists", async () => {
+  it("should return 405 if route path exists but method does not match, and 404 if path does not exist", async () => {
     const app = createApp();
     app.get("/test", vi.fn());
 
-    const req = new Request({ method: "POST", url: "/test" } as never);
-    const resMock = { statusCode: 200, end: vi.fn() };
-    const res = new Response(resMock as never);
+    const req405 = new Request({ method: "POST", url: "/test" } as never);
+    const resMock405 = { statusCode: 200, end: vi.fn() };
+    const res405 = new Response(resMock405 as never);
 
-    await (app as unknown as InternalApp).handleRequest(req, res);
+    await (app as unknown as InternalApp).handleRequest(req405, res405);
 
-    expect(resMock.statusCode).toBe(404);
-    expect(resMock.end).toHaveBeenCalledTimes(1);
+    expect(resMock405.statusCode).toBe(405);
+    expect(resMock405.end).toHaveBeenCalledTimes(1);
+
+    const req404 = new Request({ method: "GET", url: "/nonexistent" } as never);
+    const resMock404 = { statusCode: 200, end: vi.fn() };
+    const res404 = new Response(resMock404 as never);
+
+    await (app as unknown as InternalApp).handleRequest(req404, res404);
+
+    expect(resMock404.statusCode).toBe(404);
+    expect(resMock404.end).toHaveBeenCalledTimes(1);
   });
 
   it("should handle thrown errors gracefully with 500 status", async () => {

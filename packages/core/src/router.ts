@@ -67,8 +67,28 @@ export class Router {
   private readonly routes: InternalRoute[] = [];
 
   add(method: string, path: string, handler: RouteHandler): void {
+    if (!method.trim()) {
+      throw new Error("Route method cannot be empty");
+    }
+
+    if (!path.trim()) {
+      throw new Error("Route path cannot be empty");
+    }
+
+    if (typeof handler !== "function") {
+      throw new Error("Route handler must be a function");
+    }
+
     const uppercaseMethod = method.toUpperCase();
     const { segments, score } = parsePathSegments(path);
+
+    const existingIndex = this.routes.findIndex(
+      (route) => route.method === uppercaseMethod && route.path === normalizePath(path),
+    );
+
+    if (existingIndex !== -1) {
+      this.routes.splice(existingIndex, 1);
+    }
 
     this.routes.push({
       method: uppercaseMethod,
@@ -84,67 +104,105 @@ export class Router {
 
   find(method: string, pathname: string): RouteMatch | null {
     const uppercaseMethod = method.toUpperCase();
+
+    const methods = uppercaseMethod === "HEAD" ? ["HEAD", "GET"] : [uppercaseMethod];
+
     const normalized = normalizePath(pathname);
     const reqSegments = normalized === "/" ? [] : normalized.split("/").slice(1);
 
-    for (const route of this.routes) {
-      if (route.method !== uppercaseMethod) {
-        continue;
-      }
+    for (const lookupMethod of methods) {
+      for (const route of this.routes) {
+        if (route.method !== lookupMethod) {
+          continue;
+        }
 
-      const params: Record<string, string> = {};
-      let isMatch = true;
+        const params: Record<string, string> = {};
+        let isMatch = true;
 
-      for (let i = 0; i < route.segments.length; i++) {
-        const seg = route.segments[i];
+        for (let i = 0; i < route.segments.length; i++) {
+          const seg = route.segments[i];
 
-        if (seg.type === "wildcard") {
-          const restPath = reqSegments.slice(i).join("/");
-          try {
-            params[seg.name ?? "*"] = decodeURIComponent(restPath);
-          } catch {
-            params[seg.name ?? "*"] = restPath;
+          if (seg.type === "wildcard") {
+            const restPath = reqSegments.slice(i).join("/");
+            try {
+              params[seg.name ?? "*"] = decodeURIComponent(restPath);
+            } catch {
+              params[seg.name ?? "*"] = restPath;
+            }
+            break;
           }
-          break;
-        }
 
-        if (i >= reqSegments.length) {
-          isMatch = false;
-          break;
-        }
-
-        const reqSeg = reqSegments[i];
-
-        if (seg.type === "static") {
-          if (seg.value !== reqSeg) {
+          if (i >= reqSegments.length) {
             isMatch = false;
             break;
           }
-        } else if (seg.type === "param") {
-          try {
-            params[seg.name!] = decodeURIComponent(reqSeg);
-          } catch {
-            params[seg.name!] = reqSeg;
+
+          const reqSeg = reqSegments[i];
+
+          if (seg.type === "static") {
+            if (seg.value !== reqSeg) {
+              isMatch = false;
+              break;
+            }
+          } else if (seg.type === "param") {
+            try {
+              params[seg.name!] = decodeURIComponent(reqSeg);
+            } catch {
+              params[seg.name!] = reqSeg;
+            }
           }
         }
-      }
 
-      // Check for length match if no wildcard
-      const lastSeg = route.segments[route.segments.length - 1];
-      const hasWildcard = lastSeg && lastSeg.type === "wildcard";
+        // Check for length match if no wildcard
+        const lastSeg = route.segments[route.segments.length - 1];
+        const hasWildcard = lastSeg && lastSeg.type === "wildcard";
 
-      if (isMatch && !hasWildcard && route.segments.length !== reqSegments.length) {
-        isMatch = false;
-      }
+        if (isMatch && !hasWildcard && route.segments.length !== reqSegments.length) {
+          isMatch = false;
+        }
 
-      if (isMatch) {
-        return {
-          handler: route.handler,
-          params,
-        };
+        if (isMatch) {
+          return {
+            handler: route.handler,
+            params,
+          };
+        }
       }
     }
 
     return null;
+  }
+
+  hasPath(pathname: string): boolean {
+    const normalized = normalizePath(pathname);
+    const reqSegments = normalized === "/" ? [] : normalized.split("/").slice(1);
+
+    return this.routes.some((route) => {
+      if (route.segments.length > reqSegments.length) {
+        const last = route.segments[route.segments.length - 1];
+
+        if (last?.type !== "wildcard") {
+          return false;
+        }
+      }
+
+      for (let i = 0; i < route.segments.length; i++) {
+        const segment = route.segments[i];
+
+        if (segment.type === "wildcard") {
+          return true;
+        }
+
+        if (i >= reqSegments.length) {
+          return false;
+        }
+
+        if (segment.type === "static" && segment.value !== reqSegments[i]) {
+          return false;
+        }
+      }
+
+      return route.segments.length === reqSegments.length;
+    });
   }
 }
