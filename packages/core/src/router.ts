@@ -8,10 +8,10 @@ interface Segment {
   name?: string;
 }
 
-export interface RouteMatch {
-  handler: RouteHandler;
-  middlewares?: Middleware[];
-  params: Record<string, string>;
+export interface RouteMatch<Params extends Record<string, string> = Record<string, string>> {
+  handler: RouteHandler<Params>;
+  middlewares?: Middleware<Params>[];
+  params: Params;
   order?: number;
 }
 
@@ -119,18 +119,18 @@ function insertDynamicRoute(
   curr.order = order;
 }
 
-function searchDynamicTree(
+function searchDynamicTree<Params extends Record<string, string> = Record<string, string>>(
   node: DynamicNode,
   segments: string[],
   index: number,
   params: Record<string, string>,
-): RouteMatch | null {
+): RouteMatch<Params> | null {
   if (index === segments.length) {
     if (node.handler) {
       return {
-        handler: node.handler,
-        middlewares: node.middlewares,
-        params: { ...params },
+        handler: node.handler as RouteHandler<Params>,
+        middlewares: node.middlewares as Middleware<Params>[] | undefined,
+        params: { ...params } as Params,
         order: node.order,
       };
     }
@@ -139,9 +139,9 @@ function searchDynamicTree(
       const finalParams = { ...params };
       finalParams[paramName] = "";
       return {
-        handler: node.wildcardChild.handler,
-        middlewares: node.wildcardChild.middlewares,
-        params: finalParams,
+        handler: node.wildcardChild.handler as RouteHandler<Params>,
+        middlewares: node.wildcardChild.middlewares as Middleware<Params>[] | undefined,
+        params: finalParams as Params,
         order: node.wildcardChild.order,
       };
     }
@@ -153,7 +153,7 @@ function searchDynamicTree(
   // 1. Static branch precedence
   if (node.staticChildren?.has(seg)) {
     const staticChild = node.staticChildren.get(seg)!;
-    const result = searchDynamicTree(staticChild, segments, index + 1, params);
+    const result = searchDynamicTree<Params>(staticChild, segments, index + 1, params);
     if (result) return result;
   }
 
@@ -167,7 +167,7 @@ function searchDynamicTree(
       decodedValue = seg;
     }
     params[paramName] = decodedValue;
-    const result = searchDynamicTree(paramNode, segments, index + 1, params);
+    const result = searchDynamicTree<Params>(paramNode, segments, index + 1, params);
     if (result) return result;
     delete params[paramName];
   }
@@ -184,7 +184,12 @@ function searchDynamicTree(
     }
     const finalParams = { ...params };
     finalParams[paramName] = decodedRest;
-    return { handler, middlewares, params: finalParams, order };
+    return {
+      handler: handler as RouteHandler<Params>,
+      middlewares: middlewares as Middleware<Params>[] | undefined,
+      params: finalParams as Params,
+      order,
+    };
   }
 
   return null;
@@ -274,7 +279,10 @@ export class Router {
     }
   }
 
-  find(method: string, pathname: string): RouteMatch | null {
+  find<Params extends Record<string, string> = Record<string, string>>(
+    method: string,
+    pathname: string,
+  ): RouteMatch<Params> | null {
     const uppercaseMethod = method.toUpperCase();
     const isHead = uppercaseMethod === "HEAD";
 
@@ -287,9 +295,9 @@ export class Router {
       if (headMap?.has(normalized)) {
         const entry = headMap.get(normalized)!;
         return {
-          handler: entry.handler,
-          middlewares: entry.middlewares,
-          params: {},
+          handler: entry.handler as RouteHandler<Params>,
+          middlewares: entry.middlewares as Middleware<Params>[] | undefined,
+          params: {} as Params,
           order: entry.order,
         };
       }
@@ -297,9 +305,9 @@ export class Router {
       if (getMap?.has(normalized)) {
         const entry = getMap.get(normalized)!;
         return {
-          handler: entry.handler,
-          middlewares: entry.middlewares,
-          params: {},
+          handler: entry.handler as RouteHandler<Params>,
+          middlewares: entry.middlewares as Middleware<Params>[] | undefined,
+          params: {} as Params,
           order: entry.order,
         };
       }
@@ -308,9 +316,9 @@ export class Router {
       if (methodMap?.has(normalized)) {
         const entry = methodMap.get(normalized)!;
         return {
-          handler: entry.handler,
-          middlewares: entry.middlewares,
-          params: {},
+          handler: entry.handler as RouteHandler<Params>,
+          middlewares: entry.middlewares as Middleware<Params>[] | undefined,
+          params: {} as Params,
           order: entry.order,
         };
       }
@@ -324,7 +332,7 @@ export class Router {
       if (!tree) continue;
 
       const params: Record<string, string> = {};
-      const match = searchDynamicTree(tree, reqSegments, 0, params);
+      const match = searchDynamicTree<Params>(tree, reqSegments, 0, params);
       if (match) {
         return match;
       }

@@ -300,13 +300,10 @@ async function runHttpBenchmark(): Promise<void> {
 async function main() {
   // 1. HTTP Server Baseline Benchmark (Forge vs Express GET & POST JSON Body)
   // await runHttpBenchmark();
-
   // 2. Body Parser / Multipart Benchmark
   // await runBodyParserBenchmark();
-
   // 3. Isolated Router Benchmark (Static & Dynamic Radix Trie)
   // await runRouterBenchmark();
-
   // 4. Middleware Benchmark (Median of 3 runs)
   // await runMiddlewareBenchmark();
 }

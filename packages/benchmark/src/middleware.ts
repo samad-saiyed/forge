@@ -75,9 +75,7 @@ async function runSingleBenchmark(
   }
 }
 
-export async function runMiddlewareBenchmark(
-  runs = 3,
-): Promise<MedianBenchmarkResult[]> {
+export async function runMiddlewareBenchmark(runs = 3): Promise<MedianBenchmarkResult[]> {
   console.log("\n==================================================");
   console.log(` Forge vs Express Middleware Benchmark (${runs} Runs Median) `);
   console.log("==================================================\n");

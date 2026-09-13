@@ -9,22 +9,79 @@ export type ApplicationState = "created" | "starting" | "running" | "stopping" |
 
 export type NextFunction = (err?: unknown) => Promise<void>;
 
-export type Middleware = (
-  request: Request,
+type CleanParamName<S extends string> = S extends `${infer Name}?` ? Name : S;
+
+type ExtractParamKeys<Path extends string> = Path extends `${string}:${infer Rest}`
+  ? Rest extends `${infer Param}/${infer Tail}`
+    ? CleanParamName<Param> | ExtractParamKeys<`/${Tail}`>
+    : CleanParamName<Rest>
+  : Path extends `${string}*${infer Wildcard}`
+    ? Wildcard extends `${infer Param}/${infer Tail}`
+      ? (Param extends "" ? "*" : Param) | ExtractParamKeys<`/${Tail}`>
+      : Wildcard extends ""
+        ? "*"
+        : Wildcard
+    : never;
+
+export type ParseRouteParams<Path extends string> = string extends Path
+  ? Record<string, string>
+  : [ExtractParamKeys<Path>] extends [never]
+    ? Record<string, never>
+    : { [K in ExtractParamKeys<Path>]: string };
+
+type NoInfer<T> = [T][0];
+
+export type Middleware<
+  Params = Record<string, string>,
+  Query = Record<string, string | string[]>,
+  Body = unknown,
+> = (
+  request: Request<Params, Query, Body>,
   response: Response,
   next: NextFunction,
 ) => void | Promise<void>;
 
-export type ErrorMiddleware = (
+export type ErrorMiddleware<
+  Params = Record<string, string>,
+  Query = Record<string, string | string[]>,
+  Body = unknown,
+> = (
   error: unknown,
-  request: Request,
+  request: Request<Params, Query, Body>,
   response: Response,
   next: NextFunction,
 ) => void | Promise<void>;
 
-export type AnyMiddleware = Middleware | ErrorMiddleware;
-export type RouteHandler = Middleware;
-export type RequestHandler = Middleware;
+export type AnyMiddleware =
+  | Middleware<Record<string, string>, Record<string, string | string[]>, unknown>
+  | ErrorMiddleware<Record<string, string>, Record<string, string | string[]>, unknown>;
+
+export interface RouteContext<
+  Params = Record<string, string>,
+  Query = Record<string, string | string[]>,
+  Body = unknown,
+> {
+  params: Params;
+  query: Query;
+  body: Promise<Body>;
+  request: Request<Params, Query, Body>;
+  response: Response;
+}
+
+export type RouteHandler<
+  Params = Record<string, string>,
+  Query = Record<string, string | string[]>,
+  Body = unknown,
+> =
+  Params extends RouteContext<infer P, infer Q, infer B>
+    ? Middleware<P, Q, B>
+    : Middleware<Params, Query, Body>;
+
+export type RequestHandler<
+  Params = Record<string, string>,
+  Query = Record<string, string | string[]>,
+  Body = unknown,
+> = Middleware<Params, Query, Body>;
 
 interface MiddlewareEntry {
   prefix?: string;
@@ -46,11 +103,81 @@ function matchesPrefix(prefix: string | undefined, pathname: string): boolean {
     normPrefix = `/${normPrefix}`;
   }
 
-  if (pathname === normPrefix || pathname.startsWith(`${normPrefix}/`)) {
-    return true;
+  if (!normPrefix.includes(":") && !normPrefix.includes("*")) {
+    return pathname === normPrefix || pathname.startsWith(`${normPrefix}/`);
   }
 
-  return false;
+  const prefixSegs = normPrefix.split("/").slice(1);
+  const pathSegs = pathname.split("/").slice(1);
+
+  if (pathSegs.length < prefixSegs.length) {
+    return false;
+  }
+
+  for (let i = 0; i < prefixSegs.length; i++) {
+    const pSeg = prefixSegs[i];
+    if (pSeg.startsWith("*")) {
+      return true;
+    }
+    if (pSeg.startsWith(":")) {
+      continue;
+    }
+    if (pSeg !== pathSegs[i]) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+function extractPrefixParams(
+  prefix: string | undefined,
+  pathname: string,
+  params: Record<string, string>,
+): void {
+  if (!prefix || (!prefix.includes(":") && !prefix.includes("*"))) {
+    return;
+  }
+
+  let normPrefix = prefix;
+  if (normPrefix.endsWith("/") && normPrefix.length > 1) {
+    normPrefix = normPrefix.slice(0, -1);
+  }
+  if (!normPrefix.startsWith("/")) {
+    normPrefix = `/${normPrefix}`;
+  }
+
+  const prefixSegs = normPrefix.split("/").slice(1);
+  const pathSegs = pathname.split("/").slice(1);
+
+  for (let i = 0; i < prefixSegs.length; i++) {
+    const pSeg = prefixSegs[i];
+    if (pSeg.startsWith("*")) {
+      const paramName = pSeg.slice(1) || "*";
+      if (!(paramName in params)) {
+        let rest = pathSegs.slice(i).join("/");
+        try {
+          rest = decodeURIComponent(rest);
+        } catch {
+          // preserve un-decoded string if decode fails
+        }
+        params[paramName] = rest;
+      }
+      break;
+    }
+    if (pSeg.startsWith(":")) {
+      const paramName = pSeg.slice(1);
+      if (!(paramName in params)) {
+        let val = pathSegs[i];
+        try {
+          val = decodeURIComponent(val);
+        } catch {
+          // preserve un-decoded string if decode fails
+        }
+        params[paramName] = val;
+      }
+    }
+  }
 }
 
 export class Application {
@@ -76,8 +203,17 @@ export class Application {
   use(...handlers: (Middleware | Middleware[])[]): this;
   use(...handlers: ErrorMiddleware[]): this;
   use(...handlers: (ErrorMiddleware | ErrorMiddleware[])[]): this;
-  use(path: string, ...handlers: Middleware[]): this;
-  use(path: string, ...handlers: (Middleware | Middleware[])[]): this;
+  use<Body = unknown, Query = Record<string, string | string[]>, P extends string = string>(
+    path: P,
+    ...handlers: Middleware<ParseRouteParams<NoInfer<P>>, Query, Body>[]
+  ): this;
+  use<Body = unknown, Query = Record<string, string | string[]>, P extends string = string>(
+    path: P,
+    ...handlers: (
+      | Middleware<ParseRouteParams<NoInfer<P>>, Query, Body>
+      | Middleware<ParseRouteParams<NoInfer<P>>, Query, Body>[]
+    )[]
+  ): this;
   use(path: string, ...handlers: ErrorMiddleware[]): this;
   use(path: string, ...handlers: (ErrorMiddleware | ErrorMiddleware[])[]): this;
   use(...args: (string | AnyMiddleware | (AnyMiddleware | AnyMiddleware[])[])[]): this {
@@ -185,44 +321,107 @@ export class Application {
 
   protected async onStop(): Promise<void> {}
 
-  get(path: string, ...handlers: RouteHandler[]): this;
-  get(path: string, ...handlers: (RouteHandler | RouteHandler[])[]): this;
+  get<Body = unknown, Query = Record<string, string | string[]>, P extends string = string>(
+    path: P,
+    ...handlers: RouteHandler<ParseRouteParams<NoInfer<P>>, Query, Body>[]
+  ): this;
+  get<Body = unknown, Query = Record<string, string | string[]>, P extends string = string>(
+    path: P,
+    ...handlers: (
+      | RouteHandler<ParseRouteParams<NoInfer<P>>, Query, Body>
+      | RouteHandler<ParseRouteParams<NoInfer<P>>, Query, Body>[]
+    )[]
+  ): this;
   get(path: string, ...handlers: (RouteHandler | RouteHandler[])[]): this {
     return this.addRoute("GET", path, handlers);
   }
 
-  post(path: string, ...handlers: RouteHandler[]): this;
-  post(path: string, ...handlers: (RouteHandler | RouteHandler[])[]): this;
+  post<Body = unknown, Query = Record<string, string | string[]>, P extends string = string>(
+    path: P,
+    ...handlers: RouteHandler<ParseRouteParams<NoInfer<P>>, Query, Body>[]
+  ): this;
+  post<Body = unknown, Query = Record<string, string | string[]>, P extends string = string>(
+    path: P,
+    ...handlers: (
+      | RouteHandler<ParseRouteParams<NoInfer<P>>, Query, Body>
+      | RouteHandler<ParseRouteParams<NoInfer<P>>, Query, Body>[]
+    )[]
+  ): this;
   post(path: string, ...handlers: (RouteHandler | RouteHandler[])[]): this {
     return this.addRoute("POST", path, handlers);
   }
 
-  put(path: string, ...handlers: RouteHandler[]): this;
-  put(path: string, ...handlers: (RouteHandler | RouteHandler[])[]): this;
+  put<Body = unknown, Query = Record<string, string | string[]>, P extends string = string>(
+    path: P,
+    ...handlers: RouteHandler<ParseRouteParams<NoInfer<P>>, Query, Body>[]
+  ): this;
+  put<Body = unknown, Query = Record<string, string | string[]>, P extends string = string>(
+    path: P,
+    ...handlers: (
+      | RouteHandler<ParseRouteParams<NoInfer<P>>, Query, Body>
+      | RouteHandler<ParseRouteParams<NoInfer<P>>, Query, Body>[]
+    )[]
+  ): this;
   put(path: string, ...handlers: (RouteHandler | RouteHandler[])[]): this {
     return this.addRoute("PUT", path, handlers);
   }
 
-  patch(path: string, ...handlers: RouteHandler[]): this;
-  patch(path: string, ...handlers: (RouteHandler | RouteHandler[])[]): this;
+  patch<Body = unknown, Query = Record<string, string | string[]>, P extends string = string>(
+    path: P,
+    ...handlers: RouteHandler<ParseRouteParams<NoInfer<P>>, Query, Body>[]
+  ): this;
+  patch<Body = unknown, Query = Record<string, string | string[]>, P extends string = string>(
+    path: P,
+    ...handlers: (
+      | RouteHandler<ParseRouteParams<NoInfer<P>>, Query, Body>
+      | RouteHandler<ParseRouteParams<NoInfer<P>>, Query, Body>[]
+    )[]
+  ): this;
   patch(path: string, ...handlers: (RouteHandler | RouteHandler[])[]): this {
     return this.addRoute("PATCH", path, handlers);
   }
 
-  delete(path: string, ...handlers: RouteHandler[]): this;
-  delete(path: string, ...handlers: (RouteHandler | RouteHandler[])[]): this;
+  delete<Body = unknown, Query = Record<string, string | string[]>, P extends string = string>(
+    path: P,
+    ...handlers: RouteHandler<ParseRouteParams<NoInfer<P>>, Query, Body>[]
+  ): this;
+  delete<Body = unknown, Query = Record<string, string | string[]>, P extends string = string>(
+    path: P,
+    ...handlers: (
+      | RouteHandler<ParseRouteParams<NoInfer<P>>, Query, Body>
+      | RouteHandler<ParseRouteParams<NoInfer<P>>, Query, Body>[]
+    )[]
+  ): this;
   delete(path: string, ...handlers: (RouteHandler | RouteHandler[])[]): this {
     return this.addRoute("DELETE", path, handlers);
   }
 
-  options(path: string, ...handlers: RouteHandler[]): this;
-  options(path: string, ...handlers: (RouteHandler | RouteHandler[])[]): this;
+  options<Body = unknown, Query = Record<string, string | string[]>, P extends string = string>(
+    path: P,
+    ...handlers: RouteHandler<ParseRouteParams<NoInfer<P>>, Query, Body>[]
+  ): this;
+  options<Body = unknown, Query = Record<string, string | string[]>, P extends string = string>(
+    path: P,
+    ...handlers: (
+      | RouteHandler<ParseRouteParams<NoInfer<P>>, Query, Body>
+      | RouteHandler<ParseRouteParams<NoInfer<P>>, Query, Body>[]
+    )[]
+  ): this;
   options(path: string, ...handlers: (RouteHandler | RouteHandler[])[]): this {
     return this.addRoute("OPTIONS", path, handlers);
   }
 
-  head(path: string, ...handlers: RouteHandler[]): this;
-  head(path: string, ...handlers: (RouteHandler | RouteHandler[])[]): this;
+  head<Body = unknown, Query = Record<string, string | string[]>, P extends string = string>(
+    path: P,
+    ...handlers: RouteHandler<ParseRouteParams<NoInfer<P>>, Query, Body>[]
+  ): this;
+  head<Body = unknown, Query = Record<string, string | string[]>, P extends string = string>(
+    path: P,
+    ...handlers: (
+      | RouteHandler<ParseRouteParams<NoInfer<P>>, Query, Body>
+      | RouteHandler<ParseRouteParams<NoInfer<P>>, Query, Body>[]
+    )[]
+  ): this;
   head(path: string, ...handlers: (RouteHandler | RouteHandler[])[]): this {
     return this.addRoute("HEAD", path, handlers);
   }
@@ -248,6 +447,7 @@ export class Application {
 
     for (const entry of this.middlewares) {
       if (matchesPrefix(entry.prefix, pathname)) {
+        extractPrefixParams(entry.prefix, pathname, request.params);
         pipeline.push({
           fn: entry.middleware,
           isError: entry.isError,

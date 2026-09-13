@@ -1,25 +1,34 @@
 import type { IncomingHttpHeaders, IncomingMessage } from "node:http";
 
-export class Request {
-  public params: Record<string, string> = {};
+export class Request<
+  Params = Record<string, string>,
+  Query = Record<string, string | string[]>,
+  Body = unknown,
+> {
+  public params: Params;
   // public body: unknown = undefined;
-  private parsedQuery?: Record<string, string | string[]>;
+  private parsedQuery?: Query;
 
   private rawBody?: Buffer;
   private rawBodyPromise?: Promise<Buffer>;
 
-  private parsedBody?: unknown;
-  private bodyPromise?: Promise<unknown>;
+  private parsedBody?: Body;
+  private bodyPromise?: Promise<Body>;
 
-  constructor(public readonly raw: IncomingMessage) {}
+  constructor(
+    public readonly raw: IncomingMessage,
+    params?: Params,
+  ) {
+    this.params = params ?? ({} as Params);
+  }
 
-  get body(): Promise<unknown> {
+  get body(): Promise<Body> {
     if (this.parsedBody !== undefined) {
       return Promise.resolve(this.parsedBody);
     }
 
     if (!this.bodyPromise) {
-      this.bodyPromise = this.parseBody();
+      this.bodyPromise = this.parseBody<Body>() as Promise<Body>;
     }
 
     return this.bodyPromise;
@@ -37,12 +46,12 @@ export class Request {
     return this.raw.headers;
   }
 
-  get query(): Record<string, string | string[]> {
+  get query(): Query {
     if (!this.parsedQuery) {
       const urlString = this.url;
       const queryIndex = urlString.indexOf("?");
       if (queryIndex === -1) {
-        this.parsedQuery = {};
+        this.parsedQuery = {} as Query;
       } else {
         const searchParams = new URLSearchParams(urlString.slice(queryIndex + 1));
         const queryObj: Record<string, string | string[]> = {};
@@ -56,7 +65,7 @@ export class Request {
             queryObj[key] = [existing, value];
           }
         }
-        this.parsedQuery = queryObj;
+        this.parsedQuery = queryObj as unknown as Query;
       }
     }
     return this.parsedQuery;
@@ -87,7 +96,7 @@ export class Request {
     return this.rawBodyPromise;
   }
 
-  async parseBody<T = unknown>(): Promise<T | undefined> {
+  async parseBody<T = Body>(): Promise<T | undefined> {
     const body = await this.readBody();
 
     if (body.length === 0) {

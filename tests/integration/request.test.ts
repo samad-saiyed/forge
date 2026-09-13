@@ -362,4 +362,70 @@ describe("Request integration", () => {
       await new Promise<void>((resolve) => server.close(() => resolve()));
     }
   });
+
+  it("should parse query parameters correctly with generic query type", () => {
+    type UserQuery = { search: string; page?: string };
+    const rawReq = { url: "/users?search=forge&page=2", headers: {} } as never;
+    const request = new Request<Record<string, string>, UserQuery>(rawReq);
+
+    expect(request.query.search).toBe("forge");
+    expect(request.query.page).toBe("2");
+  });
+
+  it("should return typed body matching parsed JSON body", async () => {
+    type UserBody = { name: string; version: number };
+    let capturedBody: UserBody | undefined;
+
+    const server = createServer(async (req, res) => {
+      try {
+        const request = new Request<Record<string, string>, Record<string, string>, UserBody>(req);
+        capturedBody = await request.body;
+        res.statusCode = 200;
+        res.end("ok");
+      } catch (err) {
+        res.statusCode = 500;
+        res.end(String(err));
+      }
+    });
+
+    await new Promise<void>((resolve, reject) => {
+      server.listen(0, "127.0.0.1", () => resolve());
+      server.once("error", reject);
+    });
+
+    const address = server.address();
+    if (address === null || typeof address === "string") {
+      server.close();
+      throw new Error("Failed to determine server address");
+    }
+
+    try {
+      await new Promise<void>((resolve, reject) => {
+        const clientReq = httpRequest(
+          {
+            hostname: "127.0.0.1",
+            port: address.port,
+            path: "/",
+            method: "POST",
+            headers: {
+              "content-type": "application/json",
+            },
+          },
+          (res) => {
+            res.resume();
+            res.once("end", () => resolve());
+          },
+        );
+
+        clientReq.once("error", reject);
+        clientReq.write(JSON.stringify({ name: "Forge", version: 1 }));
+        clientReq.end();
+      });
+
+      expect(capturedBody).toEqual({ name: "Forge", version: 1 });
+      expect(capturedBody?.name).toBe("Forge");
+    } finally {
+      await new Promise<void>((resolve) => server.close(() => resolve()));
+    }
+  });
 });
