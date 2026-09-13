@@ -1,33 +1,76 @@
+import type { IncomingHttpHeaders } from "node:http";
 import type { RouteHandler } from "./application.js";
 import type { FileRouteHandler } from "./context.js";
-import type { ForgeSchema } from "./schema.js";
+import type { InferSchemaOutput } from "./schema.js";
+
+export type ValidateOptions = {
+  params?: unknown;
+  query?: unknown;
+  headers?: unknown;
+  body?: unknown;
+};
 
 export interface RouteOptions<
-  Params = unknown,
-  Query = unknown,
-  Headers = unknown,
-  Body = unknown,
-  Response = unknown,
+  V extends ValidateOptions = ValidateOptions,
+  ResponseSchema = unknown,
 > {
-  validate?: {
-    params?: ForgeSchema<Params> | unknown;
-    query?: ForgeSchema<Query> | unknown;
-    headers?: ForgeSchema<Headers> | unknown;
-    body?: ForgeSchema<Body> | unknown;
-  };
-  response?: ForgeSchema<Response> | unknown;
+  validate?: V;
+  response?: ResponseSchema;
 }
 
-export interface RouteDefinition<H = RouteHandler | FileRouteHandler> {
+export interface RouteDefinition<
+  H = unknown,
+  V extends ValidateOptions = ValidateOptions,
+  ResponseSchema = unknown,
+> {
   kind: "route";
-  options: RouteOptions;
+  options: RouteOptions<V, ResponseSchema>;
   handler: H;
 }
 
-export function defineRoute<H extends RouteHandler | FileRouteHandler>(
-  options: RouteOptions,
-  handler: H,
-): RouteDefinition<H> {
+export type InferValidationTarget<S, Fallback> = [S] extends [never]
+  ? Fallback
+  : [S] extends [undefined]
+    ? Fallback
+    : unknown extends S
+      ? Fallback
+      : InferSchemaOutput<S>;
+
+export type InferValidateParams<V, Fallback = Record<string, string>> = V extends {
+  params: infer S;
+}
+  ? InferValidationTarget<S, Fallback>
+  : Fallback;
+
+export type InferValidateQuery<V, Fallback = Record<string, string | string[]>> = V extends {
+  query: infer S;
+}
+  ? InferValidationTarget<S, Fallback>
+  : Fallback;
+
+export type InferValidateHeaders<V, Fallback = IncomingHttpHeaders> = V extends { headers: infer S }
+  ? InferValidationTarget<S, Fallback>
+  : Fallback;
+
+export type InferValidateBody<V, Fallback = unknown> = V extends { body: infer S }
+  ? InferValidationTarget<S, Fallback>
+  : Fallback;
+
+export type UnifiedRouteHandler<P, Q, B, R, H> =
+  RouteHandler<P, Q, B, R, H> | FileRouteHandler<P, Q, B, R, H>;
+
+export function defineRoute<
+  V extends ValidateOptions,
+  ResSchema = unknown,
+  P = InferValidateParams<V>,
+  Q = InferValidateQuery<V>,
+  B = InferValidateBody<V>,
+  H = InferValidateHeaders<V>,
+  R = InferSchemaOutput<ResSchema>,
+>(
+  options: { validate?: V; response?: ResSchema },
+  handler: UnifiedRouteHandler<P, Q, B, R, H>,
+): RouteDefinition<UnifiedRouteHandler<P, Q, B, R, H>, V, ResSchema> {
   return {
     kind: "route",
     options,

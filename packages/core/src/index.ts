@@ -57,7 +57,14 @@ export {
   isRouteDefinition,
   type RouteOptions,
   type RouteDefinition,
+  type ValidateOptions,
+  type InferValidationTarget,
+  type InferValidateParams,
+  type InferValidateQuery,
+  type InferValidateHeaders,
+  type InferValidateBody,
 } from "./route-definition.js";
+
 export {
   createSchema,
   isForgeSchema,

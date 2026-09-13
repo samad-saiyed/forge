@@ -1,4 +1,4 @@
-import type { IncomingMessage, Server, ServerResponse } from "node:http";
+import type { IncomingHttpHeaders, IncomingMessage, Server, ServerResponse } from "node:http";
 import { createServer } from "node:http";
 import * as path from "node:path";
 import { Request } from "./request.js";
@@ -55,8 +55,9 @@ export type Middleware<
   Query = Record<string, string | string[]>,
   Body = unknown,
   ResBody = unknown,
+  Headers = IncomingHttpHeaders,
 > = (
-  request: Request<Params, Query, Body>,
+  request: Request<Params, Query, Body, Headers>,
   response: Response<ResBody>,
   next: NextFunction,
 ) => void | Promise<unknown>;
@@ -66,9 +67,10 @@ export type ErrorMiddleware<
   Query = Record<string, string | string[]>,
   Body = unknown,
   ResBody = unknown,
+  Headers = IncomingHttpHeaders,
 > = (
   error: unknown,
-  request: Request<Params, Query, Body>,
+  request: Request<Params, Query, Body, Headers>,
   response: Response<ResBody>,
   next: NextFunction,
 ) => void | Promise<unknown>;
@@ -84,17 +86,19 @@ export type RouteHandler<
   Query = Record<string, string | string[]>,
   Body = unknown,
   ResBody = unknown,
+  Headers = IncomingHttpHeaders,
 > =
-  Params extends RouteContext<infer P, infer Q, infer B, infer R>
-    ? Middleware<P, Q, B, R>
-    : Middleware<Params, Query, Body, ResBody>;
+  Params extends RouteContext<infer P, infer Q, infer B, infer R, infer H>
+    ? Middleware<P, Q, B, R, H>
+    : Middleware<Params, Query, Body, ResBody, Headers>;
 
 export type RequestHandler<
   Params = Record<string, string>,
   Query = Record<string, string | string[]>,
   Body = unknown,
   ResBody = unknown,
-> = Middleware<Params, Query, Body, ResBody>;
+  Headers = IncomingHttpHeaders,
+> = Middleware<Params, Query, Body, ResBody, Headers>;
 
 interface MiddlewareEntry {
   prefix?: string;

@@ -54,14 +54,17 @@ export async function loadApplicationContext(
   });
 }
 
+import type { IncomingHttpHeaders } from "node:http";
+
 export interface RouteContext<
   Params = Record<string, string>,
   Query = Record<string, string | string[]>,
   Body = unknown,
   ResBody = unknown,
+  Headers = IncomingHttpHeaders,
 > {
   app: Application;
-  request: Request<Params, Query, Body>;
+  request: Request<Params, Query, Body, Headers>;
   response: Response<ResBody>;
 }
 
@@ -70,7 +73,8 @@ export type FileRouteHandler<
   Query = Record<string, string | string[]>,
   Body = unknown,
   ResBody = unknown,
-> = (context: RouteContext<Params, Query, Body, ResBody>) => void | Promise<unknown>;
+  Headers = IncomingHttpHeaders,
+> = (context: RouteContext<Params, Query, Body, ResBody, Headers>) => void | Promise<unknown>;
 
 import type { ParseFilesystemRouteParams } from "./filesystem-router.js";
 
@@ -79,15 +83,17 @@ export type FilesystemRouteHandler<
   Query = Record<string, string | string[]>,
   Body = unknown,
   ResBody = unknown,
-> = FileRouteHandler<ParseFilesystemRouteParams<Path>, Query, Body, ResBody>;
+  Headers = IncomingHttpHeaders,
+> = FileRouteHandler<ParseFilesystemRouteParams<Path>, Query, Body, ResBody, Headers>;
 
 export function defineRouteHandler<
   Path extends string = string,
   Query = Record<string, string | string[]>,
   Body = unknown,
   ResBody = unknown,
+  Headers = IncomingHttpHeaders,
 >(
-  handler: FileRouteHandler<ParseFilesystemRouteParams<Path>, Query, Body, ResBody>,
-): FileRouteHandler<ParseFilesystemRouteParams<Path>, Query, Body, ResBody> {
+  handler: FileRouteHandler<ParseFilesystemRouteParams<Path>, Query, Body, ResBody, Headers>,
+): FileRouteHandler<ParseFilesystemRouteParams<Path>, Query, Body, ResBody, Headers> {
   return handler;
 }

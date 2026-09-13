@@ -718,3 +718,221 @@ app.post("/defined-route/:id", definedRouteDef);
 app.put("/defined-route/:id", definedRouteDef);
 app.patch("/defined-route/:id", definedRouteDef);
 app.delete("/defined-route/:id", definedRouteDef);
+
+// 17. Action 72.6: Schema-Driven Type Inference compile-time tests
+import {
+  createSchema,
+  type InferSchemaOutput,
+  type InferValidateBody,
+} from "../../packages/core/src/index.js";
+
+// 17.1 InferSchemaOutput type helper test
+const testSchemaObj = createSchema<{ name: string; age: number }, { name: string; age: string }>(
+  (input) => {
+    const b = input as { name: string; age: string };
+    return { success: true, data: { name: b.name, age: Number(b.age) } };
+  },
+);
+
+type InferredObjOutput = InferSchemaOutput<typeof testSchemaObj>;
+export const checkSchemaOutputInfer: AssertEqual<InferredObjOutput, { name: string; age: number }> =
+  true;
+void testSchemaObj;
+
+// 17.2 Body inference & invalid property access
+const bodySchema = createSchema<{ email: string; isVerified: boolean }>(() => ({
+  success: true,
+  data: { email: "a@b.com", isVerified: true },
+}));
+
+export const routeBodyInferred = defineRoute(
+  {
+    validate: {
+      body: bodySchema,
+    },
+  },
+  async (req) => {
+    const body = await req.body;
+    const email: string = body.email;
+    const isVerified: boolean = body.isVerified;
+    void email;
+    void isVerified;
+
+    const invalid = body.nonexistent;
+    void invalid;
+
+    // Unconfigured properties retain default types
+    const paramId: string = req.params.anything;
+    const queryVal: string | string[] | undefined = req.query.anything;
+    const headerVal: string | string[] | undefined = req.headers["content-type"];
+    void paramId;
+    void queryVal;
+    void headerVal;
+  },
+);
+
+// 17.3 Query inference & transformation (string -> number)
+const queryTransformSchema = createSchema<
+  { page: number; search?: string },
+  { page?: string; search?: string }
+>(() => ({
+  success: true,
+  data: { page: 1, search: "test" },
+}));
+
+export const routeQueryInferred = defineRoute(
+  {
+    validate: {
+      query: queryTransformSchema,
+    },
+  },
+  (req) => {
+    const page: number = req.query.page;
+    const search: string | undefined = req.query.search;
+    void page;
+    void search;
+
+    const invalid = req.query.nonexistent;
+    void invalid;
+  },
+);
+
+// 17.4 Params inference
+const paramsSchema = createSchema<{ userId: string }>(() => ({
+  success: true,
+  data: { userId: "u123" },
+}));
+
+export const routeParamsInferred = defineRoute(
+  {
+    validate: {
+      params: paramsSchema,
+    },
+  },
+  (req) => {
+    const userId: string = req.params.userId;
+    void userId;
+
+    const invalid = req.params.nonexistent;
+    void invalid;
+  },
+);
+
+// 17.5 Headers inference
+const headersSchema = createSchema<{ "x-api-key": string; "x-tenant-id"?: string }>(() => ({
+  success: true,
+  data: { "x-api-key": "secret" },
+}));
+
+export const routeHeadersInferred = defineRoute(
+  {
+    validate: {
+      headers: headersSchema,
+    },
+  },
+  (req) => {
+    const apiKey: string = req.headers["x-api-key"];
+    const tenantId: string | undefined = req.headers["x-tenant-id"];
+    void apiKey;
+    void tenantId;
+
+    const invalid = req.headers.nonexistent;
+    void invalid;
+  },
+);
+
+// 17.6 Multiple schemas simultaneous inference
+export const routeFullInferred = defineRoute(
+  {
+    validate: {
+      params: paramsSchema,
+      query: queryTransformSchema,
+      headers: headersSchema,
+      body: bodySchema,
+    },
+  },
+  async (req) => {
+    const userId: string = req.params.userId;
+    const page: number = req.query.page;
+    const apiKey: string = req.headers["x-api-key"];
+    const body = await req.body;
+    const email: string = body.email;
+
+    void userId;
+    void page;
+    void apiKey;
+    void email;
+
+    const pErr = req.params.invalid;
+    const qErr = req.query.invalid;
+    const hErr = req.headers.invalid;
+    const bErr = body.invalid;
+
+    void pErr;
+    void qErr;
+    void hErr;
+    void bErr;
+  },
+);
+
+// 17.7 Filesystem Route Handler inference (FileRouteHandler signature)
+export const fsRouteInferred = defineRoute(
+  {
+    validate: {
+      params: paramsSchema,
+      body: bodySchema,
+    },
+  },
+  async ({ request, response }) => {
+    const userId: string = request.params.userId;
+    const body = await request.body;
+    const email: string = body.email;
+
+    void userId;
+    void email;
+
+    const pErr = request.params.invalid;
+    const bErr = body.invalid;
+
+    void pErr;
+    void bErr;
+
+    response.status(200);
+  },
+);
+
+// 17.8 Response schema does not alter request inference
+const responseSchema = createSchema<{ id: string; ok: boolean }>(() => ({
+  success: true,
+  data: { id: "res1", ok: true },
+}));
+
+export const routeWithResponseSchema = defineRoute(
+  {
+    validate: {
+      body: bodySchema,
+    },
+    response: responseSchema,
+  },
+  async (req, res) => {
+    const body = await req.body;
+    const email: string = body.email;
+    void email;
+
+    // Valid typed response output
+    res.json({ id: "1", ok: true });
+
+    // @ts-expect-error invalid response payload type
+    res.json({ id: "1", ok: "not-a-boolean" });
+  },
+);
+
+// 17.9 Manual route registration with defined route
+app.post("/manual/inferred", routeFullInferred);
+
+// 17.10 Verify no `any` type escapes the validation type layer
+type CheckNoAnyBody = AssertEqual<
+  InferValidateBody<{ body: typeof bodySchema }>,
+  { email: string; isVerified: boolean }
+>;
+export const checkNoAny: CheckNoAnyBody = true;

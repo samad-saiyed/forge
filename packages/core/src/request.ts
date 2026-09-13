@@ -4,6 +4,7 @@ export class Request<
   Params = Record<string, string>,
   Query = Record<string, string | string[]>,
   Body = unknown,
+  Headers = IncomingHttpHeaders,
 > {
   public params: Params;
   // public body: unknown = undefined;
@@ -48,12 +49,12 @@ export class Request<
 
   private customHeaders?: IncomingHttpHeaders;
 
-  get headers(): IncomingHttpHeaders {
-    return this.customHeaders ?? this.raw.headers;
+  get headers(): Headers {
+    return (this.customHeaders ?? this.raw.headers) as unknown as Headers;
   }
 
-  set headers(val: IncomingHttpHeaders) {
-    this.customHeaders = val as IncomingHttpHeaders;
+  set headers(val: Headers) {
+    this.customHeaders = val as unknown as IncomingHttpHeaders;
   }
 
   get query(): Query {

@@ -21,7 +21,8 @@ export function registerLoadedRoutes(
         if (options?.validate) {
           await executeRouteValidation(options, req);
         }
-        if (targetHandler.length <= 1) {
+        const fn = targetHandler as (...args: unknown[]) => unknown;
+        if (fn.length <= 1) {
           return (targetHandler as FileRouteHandler)({
             app: app!,
             request: req,
