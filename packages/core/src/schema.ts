@@ -8,6 +8,25 @@ export interface SchemaValidationError {
   issues: SchemaIssue[];
 }
 
+export type ValidationSource = "params" | "query" | "headers" | "body";
+
+export interface ValidationIssue {
+  source: ValidationSource;
+  path: (string | number)[];
+  message: string;
+}
+
+export class ForgeValidationError extends Error {
+  readonly code = "VALIDATION_ERROR" as const;
+  readonly details: ValidationIssue[];
+
+  constructor(details: ValidationIssue[], message = "Request validation failed") {
+    super(message);
+    this.name = "ForgeValidationError";
+    this.details = details;
+  }
+}
+
 export type SchemaResult<T> =
   { success: true; data: T } | { success: false; error: SchemaValidationError };
 

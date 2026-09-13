@@ -61,10 +61,13 @@ export {
 export {
   createSchema,
   isForgeSchema,
+  ForgeValidationError,
   type ForgeSchema,
   type SchemaResult,
   type SchemaValidationError,
   type SchemaIssue,
+  type ValidationIssue,
+  type ValidationSource,
   type InferSchemaOutput,
 } from "./schema.js";
 

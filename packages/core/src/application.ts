@@ -16,6 +16,7 @@ import {
   isRouteDefinition,
   type RouteDefinition,
 } from "./route-definition.js";
+import { ForgeValidationError } from "./schema.js";
 
 export interface ApplicationOptions {
   appDir?: string;
@@ -784,6 +785,17 @@ export class Application {
 
   protected handleError(error: unknown, _request: Request, response: Response): void {
     if (response.raw.headersSent) {
+      return;
+    }
+
+    if (error instanceof ForgeValidationError) {
+      response.status(400).json({
+        error: {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+        },
+      });
       return;
     }
 

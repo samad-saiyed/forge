@@ -45,7 +45,24 @@ export function isRouteDefinition(value: unknown): value is RouteDefinition {
 }
 
 import type { Request } from "./request.js";
-import { isForgeSchema } from "./schema.js";
+import {
+  isForgeSchema,
+  ForgeValidationError,
+  type ValidationIssue,
+  type ValidationSource,
+  type SchemaIssue,
+} from "./schema.js";
+
+function formatValidationIssues(
+  source: ValidationSource,
+  issues: SchemaIssue[],
+): ValidationIssue[] {
+  return issues.map((issue) => ({
+    source,
+    path: issue.path ?? [],
+    message: issue.message,
+  }));
+}
 
 export async function executeRouteValidation(
   options: RouteOptions | undefined,
@@ -60,7 +77,7 @@ export async function executeRouteValidation(
   if (validate.params && isForgeSchema(validate.params)) {
     const result = await validate.params.validate(request.params);
     if (!result.success) {
-      throw result.error;
+      throw new ForgeValidationError(formatValidationIssues("params", result.error.issues));
     }
     request.params = result.data as Record<string, string>;
   }
@@ -69,7 +86,7 @@ export async function executeRouteValidation(
   if (validate.query && isForgeSchema(validate.query)) {
     const result = await validate.query.validate(request.query);
     if (!result.success) {
-      throw result.error;
+      throw new ForgeValidationError(formatValidationIssues("query", result.error.issues));
     }
     request.query = result.data as Record<string, string | string[]>;
   }
@@ -78,7 +95,7 @@ export async function executeRouteValidation(
   if (validate.headers && isForgeSchema(validate.headers)) {
     const result = await validate.headers.validate(request.headers);
     if (!result.success) {
-      throw result.error;
+      throw new ForgeValidationError(formatValidationIssues("headers", result.error.issues));
     }
     request.headers = result.data as unknown as import("node:http").IncomingHttpHeaders;
   }
@@ -88,7 +105,7 @@ export async function executeRouteValidation(
     const rawBody = await request.body;
     const result = await validate.body.validate(rawBody);
     if (!result.success) {
-      throw result.error;
+      throw new ForgeValidationError(formatValidationIssues("body", result.error.issues));
     }
     request.body = result.data;
   }

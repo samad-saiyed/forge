@@ -94,7 +94,7 @@ describe("Action 72.4 — Request Validation Pipeline", () => {
       handlerSpy.mockClear();
 
       const invalidRes = await doRequest("GET", "/users/999");
-      expect(invalidRes.status).toBe(500);
+      expect(invalidRes.status).toBe(400);
       expect(handlerSpy).not.toHaveBeenCalled();
     } finally {
       await close();
@@ -138,7 +138,7 @@ describe("Action 72.4 — Request Validation Pipeline", () => {
       handlerSpy.mockClear();
 
       const invalidRes = await doRequest("GET", "/search?search=ab");
-      expect(invalidRes.status).toBe(500);
+      expect(invalidRes.status).toBe(400);
       expect(handlerSpy).not.toHaveBeenCalled();
     } finally {
       await close();
@@ -185,7 +185,7 @@ describe("Action 72.4 — Request Validation Pipeline", () => {
       const invalidRes = await doRequest("GET", "/protected", {
         headers: { "x-api-key": "wrong-token" },
       });
-      expect(invalidRes.status).toBe(500);
+      expect(invalidRes.status).toBe(400);
       expect(handlerSpy).not.toHaveBeenCalled();
     } finally {
       await close();
@@ -236,7 +236,7 @@ describe("Action 72.4 — Request Validation Pipeline", () => {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ age: 15 }),
       });
-      expect(invalidRes.status).toBe(500);
+      expect(invalidRes.status).toBe(400);
       expect(handlerSpy).not.toHaveBeenCalled();
     } finally {
       await close();
@@ -350,7 +350,7 @@ describe("Action 72.4 — Request Validation Pipeline", () => {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ ok: true }),
       });
-      expect(shortCircuitRes.status).toBe(500);
+      expect(shortCircuitRes.status).toBe(400);
       expect(executionOrder).toEqual(["params"]);
     } finally {
       await close();
@@ -496,7 +496,7 @@ describe("Action 72.4 — Request Validation Pipeline", () => {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ name: "invalid" }),
       });
-      expect(invalidRes.status).toBe(500);
+      expect(invalidRes.status).toBe(400);
     } finally {
       await close();
     }
@@ -544,7 +544,7 @@ describe("Action 72.4 — Request Validation Pipeline", () => {
       expect(validRes.json()).toEqual({ id: "NUM_123" });
 
       const invalidRes = await doRequest("GET", "/users/999");
-      expect(invalidRes.status).toBe(500);
+      expect(invalidRes.status).toBe(400);
     } finally {
       await close();
     }
