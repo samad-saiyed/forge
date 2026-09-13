@@ -6,6 +6,7 @@ import {
   type ResolvedForgeConfig,
 } from "@forge/core";
 
+export { handleDevCommand, type DevCommandOptions, type DevCommandResult } from "./commands/dev.js";
 export { handleNewCommand, type NewCommandOptions } from "./commands/new.js";
 export { runCli, type BaseCliOptions, type CliResult, type RunCliOptions } from "./dispatcher.js";
 export { getHelpText } from "./help.js";
@@ -19,6 +20,11 @@ export { installDependencies, type InstallResult } from "./project/package-manag
 export { scaffoldProject } from "./project/scaffolder.js";
 export { validateProjectName, type ValidationResult } from "./project/validation.js";
 export { CancelledError, runWizard, type WizardOptions } from "./project/wizard.js";
+export {
+  startDevServer,
+  type DevServerController,
+  type DevServerOptions,
+} from "./runner/dev-runner.js";
 export { getVersion } from "./version.js";
 
 export interface CliOptions {
