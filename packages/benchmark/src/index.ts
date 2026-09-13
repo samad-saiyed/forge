@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
+// /* eslint-disable @typescript-eslint/no-unused-vars */
 import type { EventEmitter } from "node:events";
 import { request as httpRequest, type RequestOptions } from "node:http";
 import express from "express";
