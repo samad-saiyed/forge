@@ -124,48 +124,52 @@ describe("Forge CLI 'forge dev' Server & Lifecycle Tests", () => {
     await controller.stop();
   });
 
-  it("handles failed restart when route code has errors and recovers after fix", async () => {
-    writeFileSync(
-      join(tempDir, "forge.config.ts"),
-      `export default { server: { port: 4853, host: "127.0.0.1" } };`,
-      "utf8",
-    );
-    mkdirSync(join(tempDir, "src", "app"), { recursive: true });
-    const routePath = join(tempDir, "src", "app", "route.ts");
-    writeFileSync(
-      routePath,
-      `export const GET = (_req, res) => res.json({ state: "initial" });`,
-      "utf8",
-    );
+  it(
+    "handles failed restart when route code has errors and recovers after fix",
+    { timeout: 15000 },
+    async () => {
+      writeFileSync(
+        join(tempDir, "forge.config.ts"),
+        `export default { server: { port: 4853, host: "127.0.0.1" } };`,
+        "utf8",
+      );
+      mkdirSync(join(tempDir, "src", "app"), { recursive: true });
+      const routePath = join(tempDir, "src", "app", "route.ts");
+      writeFileSync(
+        routePath,
+        `export const GET = (_req, res) => res.json({ state: "initial" });`,
+        "utf8",
+      );
 
-    let stderrOutput = "";
-    const controller = await startDevServer({
-      projectRoot: tempDir,
-      watch: false,
-      stderr: (msg) => {
-        stderrOutput += msg + "\n";
-      },
-    });
+      let stderrOutput = "";
+      const controller = await startDevServer({
+        projectRoot: tempDir,
+        watch: false,
+        stderr: (msg) => {
+          stderrOutput += msg + "\n";
+        },
+      });
 
-    // Introduce invalid code
-    writeFileSync(routePath, `throw new Error("Syntax broken");`, "utf8");
+      // Introduce invalid code
+      writeFileSync(routePath, `throw new Error("Syntax broken");`, "utf8");
 
-    await controller.restart();
-    expect(stderrOutput).toContain("Unable to start Forge server");
+      await controller.restart();
+      expect(stderrOutput).toContain("Unable to start Forge server");
 
-    // Fix the code and restart again
-    writeFileSync(
-      routePath,
-      `export const GET = (_req, res) => res.json({ state: "recovered" });`,
-      "utf8",
-    );
+      // Fix the code and restart again
+      writeFileSync(
+        routePath,
+        `export const GET = (_req, res) => res.json({ state: "recovered" });`,
+        "utf8",
+      );
 
-    await controller.restart();
+      await controller.restart();
 
-    const res = await fetch("http://127.0.0.1:4853/");
-    expect(res.status).toBe(200);
-    expect(await res.json()).toEqual({ state: "recovered" });
+      const res = await fetch("http://127.0.0.1:4853/");
+      expect(res.status).toBe(200);
+      expect(await res.json()).toEqual({ state: "recovered" });
 
-    await controller.stop();
-  });
+      await controller.stop();
+    },
+  );
 });

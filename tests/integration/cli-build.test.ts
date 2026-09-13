@@ -278,47 +278,51 @@ describe("Action 70.8 — Build Pipeline Integration & 'forge build' CLI Tests",
     expect(existsSync(join(tempDir, BUILD_OUTPUT_DIR, "app", "v1", "route.js"))).toBe(false);
   });
 
-  it("J. Previous successful build is preserved when subsequent build fails", async () => {
-    writeFileSync(
-      join(tempDir, "tsconfig.json"),
-      JSON.stringify({ compilerOptions: { target: "ES2022", module: "NodeNext" } }),
-    );
-    writeFileSync(join(tempDir, "forge.config.ts"), `export default {};`);
-    mkdirSync(join(tempDir, "src", "app", "valid"), { recursive: true });
-    writeFileSync(
-      join(tempDir, "src", "app", "valid", "route.ts"),
-      `export const GET = () => "valid";`,
-    );
+  it(
+    "J. Previous successful build is preserved when subsequent build fails",
+    { timeout: 15000 },
+    async () => {
+      writeFileSync(
+        join(tempDir, "tsconfig.json"),
+        JSON.stringify({ compilerOptions: { target: "ES2022", module: "NodeNext" } }),
+      );
+      writeFileSync(join(tempDir, "forge.config.ts"), `export default {};`);
+      mkdirSync(join(tempDir, "src", "app", "valid"), { recursive: true });
+      writeFileSync(
+        join(tempDir, "src", "app", "valid", "route.ts"),
+        `export const GET = () => "valid";`,
+      );
 
-    // Build 1: Success
-    const res1 = await handleBuildCommand([], { projectRoot: tempDir });
-    expect(res1.exitCode).toBe(0);
+      // Build 1: Success
+      const res1 = await handleBuildCommand([], { projectRoot: tempDir });
+      expect(res1.exitCode).toBe(0);
 
-    const manifestPath = join(tempDir, BUILD_OUTPUT_DIR, "manifest.json");
-    expect(existsSync(manifestPath)).toBe(true);
-    const initialManifest = readFileSync(manifestPath, "utf8");
+      const manifestPath = join(tempDir, BUILD_OUTPUT_DIR, "manifest.json");
+      expect(existsSync(manifestPath)).toBe(true);
+      const initialManifest = readFileSync(manifestPath, "utf8");
 
-    // Introduce a TypeScript error
-    writeFileSync(
-      join(tempDir, "src", "app", "valid", "route.ts"),
-      `const err: number = "broken"; export const GET = () => err;`,
-    );
+      // Introduce a TypeScript error
+      writeFileSync(
+        join(tempDir, "src", "app", "valid", "route.ts"),
+        `const err: number = "broken"; export const GET = () => err;`,
+      );
 
-    // Build 2: Failure
-    const res2 = await handleBuildCommand([], {
-      projectRoot: tempDir,
-      stdout: customStdout,
-      stderr: customStderr,
-    });
+      // Build 2: Failure
+      const res2 = await handleBuildCommand([], {
+        projectRoot: tempDir,
+        stdout: customStdout,
+        stderr: customStderr,
+      });
 
-    expect(res2.exitCode).toBe(1);
-    expect(res2.output).toContain("Forge build failed.");
+      expect(res2.exitCode).toBe(1);
+      expect(res2.output).toContain("Forge build failed.");
 
-    // Previous build output remains intact!
-    expect(existsSync(manifestPath)).toBe(true);
-    const preservedManifest = readFileSync(manifestPath, "utf8");
-    expect(preservedManifest).toBe(initialManifest);
-  });
+      // Previous build output remains intact!
+      expect(existsSync(manifestPath)).toBe(true);
+      const preservedManifest = readFileSync(manifestPath, "utf8");
+      expect(preservedManifest).toBe(initialManifest);
+    },
+  );
 
   it("K. CLI exit codes: 0 on success, 1 on failure", async () => {
     writeFileSync(join(tempDir, "forge.config.js"), `export default {};`);

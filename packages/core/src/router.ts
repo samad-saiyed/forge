@@ -98,7 +98,7 @@ function insertDynamicRoute(
           paramName,
           node: {},
         };
-      } else {
+      } else if (i === segments.length - 1) {
         curr.paramChild.paramName = paramName;
       }
       curr = curr.paramChild.node;

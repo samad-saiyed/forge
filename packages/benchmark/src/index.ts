@@ -9,6 +9,7 @@ import { runRouterBenchmark } from "./router.js";
 
 export { runBodyParserBenchmark } from "./body-parser.js";
 export { runMiddlewareBenchmark } from "./middleware.js";
+export { runProductionBaseline } from "./production-baseline.js";
 export { runRouterBenchmark } from "./router.js";
 
 export interface BenchmarkResult {
@@ -299,13 +300,13 @@ async function runHttpBenchmark(): Promise<void> {
 
 async function main() {
   // 1. HTTP Server Baseline Benchmark (Forge vs Express GET & POST JSON Body)
-  // await runHttpBenchmark();
+  await runHttpBenchmark();
   // 2. Body Parser / Multipart Benchmark
-  // await runBodyParserBenchmark();
+  await runBodyParserBenchmark();
   // 3. Isolated Router Benchmark (Static & Dynamic Radix Trie)
-  // await runRouterBenchmark();
+  await runRouterBenchmark();
   // 4. Middleware Benchmark (Median of 3 runs)
-  // await runMiddlewareBenchmark();
+  await runMiddlewareBenchmark();
 }
 
 void main();

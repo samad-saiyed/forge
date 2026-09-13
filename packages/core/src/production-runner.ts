@@ -117,7 +117,8 @@ export async function loadProductionApplication(options: ProductionRunnerOptions
   const compiledConfigPath = join(buildDir, manifest.metadata.configPath ?? "forge.config.js");
   if (existsSync(compiledConfigPath)) {
     try {
-      const mod = (await import(pathToFileURL(compiledConfigPath).href)) as Record<string, unknown>;
+      const configUrl = `${pathToFileURL(compiledConfigPath).href}?t=${Date.now()}_${Math.random()}`;
+      const mod = (await import(configUrl)) as Record<string, unknown>;
       const rawConfig = (
         mod.default && typeof mod.default === "object" && "default" in mod.default
           ? (mod.default as Record<string, unknown>).default
@@ -145,7 +146,8 @@ export async function loadProductionApplication(options: ProductionRunnerOptions
   for (const entryPath of potentialEntryPaths) {
     if (existsSync(entryPath)) {
       try {
-        const mod = (await import(pathToFileURL(entryPath).href)) as Record<string, unknown>;
+        const entryUrl = `${pathToFileURL(entryPath).href}?t=${Date.now()}_${Math.random()}`;
+        const mod = (await import(entryUrl)) as Record<string, unknown>;
         const exportedApp = mod.app ?? mod.default;
         if (exportedApp && typeof exportedApp === "object" && "listen" in exportedApp) {
           app = exportedApp as Application;
@@ -173,7 +175,8 @@ export async function loadProductionApplication(options: ProductionRunnerOptions
 
     let routeMod: Record<string, unknown>;
     try {
-      routeMod = (await import(pathToFileURL(moduleFile).href)) as Record<string, unknown>;
+      const routeUrl = `${pathToFileURL(moduleFile).href}?t=${Date.now()}_${Math.random()}`;
+      routeMod = (await import(routeUrl)) as Record<string, unknown>;
     } catch (err) {
       throw new ProductionArtifactError(
         `Failed to import production route module '${route.modulePath}': ${err instanceof Error ? err.message : String(err)}`,
