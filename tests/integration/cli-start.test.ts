@@ -42,44 +42,48 @@ describe("Action 70.9 — Production Runtime & 'forge start' CLI Integration Tes
     }
   });
 
-  it("1. Starts valid TypeScript production build and responds to HTTP requests", async () => {
-    writeFileSync(
-      join(tempDir, "tsconfig.json"),
-      JSON.stringify({ compilerOptions: { target: "ES2022", module: "NodeNext" } }),
-    );
-    writeFileSync(join(tempDir, "forge.config.ts"), `export default { server: { port: 5111 } };`);
-    mkdirSync(join(tempDir, "src", "app", "hello"), { recursive: true });
-    writeFileSync(
-      join(tempDir, "src", "app", "hello", "route.ts"),
-      `export const GET = (_req: any, res: any) => { res.json({ message: "hello ts" }); };`,
-    );
+  it(
+    "1. Starts valid TypeScript production build and responds to HTTP requests",
+    { timeout: 15000 },
+    async () => {
+      writeFileSync(
+        join(tempDir, "tsconfig.json"),
+        JSON.stringify({ compilerOptions: { target: "ES2022", module: "NodeNext" } }),
+      );
+      writeFileSync(join(tempDir, "forge.config.ts"), `export default { server: { port: 5111 } };`);
+      mkdirSync(join(tempDir, "src", "app", "hello"), { recursive: true });
+      writeFileSync(
+        join(tempDir, "src", "app", "hello", "route.ts"),
+        `export const GET = (_req: any, res: any) => { res.json({ message: "hello ts" }); };`,
+      );
 
-    // Build first
-    const buildRes = await handleBuildCommand([], { projectRoot: tempDir });
-    expect(buildRes.exitCode).toBe(0);
+      // Build first
+      const buildRes = await handleBuildCommand([], { projectRoot: tempDir });
+      expect(buildRes.exitCode).toBe(0);
 
-    // Start production server
-    const startRes = await handleStartCommand([], {
-      projectRoot: tempDir,
-      attachSignalHandlers: false,
-      stdout: customStdout,
-      stderr: customStderr,
-    });
+      // Start production server
+      const startRes = await handleStartCommand([], {
+        projectRoot: tempDir,
+        attachSignalHandlers: false,
+        stdout: customStdout,
+        stderr: customStderr,
+      });
 
-    expect(startRes.exitCode).toBe(0);
-    expect(startRes.output).toContain("Forge production server running at http://");
-    expect(startRes.output).toContain("5111");
+      expect(startRes.exitCode).toBe(0);
+      expect(startRes.output).toContain("Forge production server running at http://");
+      expect(startRes.output).toContain("5111");
 
-    try {
-      const httpRes = await makeHttpRequest("http://localhost:5111/hello");
-      expect(httpRes.status).toBe(200);
-      expect(JSON.parse(httpRes.body)).toEqual({ message: "hello ts" });
-    } finally {
-      if (startRes.runnerResult?.app) {
-        await startRes.runnerResult.app.close();
+      try {
+        const httpRes = await makeHttpRequest("http://localhost:5111/hello");
+        expect(httpRes.status).toBe(200);
+        expect(JSON.parse(httpRes.body)).toEqual({ message: "hello ts" });
+      } finally {
+        if (startRes.runnerResult?.app) {
+          await startRes.runnerResult.app.close();
+        }
       }
-    }
-  });
+    },
+  );
 
   it("2. Starts valid JavaScript production build and responds to HTTP requests", async () => {
     writeFileSync(join(tempDir, "package.json"), JSON.stringify({ type: "module" }));

@@ -10,7 +10,12 @@ import {
   parseBuildManifest,
   type BuildManifest,
 } from "./build.js";
-import { loadConfig, type ResolvedForgeConfig } from "./config.js";
+import {
+  loadConfig,
+  resolveConfig,
+  type ForgeConfigInput,
+  type ResolvedForgeConfig,
+} from "./config.js";
 
 export interface ProductionRunnerOptions {
   /** Target project root directory containing .forge/build */
@@ -81,7 +86,20 @@ export async function loadProductionApplication(options: ProductionRunnerOptions
     );
   }
 
-  // 3. Verify route module files exist on disk
+  // 3. Verify application directory and route module files exist on disk
+  if (manifest.metadata.appDir) {
+    const appDirPath = join(buildDir, manifest.metadata.appDir);
+    if (
+      !existsSync(appDirPath) &&
+      !existsSync(join(buildDir, "app")) &&
+      !existsSync(join(buildDir, "src", "app"))
+    ) {
+      throw new ProductionArtifactError(
+        `Production application directory '${manifest.metadata.appDir}' referenced in manifest.json does not exist.`,
+      );
+    }
+  }
+
   for (const route of manifest.routes) {
     let moduleFile = join(buildDir, route.modulePath);
     if (!existsSync(moduleFile) && existsSync(join(buildDir, "src", route.modulePath))) {
@@ -94,8 +112,24 @@ export async function loadProductionApplication(options: ProductionRunnerOptions
     }
   }
 
-  // 4. Load runtime configuration (supporting environment overrides)
-  const runtimeConfig = await loadConfig(projectRoot);
+  // 4. Load runtime configuration (prefer compiled config from build directory for portability)
+  let runtimeConfig: ResolvedForgeConfig;
+  const compiledConfigPath = join(buildDir, manifest.metadata.configPath ?? "forge.config.js");
+  if (existsSync(compiledConfigPath)) {
+    try {
+      const mod = (await import(pathToFileURL(compiledConfigPath).href)) as Record<string, unknown>;
+      const rawConfig = (
+        mod.default && typeof mod.default === "object" && "default" in mod.default
+          ? (mod.default as Record<string, unknown>).default
+          : (mod.default ?? mod)
+      ) as ForgeConfigInput;
+      runtimeConfig = resolveConfig(rawConfig);
+    } catch {
+      runtimeConfig = await loadConfig(projectRoot);
+    }
+  } else {
+    runtimeConfig = await loadConfig(projectRoot);
+  }
 
   // 5. Instantiate Application instance (bypassing dev src/app scanning)
   let app: Application | undefined;

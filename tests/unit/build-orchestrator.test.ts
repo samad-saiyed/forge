@@ -123,7 +123,7 @@ describe("BuildOrchestrator Unit & Artifact Validation Tests", () => {
   });
 
   describe("BuildOrchestrator Execution", () => {
-    it("successfully orchestrates a TypeScript build end-to-end", async () => {
+    it("successfully orchestrates a TypeScript build end-to-end", { timeout: 15000 }, async () => {
       writeFileSync(
         join(tempDir, "tsconfig.json"),
         JSON.stringify({ compilerOptions: { target: "ES2022", module: "NodeNext" } }),

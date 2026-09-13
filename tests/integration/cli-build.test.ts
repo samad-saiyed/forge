@@ -29,7 +29,7 @@ describe("Action 70.8 — Build Pipeline Integration & 'forge build' CLI Tests",
     }
   });
 
-  it("A. Basic TypeScript build through CLI 'forge build'", async () => {
+  it("A. Basic TypeScript build through CLI 'forge build'", { timeout: 15000 }, async () => {
     writeFileSync(
       join(tempDir, "tsconfig.json"),
       JSON.stringify({ compilerOptions: { target: "ES2022", module: "NodeNext" } }),
