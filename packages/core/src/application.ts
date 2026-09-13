@@ -14,6 +14,8 @@ export class Application {
   private readonly settings = new Map<string, unknown>();
   private readonly router = new Router();
   private state: ApplicationState = "created";
+  private startPromise?: Promise<void>;
+  private stopPromise?: Promise<void>;
 
   constructor() {
     this.server = createServer((request: IncomingMessage, response: ServerResponse) => {
@@ -28,6 +30,60 @@ export class Application {
     this.router.add(method, path, handler);
     return this;
   }
+
+  async start(): Promise<void> {
+    if (this.startPromise && this.state === "starting") {
+      return this.startPromise;
+    }
+
+    if (this.state !== "created") {
+      throw new Error(`Cannot start application from state: ${this.state}`);
+    }
+
+    this.startPromise = this.performStart();
+    return this.startPromise;
+  }
+
+  private async performStart(): Promise<void> {
+    this.transitionTo("starting");
+
+    try {
+      await this.onStart();
+      this.transitionTo("running");
+    } catch (error) {
+      this.transitionTo("stopped");
+      throw error;
+    }
+  }
+
+  async stop(): Promise<void> {
+    if (this.stopPromise && this.state === "stopping") {
+      return this.stopPromise;
+    }
+
+    if (this.state !== "running") {
+      throw new Error(`Cannot stop application from state: ${this.state}`);
+    }
+
+    this.stopPromise = this.performStop();
+    return this.stopPromise;
+  }
+
+  private async performStop(): Promise<void> {
+    this.transitionTo("stopping");
+
+    try {
+      await this.onStop();
+      this.transitionTo("stopped");
+    } catch (error) {
+      this.transitionTo("stopped");
+      throw error;
+    }
+  }
+
+  protected async onStart(): Promise<void> {}
+
+  protected async onStop(): Promise<void> {}
 
   get(path: string, handler: RouteHandler): this {
     return this.addRoute("GET", path, handler);

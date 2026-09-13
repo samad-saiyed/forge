@@ -20,6 +20,7 @@
     "@forge/core": "workspace:*"
   },
   "devDependencies": {
+    "@fastify/busboy": "^3.2.2",
     "@types/express": "^5.0.0",
     "express": "^5.0.1"
   }

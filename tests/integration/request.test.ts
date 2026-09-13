@@ -292,4 +292,74 @@ describe("Request integration", () => {
       await new Promise<void>((resolve) => server.close(() => resolve()));
     }
   });
+
+  it("should support req.body with lazy and cached parsing end-to-end", async () => {
+    let bodyResult: unknown;
+    let firstResult: unknown;
+    let secondResult: unknown;
+
+    const server = createServer(async (req, res) => {
+      try {
+        const request = new Request(req);
+
+        const body = await request.body;
+        const first = await request.body;
+        const second = await request.body;
+
+        bodyResult = body;
+        firstResult = first;
+        secondResult = second;
+
+        res.statusCode = 200;
+        res.end("ok");
+      } catch (err) {
+        res.statusCode = 500;
+        res.end(String(err));
+      }
+    });
+
+    await new Promise<void>((resolve, reject) => {
+      server.listen(0, "127.0.0.1", () => resolve());
+      server.once("error", reject);
+    });
+
+    const address = server.address();
+    if (address === null || typeof address === "string") {
+      server.close();
+      throw new Error("Failed to determine server address");
+    }
+
+    try {
+      await new Promise<void>((resolve, reject) => {
+        const clientReq = httpRequest(
+          {
+            hostname: "127.0.0.1",
+            port: address.port,
+            path: "/",
+            method: "POST",
+            headers: {
+              "content-type": "application/json",
+            },
+          },
+          (res) => {
+            res.resume();
+            res.once("end", () => resolve());
+          },
+        );
+
+        clientReq.once("error", reject);
+        clientReq.write(JSON.stringify({ name: "Forge", version: 1 }));
+        clientReq.end();
+      });
+
+      expect(bodyResult).toEqual({
+        name: "Forge",
+        version: 1,
+      });
+
+      expect(secondResult).toBe(firstResult);
+    } finally {
+      await new Promise<void>((resolve) => server.close(() => resolve()));
+    }
+  });
 });

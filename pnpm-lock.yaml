@@ -38,6 +38,9 @@ importers:
         specifier: workspace:*
         version: link:../core
     devDependencies:
+      "@fastify/busboy":
+        specifier: ^3.2.2
+        version: 3.2.2
       "@types/express":
         specifier: ^5.0.0
         version: 5.0.6
@@ -49,9 +52,15 @@ importers:
 
   packages/core:
     devDependencies:
+      "@fastify/busboy":
+        specifier: ^3.2.2
+        version: 3.2.2
       "@types/node":
         specifier: 22.12.0
         version: 22.12.0
+      formidable:
+        specifier: ^3.5.4
+        version: 3.5.4
 
 packages:
   "@babel/helper-string-parser@7.29.7":
@@ -153,6 +162,12 @@ packages:
       }
     engines: { node: ^20.19.0 || ^22.13.0 || >=24 }
 
+  "@fastify/busboy@3.2.2":
+    resolution:
+      {
+        integrity: sha512-yXSS27qPExaXeuLvMRMXOLtpipzfQYNjG3FkunDWKGfMYjKuhFXko9CVzqxm8jcF+lmtS9Fd89QNdh9XDjnbNg==,
+      }
+
   "@humanfs/core@0.19.2":
     resolution:
       {
@@ -222,10 +237,23 @@ packages:
         integrity: sha512-dXn3FZhPv0US+7dtJsIi2R+c7qWYiReoEh5zUntWCf4oSpMNib8FDhSoed6m3QyZdx5hK7iLFkYk3rNxwt8vTA==,
       }
 
+  "@noble/hashes@1.8.0":
+    resolution:
+      {
+        integrity: sha512-jCs9ldd7NwzpgXDIf6P3+NrHh9/sD6CQdxHyjQI+h/6rDNo88ypBxxz45UDuZHz9r3tNz7N/VInSVoVdtXEI4A==,
+      }
+    engines: { node: ^14.21.3 || >=16 }
+
   "@oxc-project/types@0.149.0":
     resolution:
       {
         integrity: sha512-Efcc+iF0j3Bf67YjEqIqWXbX5XddXoK/Mw4K1/JuXwRCZ8N16VR7iT23nlCc9XrveFVh/E5Rqs2StT0V8v9LdA==,
+      }
+
+  "@paralleldrive/cuid2@2.3.1":
+    resolution:
+      {
+        integrity: sha512-XO7cAxhnTZl0Yggq6jOgjiOHhbgcO4NqFqwSmQpjK3b6TEE6Uj/jfSk6wzYyemh3+I0sHirKSetjQwn5cZktFw==,
       }
 
   "@rolldown/binding-android-arm-eabi@1.2.8":
@@ -810,6 +838,12 @@ packages:
         integrity: sha512-fgFx7Hfoq60ytK2c7DhnF8jIvzYgOMxfugjLOSMHjLIPgenqa7S7oaagATUq99mV6IYvN2tRmC0wnTYX6iPbMw==,
       }
 
+  asap@2.0.6:
+    resolution:
+      {
+        integrity: sha512-BSHWgDSAiKs50o2Re8ppvp3seVHXSRM44cdSsT9FfNEUUZLOGWVCsiWaRPWM1Znn+mqZ1OfVZ3z3DWEzSp7hRA==,
+      }
+
   assertion-error@2.0.1:
     resolution:
       {
@@ -951,6 +985,12 @@ packages:
         integrity: sha512-Btj2BOOO83o3WyH59e8MgXsxEQVcarkUOpEYrubB0urwnN10yQ364rsiByU11nZlqWYZm05i/of7io4mzihBtQ==,
       }
     engines: { node: ">=8" }
+
+  dezalgo@1.0.4:
+    resolution:
+      {
+        integrity: sha512-rXSP0bf+5n0Qonsb+SVVfNfIsimO4HEtmnIpPHY8Q1UCzKlQrDMfdobr8nJOOsRgWCyMRqeSBQzmWUMq7zvVig==,
+      }
 
   dunder-proto@1.0.1:
     resolution:
@@ -1169,6 +1209,13 @@ packages:
       {
         integrity: sha512-5+ybhBZANEJxaH3X5evAFatUxLfEHSr7n6kYJ+1Qd0mUqr4eu9gIf6GDbWHf8RJijHrjjO8G+la14SlL2SeS1Q==,
       }
+
+  formidable@3.5.4:
+    resolution:
+      {
+        integrity: sha512-YikH+7CUTOtP44ZTnUhR7Ic2UASBPOqmaRkRKxRbywPTe5VxF7RRCck4af9wutiZ/QKM5nME9Bie2fFaPz5Gug==,
+      }
+    engines: { node: ">=14.0.0" }
 
   forwarded@0.2.0:
     resolution:
@@ -2127,6 +2174,8 @@ snapshots:
       "@eslint/core": 1.2.1
       levn: 0.4.1
 
+  "@fastify/busboy@3.2.2": {}
+
   "@humanfs/core@0.19.2":
     dependencies:
       "@humanfs/types": 0.15.0
@@ -2160,7 +2209,13 @@ snapshots:
 
   "@keyv/serialize@1.1.1": {}
 
+  "@noble/hashes@1.8.0": {}
+
   "@oxc-project/types@0.149.0": {}
+
+  "@paralleldrive/cuid2@2.3.1":
+    dependencies:
+      "@noble/hashes": 1.8.0
 
   "@rolldown/binding-android-arm-eabi@1.2.8":
     optional: true
@@ -2465,6 +2520,8 @@ snapshots:
       json-schema-traverse: 0.4.1
       uri-js: 4.4.1
 
+  asap@2.0.6: {}
+
   assertion-error@2.0.1: {}
 
   ast-v8-to-istanbul@1.0.6:
@@ -2540,6 +2597,11 @@ snapshots:
   depd@2.0.0: {}
 
   detect-libc@2.1.2: {}
+
+  dezalgo@1.0.4:
+    dependencies:
+      asap: 2.0.6
+      wrappy: 1.0.2
 
   dunder-proto@1.0.1:
     dependencies:
@@ -2707,6 +2769,12 @@ snapshots:
       hookified: 1.15.1
 
   flatted@3.4.4: {}
+
+  formidable@3.5.4:
+    dependencies:
+      "@paralleldrive/cuid2": 2.3.1
+      dezalgo: 1.0.4
+      once: 1.4.0
 
   forwarded@0.2.0: {}
 

@@ -4,6 +4,17 @@ import { Application, createApp } from "../../packages/core/src/index.js";
 import { ApplicationState } from "../../packages/core/src/application.js";
 
 class TestApplication extends Application {
+  public startCount = 0;
+  public stopCount = 0;
+
+  protected override async onStart(): Promise<void> {
+    this.startCount++;
+  }
+
+  protected override async onStop(): Promise<void> {
+    this.stopCount++;
+  }
+
   public readSetting<T>(key: string): T | undefined {
     return this.getSetting<T>(key);
   }
@@ -215,5 +226,99 @@ describe("createApp", () => {
     expect(() => app.listen(0)).toThrow('Cannot listen when application state is "running"');
 
     await app.close();
+  });
+
+  describe("start and stop lifecycle", () => {
+    it("should transition from created -> start() -> running", async () => {
+      const app = new TestApplication();
+      expect(app.readState()).toBe("created");
+
+      await app.start();
+
+      expect(app.readState()).toBe("running");
+    });
+
+    it("should transition from running -> stop() -> stopped", async () => {
+      const app = new TestApplication();
+      await app.start();
+      expect(app.readState()).toBe("running");
+
+      await app.stop();
+
+      expect(app.readState()).toBe("stopped");
+    });
+
+    it("should transition to stopped on start failure", async () => {
+      class FailingStartApp extends TestApplication {
+        protected override async onStart(): Promise<void> {
+          throw new Error("Start failed");
+        }
+      }
+
+      const app = new FailingStartApp();
+      await expect(app.start()).rejects.toThrow("Start failed");
+
+      expect(app.readState()).toBe("stopped");
+    });
+
+    it("should transition to stopped on stop failure", async () => {
+      class FailingStopApp extends TestApplication {
+        protected override async onStop(): Promise<void> {
+          throw new Error("Stop failed");
+        }
+      }
+
+      const app = new FailingStopApp();
+      await app.start();
+      expect(app.readState()).toBe("running");
+
+      await expect(app.stop()).rejects.toThrow("Stop failed");
+
+      expect(app.readState()).toBe("stopped");
+    });
+
+    it("should call onStart only once when start is called concurrently", async () => {
+      let startCalls = 0;
+      class CountingApp extends TestApplication {
+        protected override async onStart(): Promise<void> {
+          startCalls++;
+          await new Promise((resolve) => setTimeout(resolve, 10));
+        }
+      }
+
+      const app = new CountingApp();
+      await Promise.all([app.start(), app.start()]);
+
+      expect(startCalls).toBe(1);
+      expect(app.readState()).toBe("running");
+    });
+
+    it("should reject start when already running and stop when already stopped", async () => {
+      const app = new TestApplication();
+
+      await app.start();
+      await expect(app.start()).rejects.toThrow();
+      await app.stop();
+      await expect(app.stop()).rejects.toThrow();
+    });
+
+    it("should only execute onStart once for concurrent start calls", async () => {
+      const app = new TestApplication();
+
+      await Promise.all([app.start(), app.start()]);
+
+      expect(app.startCount).toBe(1);
+      expect(app.readState()).toBe("running");
+    });
+
+    it("should only execute onStop once for concurrent stop calls", async () => {
+      const app = new TestApplication();
+
+      await app.start();
+      await Promise.all([app.stop(), app.stop()]);
+
+      expect(app.stopCount).toBe(1);
+      expect(app.readState()).toBe("stopped");
+    });
   });
 });

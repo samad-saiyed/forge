@@ -5,10 +5,25 @@ export class Request {
   // public body: unknown = undefined;
   private parsedQuery?: Record<string, string | string[]>;
 
-  private bodyPromise?: Promise<Buffer>;
-  private parsedBody?: Buffer;
+  private rawBody?: Buffer;
+  private rawBodyPromise?: Promise<Buffer>;
+
+  private parsedBody?: unknown;
+  private bodyPromise?: Promise<unknown>;
 
   constructor(public readonly raw: IncomingMessage) {}
+
+  get body(): Promise<unknown> {
+    if (this.parsedBody !== undefined) {
+      return Promise.resolve(this.parsedBody);
+    }
+
+    if (!this.bodyPromise) {
+      this.bodyPromise = this.parseBody();
+    }
+
+    return this.bodyPromise;
+  }
 
   get method(): string {
     return this.raw.method ?? "GET";
@@ -48,12 +63,12 @@ export class Request {
   }
 
   async readBody(): Promise<Buffer> {
-    if (this.parsedBody) {
-      return this.parsedBody;
+    if (this.rawBody) {
+      return this.rawBody;
     }
 
-    if (!this.bodyPromise) {
-      this.bodyPromise = new Promise<Buffer>((resolve, reject) => {
+    if (!this.rawBodyPromise) {
+      this.rawBodyPromise = new Promise<Buffer>((resolve, reject) => {
         const chunks: Buffer[] = [];
 
         this.raw.on("data", (chunk: Buffer | string) => {
@@ -61,15 +76,15 @@ export class Request {
         });
 
         this.raw.once("end", () => {
-          this.parsedBody = Buffer.concat(chunks);
-          resolve(this.parsedBody);
+          this.rawBody = Buffer.concat(chunks);
+          resolve(this.rawBody);
         });
 
         this.raw.once("error", reject);
       });
     }
 
-    return this.bodyPromise;
+    return this.rawBodyPromise;
   }
 
   async parseBody<T = unknown>(): Promise<T | undefined> {
