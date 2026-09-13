@@ -4,12 +4,14 @@ import { request as httpRequest, type RequestOptions } from "node:http";
 import express from "express";
 import { createApp } from "@forge/core";
 import { runBodyParserBenchmark } from "./body-parser.js";
+import { runMiddlewareBenchmark } from "./middleware.js";
 import { runRouterBenchmark } from "./router.js";
 
 export { runBodyParserBenchmark } from "./body-parser.js";
+export { runMiddlewareBenchmark } from "./middleware.js";
 export { runRouterBenchmark } from "./router.js";
 
-interface BenchmarkResult {
+export interface BenchmarkResult {
   name: string;
   totalRequests: number;
   durationMs: number;
@@ -29,7 +31,7 @@ function calculatePercentile(latencies: number[], percentile: number): number {
   return sorted[Math.max(0, index)];
 }
 
-async function runBenchmarkForUrl(
+export async function runBenchmarkForUrl(
   name: string,
   urlStr: string,
   totalRequests = 5000,
@@ -303,7 +305,10 @@ async function main() {
   // await runBodyParserBenchmark();
 
   // 3. Isolated Router Benchmark (Static & Dynamic Radix Trie)
-  await runRouterBenchmark();
+  // await runRouterBenchmark();
+
+  // 4. Middleware Benchmark (Median of 3 runs)
+  // await runMiddlewareBenchmark();
 }
 
 void main();
