@@ -70,6 +70,7 @@ export {
   isForgeSchema,
   executeSchemaValidation,
   ForgeValidationError,
+  ResponseValidationError,
   type ForgeSchema,
   type SchemaResult,
   type SchemaValidationError,

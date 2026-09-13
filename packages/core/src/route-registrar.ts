@@ -18,6 +18,9 @@ export function registerLoadedRoutes(
       const options = isDef ? rawHandler.options : undefined;
 
       const adaptedHandler: RouteHandler = async (req, res, next) => {
+        if (options?.response) {
+          res.setResponseSchema(options.response);
+        }
         if (options?.validate) {
           await executeRouteValidation(options, req);
         }

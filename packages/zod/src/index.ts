@@ -13,8 +13,8 @@ export function formatZodError(error: ZodError): SchemaValidationError {
 export function zodSchema<T extends ZodTypeAny>(schema: T): ForgeSchema<z.output<T>, z.input<T>> {
   return {
     kind: "forge-schema",
-    async validate(input: z.input<T>) {
-      const result = await schema.safeParseAsync(input);
+    validate(input: z.input<T>) {
+      const result = schema.safeParse(input);
       if (result.success) {
         return { success: true, data: result.data };
       }

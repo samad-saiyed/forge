@@ -27,6 +27,17 @@ export class ForgeValidationError extends Error {
   }
 }
 
+export class ResponseValidationError extends Error {
+  readonly code = "RESPONSE_VALIDATION_ERROR" as const;
+  readonly issues: SchemaIssue[];
+
+  constructor(message = "Response validation failed", issues: SchemaIssue[] = []) {
+    super(message);
+    this.name = "ResponseValidationError";
+    this.issues = issues;
+  }
+}
+
 export type SchemaResult<T> =
   { success: true; data: T } | { success: false; error: SchemaValidationError };
 

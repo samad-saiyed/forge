@@ -311,9 +311,14 @@ export class Application {
     const options = isDef ? rawRoute.options : undefined;
 
     let finalHandler: RouteHandler;
-    if (options?.validate) {
+    if (options?.validate || options?.response) {
       finalHandler = async (req, res, next) => {
-        await executeRouteValidation(options, req);
+        if (options?.response) {
+          res.setResponseSchema(options.response);
+        }
+        if (options?.validate) {
+          await executeRouteValidation(options, req);
+        }
         return (targetHandler as RouteHandler)(req, res, next);
       };
     } else {
@@ -788,6 +793,7 @@ export class Application {
   }
 
   protected handleError(error: unknown, _request: Request, response: Response): void {
+    response.setResponseSchema(undefined);
     if (response.raw.headersSent) {
       return;
     }

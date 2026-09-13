@@ -1,9 +1,16 @@
 import type { ServerResponse } from "node:http";
+import { ResponseValidationError } from "./schema.js";
 
 export class Response<ResBody = unknown> {
   private isEnded = false;
+  private responseSchema?: unknown;
 
   constructor(public readonly raw: ServerResponse) {}
+
+  setResponseSchema(schema: unknown): this {
+    this.responseSchema = schema;
+    return this;
+  }
 
   status(code: number): this {
     if (this.isEnded || this.raw.headersSent) {
@@ -46,9 +53,169 @@ export class Response<ResBody = unknown> {
     return this.set(field, value);
   }
 
+  private validateResponseBody(body: unknown): void {
+    if (!this.responseSchema) {
+      return;
+    }
+
+    const schema = this.responseSchema as Record<string, unknown>;
+
+    if (typeof schema.safeParse === "function") {
+      const res = (
+        schema as {
+          safeParse: (b: unknown) =>
+            | {
+                success: boolean;
+                data?: unknown;
+                error?: {
+                  issues: Array<{ path?: (string | number)[]; message: string; code?: string }>;
+                };
+              }
+            | Promise<{
+                success: boolean;
+                data?: unknown;
+                error?: {
+                  issues: Array<{ path?: (string | number)[]; message: string; code?: string }>;
+                };
+              }>;
+        }
+      ).safeParse(body);
+
+      if ("then" in res && typeof (res as Promise<unknown>).then === "function") {
+        (
+          res as Promise<{
+            success: boolean;
+            error?: {
+              issues: Array<{ path?: (string | number)[]; message: string; code?: string }>;
+            };
+          }>
+        ).then((r) => {
+          if (!r.success) {
+            const issues = (r.error?.issues ?? []).map((i) => ({
+              path: i.path ?? [],
+              message: i.message,
+              code: i.code,
+            }));
+            throw new ResponseValidationError(
+              `Response validation failed: ${issues.map((i) => i.message).join(", ")}`,
+              issues,
+            );
+          }
+        });
+        return;
+      }
+
+      if (!(res as { success: boolean }).success) {
+        const issues = (
+          (
+            res as {
+              error?: {
+                issues: Array<{ path?: (string | number)[]; message: string; code?: string }>;
+              };
+            }
+          ).error?.issues ?? []
+        ).map((i) => ({
+          path: i.path ?? [],
+          message: i.message,
+          code: i.code,
+        }));
+        throw new ResponseValidationError(
+          `Response validation failed: ${issues.map((i) => i.message).join(", ")}`,
+          issues,
+        );
+      }
+      return;
+    }
+
+    if (schema.kind === "forge-schema" && typeof schema.validate === "function") {
+      const res = (
+        schema as {
+          validate: (b: unknown) =>
+            | {
+                success: boolean;
+                error: {
+                  issues: Array<{ path?: (string | number)[]; message: string; code?: string }>;
+                };
+              }
+            | Promise<{
+                success: boolean;
+                error: {
+                  issues: Array<{ path?: (string | number)[]; message: string; code?: string }>;
+                };
+              }>;
+        }
+      ).validate(body);
+
+      if ("then" in res && typeof (res as Promise<unknown>).then === "function") {
+        (
+          res as Promise<{
+            success: boolean;
+            error: {
+              issues: Array<{ path?: (string | number)[]; message: string; code?: string }>;
+            };
+          }>
+        ).then((r) => {
+          if (!r.success) {
+            throw new ResponseValidationError(
+              `Response validation failed: ${r.error.issues.map((i) => i.message).join(", ")}`,
+              r.error.issues,
+            );
+          }
+        });
+        return;
+      }
+
+      if (!(res as { success: boolean }).success) {
+        const errRes = res as {
+          success: false;
+          error: {
+            issues: Array<{ path?: (string | number)[]; message: string; code?: string }>;
+          };
+        };
+        throw new ResponseValidationError(
+          `Response validation failed: ${errRes.error.issues.map((i) => i.message).join(", ")}`,
+          errRes.error.issues,
+        );
+      }
+      return;
+    }
+
+    if (typeof schema.safeParseAsync === "function") {
+      (
+        schema as {
+          safeParseAsync: (b: unknown) => Promise<{
+            success: boolean;
+            error?: {
+              issues: Array<{ path?: (string | number)[]; message: string; code?: string }>;
+            };
+          }>;
+        }
+      )
+        .safeParseAsync(body)
+        .then((r) => {
+          if (!r.success) {
+            const issues = (r.error?.issues ?? []).map((i) => ({
+              path: i.path ?? [],
+              message: i.message,
+              code: i.code,
+            }));
+            throw new ResponseValidationError(
+              `Response validation failed: ${issues.map((i) => i.message).join(", ")}`,
+              issues,
+            );
+          }
+        });
+      return;
+    }
+  }
+
   json(body: ResBody): this {
     if (this.isEnded || this.raw.headersSent) {
       throw new Error("Cannot send response after headers are sent or response is ended");
+    }
+
+    if (this.responseSchema && (!this.raw.statusCode || this.raw.statusCode < 400)) {
+      this.validateResponseBody(body);
     }
 
     if (!this.raw.getHeader("content-type")) {

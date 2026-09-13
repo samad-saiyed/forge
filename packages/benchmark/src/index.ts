@@ -228,11 +228,22 @@ async function runHttpBenchmark(): Promise<void> {
     framework: z.boolean(),
   });
 
+  const ResponseZodSchema = z.object({
+    message: z.string(),
+  });
+
   forgeApp.post(
     "/validated-json",
     defineRoute({ validate: { body: BodyZodSchema } }, async (req, res) => {
       const body = await req.body;
       res.json(body);
+    }),
+  );
+
+  forgeApp.get(
+    "/response-schema-json",
+    defineRoute({ response: ResponseZodSchema }, (_req, res) => {
+      res.json({ message: "Hello World" });
     }),
   );
   const forgeServer = forgeApp.listen(0);
@@ -258,8 +269,13 @@ async function runHttpBenchmark(): Promise<void> {
     const forgeUrl = `http://127.0.0.1:${forgeAddress.port}/json`;
     const expressUrl = `http://127.0.0.1:${expressAddress.port}/json`;
 
+    const forgeResponseUrl = `http://127.0.0.1:${forgeAddress.port}/response-schema-json`;
+
     console.log(`Running Forge benchmark at ${forgeUrl}...`);
     const forgeResults = await runBenchmarkForUrl("Forge", forgeUrl);
+
+    console.log(`Running Forge (Response Schema) benchmark at ${forgeResponseUrl}...`);
+    const forgeResponseResults = await runBenchmarkForUrl("Forge (Resp Schema)", forgeResponseUrl);
 
     console.log(`Running Express benchmark at ${expressUrl}...\n`);
     const expressResults = await runBenchmarkForUrl("Express", expressUrl);
@@ -273,6 +289,15 @@ async function runHttpBenchmark(): Promise<void> {
         "p95 (ms)": forgeResults.p95Ms.toFixed(3),
         "p99 (ms)": forgeResults.p99Ms.toFixed(3),
         Errors: forgeResults.errorCount,
+      },
+      {
+        Framework: forgeResponseResults.name,
+        "Req/Sec": Math.round(forgeResponseResults.requestsPerSec),
+        "Avg Latency (ms)": forgeResponseResults.avgLatencyMs.toFixed(3),
+        "p50 (ms)": forgeResponseResults.p50Ms.toFixed(3),
+        "p95 (ms)": forgeResponseResults.p95Ms.toFixed(3),
+        "p99 (ms)": forgeResponseResults.p99Ms.toFixed(3),
+        Errors: forgeResponseResults.errorCount,
       },
       {
         Framework: expressResults.name,
