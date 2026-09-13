@@ -43,6 +43,10 @@ export {
 } from "./filesystem-router.js";
 export {
   type ApplicationContext,
+  type ApplicationContextOptions,
+  createApplicationContext,
+  type LoadApplicationContextOptions,
+  loadApplicationContext,
   type RouteContext,
   type FileRouteHandler,
   type FilesystemRouteHandler,

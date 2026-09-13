@@ -1,9 +1,57 @@
-import type { Application } from "./application.js";
+import { resolve } from "node:path";
+import { createApp, Application } from "./application.js";
+import {
+  loadConfig,
+  resolveConfig,
+  type ForgeConfigInput,
+  type ResolvedForgeConfig,
+} from "./config.js";
 import type { Request } from "./request.js";
 import type { Response } from "./response.js";
 
 export interface ApplicationContext {
   app: Application;
+  config: ResolvedForgeConfig;
+}
+
+export interface ApplicationContextOptions {
+  appDir?: string;
+  config?: ResolvedForgeConfig | ForgeConfigInput;
+}
+
+export function createApplicationContext(options?: ApplicationContextOptions): ApplicationContext {
+  const resolvedConfig = resolveConfig(options?.config);
+  const app = createApp({
+    appDir: options?.appDir,
+    config: resolvedConfig,
+  });
+
+  return {
+    app,
+    config: resolvedConfig,
+  };
+}
+
+export interface LoadApplicationContextOptions {
+  projectRoot?: string;
+  appDir?: string;
+  config?: ResolvedForgeConfig | ForgeConfigInput;
+}
+
+export async function loadApplicationContext(
+  options?: LoadApplicationContextOptions,
+): Promise<ApplicationContext> {
+  const projectRoot = options?.projectRoot ? resolve(options.projectRoot) : process.cwd();
+
+  const resolvedConfig =
+    options?.config !== undefined ? resolveConfig(options.config) : await loadConfig(projectRoot);
+
+  const appDir = options?.appDir ?? resolve(projectRoot, "src/app");
+
+  return createApplicationContext({
+    appDir,
+    config: resolvedConfig,
+  });
 }
 
 export interface RouteContext<

@@ -226,6 +226,8 @@ import {
   type ApplicationContext,
   type FileRouteHandler,
   type RouteContext as AppRouteContext,
+  type ResolvedForgeConfig,
+  createApplicationContext,
 } from "../../packages/core/src/index.js";
 
 const sampleFileHandler: FileRouteHandler<{ id: string }> = async ({ app, request, response }) => {
@@ -251,8 +253,12 @@ export const checkApplicationContext: AssertEqual<
   ApplicationContext,
   {
     app: Application;
+    config: ResolvedForgeConfig;
   }
 > = true;
+
+const _createdContext: ApplicationContext = createApplicationContext();
+void _createdContext;
 
 void sampleFileHandler;
 

@@ -7,6 +7,8 @@ import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import type { ApplicationState } from "../../packages/core/src/application.js";
 import {
   Application,
+  createApplicationContext,
+  resolveConfig,
   Request,
   Response,
   type ApplicationOptions,
@@ -182,5 +184,42 @@ describe("Application Context Integration", () => {
 
     expect(getStatus()).toBe(200);
     expect(getData()).toEqual({ id: "42" });
+  });
+
+  test("ApplicationContext accepts resolved Forge configuration and shares identity with app", () => {
+    const rawInput = {
+      server: {
+        host: "127.0.0.1",
+        port: 4567,
+      },
+    };
+
+    const context = createApplicationContext({ config: rawInput });
+
+    expect(context.config.server.port).toBe(4567);
+    expect(context.config.server.host).toBe("127.0.0.1");
+    expect(context.app.config.server.port).toBe(4567);
+    expect(context.app.config.server.host).toBe("127.0.0.1");
+
+    // Single configuration identity boundary check
+    expect(context.app.config).toBe(context.config);
+  });
+
+  test("ApplicationContext preserves defaults when created without configuration", () => {
+    const defaultContext = createApplicationContext();
+
+    expect(defaultContext.config).toBeDefined();
+    expect(defaultContext.config.server.port).toBe(3000);
+    expect(defaultContext.config.server.host).toBe("127.0.0.1");
+    expect(defaultContext.app.config.server.port).toBe(3000);
+    expect(defaultContext.app.config).toBe(defaultContext.config);
+  });
+
+  test("accepts already resolved configuration instance without duplicate resolution", () => {
+    const resolved = resolveConfig({ server: { port: 8080 } });
+    const context = createApplicationContext({ config: resolved });
+
+    expect(context.config).toBe(resolved);
+    expect(context.app.config).toBe(resolved);
   });
 });

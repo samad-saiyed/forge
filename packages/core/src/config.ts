@@ -200,9 +200,23 @@ export function defineConfig(config: ForgeConfigInput): ForgeConfigInput {
   return config;
 }
 
-export function resolveConfig(config?: ForgeConfigInput): ResolvedForgeConfig {
+export function resolveConfig(
+  config?: ForgeConfigInput | ResolvedForgeConfig,
+): ResolvedForgeConfig {
   if (config === undefined) {
     return DEFAULT_CONFIG;
+  }
+
+  if (
+    config !== null &&
+    typeof config === "object" &&
+    Object.isFrozen(config) &&
+    "server" in config &&
+    "logging" in config &&
+    "benchmarking" in config &&
+    "development" in config
+  ) {
+    return config as ResolvedForgeConfig;
   }
 
   validateConfig(config);

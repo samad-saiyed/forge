@@ -61,7 +61,7 @@ function makeMockReqRes(method: string, url: string) {
   };
 }
 
-describe("Filesystem Routing Precedence & Conflict Resolution (Action 52)", () => {
+describe("Filesystem Routing Precedence & Conflict Resolution", () => {
   let tmpDir: string;
 
   beforeEach(async () => {

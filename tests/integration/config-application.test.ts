@@ -6,6 +6,7 @@ import {
   createApp,
   DEFAULT_CONFIG,
   loadConfig,
+  loadApplicationContext,
   resolveConfig,
 } from "../../packages/core/src/index.js";
 
@@ -85,5 +86,88 @@ describe("Application Configuration Integration", () => {
     const app = createApp(loadedConfig!);
     expect(app.config.server.port).toBe(7070);
     expect(app.config.benchmarking.enabled).toBe(true);
+  });
+
+  describe("Automatic Configuration Discovery During Forge Startup", () => {
+    it("automatically discovers forge.config.ts during loadApplicationContext startup", async () => {
+      writeFileSync(
+        join(tempDir, "forge.config.ts"),
+        `export default { server: { port: 4321, host: "127.0.0.1" } };`,
+        "utf8",
+      );
+
+      const context = await loadApplicationContext({ projectRoot: tempDir });
+      expect(context.config.server.port).toBe(4321);
+      expect(context.app.config.server.port).toBe(4321);
+
+      const server = context.app.listen();
+      await new Promise<void>((resolve, reject) => {
+        server.once("listening", resolve);
+        server.once("error", reject);
+      });
+
+      expect(server.listening).toBe(true);
+      await context.app.close();
+    });
+
+    it("uses default configuration during startup when no forge.config.ts exists", async () => {
+      const context = await loadApplicationContext({ projectRoot: tempDir });
+      expect(context.config.server.port).toBe(3000);
+      expect(context.config.server.host).toBe("127.0.0.1");
+      expect(context.app.config.server.port).toBe(3000);
+    });
+
+    it("verifies custom host from forge.config.ts reaches the HTTP server", async () => {
+      writeFileSync(
+        join(tempDir, "forge.config.ts"),
+        `export default { server: { host: "127.0.0.1", port: 0 } };`,
+        "utf8",
+      );
+
+      const context = await loadApplicationContext({ projectRoot: tempDir });
+      expect(context.config.server.host).toBe("127.0.0.1");
+
+      const server = context.app.listen();
+      await new Promise<void>((resolve, reject) => {
+        server.once("listening", resolve);
+        server.once("error", reject);
+      });
+
+      expect(server.listening).toBe(true);
+      await context.app.close();
+    });
+
+    it("prevents startup and server creation when forge.config.ts is invalid", async () => {
+      writeFileSync(
+        join(tempDir, "forge.config.js"),
+        `export default { server: { port: "invalid-port" } };`,
+        "utf8",
+      );
+
+      await expect(loadApplicationContext({ projectRoot: tempDir })).rejects.toThrow(TypeError);
+    });
+
+    it("guarantees direct createApp() remains filesystem-independent", () => {
+      writeFileSync(
+        join(tempDir, "forge.config.ts"),
+        `export default { server: { port: 9999 } };`,
+        "utf8",
+      );
+
+      // Direct createApp does not read forge.config.ts in tempDir
+      const app = createApp({ server: { port: 4000 } });
+      expect(app.config.server.port).toBe(4000);
+    });
+
+    it("avoids redundant loading by sharing single resolved config reference", async () => {
+      writeFileSync(
+        join(tempDir, "forge.config.ts"),
+        `export default { server: { port: 5432 } };`,
+        "utf8",
+      );
+
+      const context = await loadApplicationContext({ projectRoot: tempDir });
+      expect(context.app.config).toBe(context.config);
+    });
   });
 });

@@ -48,7 +48,11 @@ importers:
         specifier: ^5.0.1
         version: 5.2.1
 
-  packages/cli: {}
+  packages/cli:
+    dependencies:
+      "@forge/core":
+        specifier: workspace:*
+        version: link:../core
 
   packages/core:
     devDependencies:

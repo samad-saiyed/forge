@@ -6,7 +6,7 @@ import { Response } from "../../packages/core/src/response.js";
 
 type InternalApp = { handleRequest: (req: Request, res: Response) => Promise<void> };
 
-describe("Action #45 — Request/Response API Hardening", () => {
+describe("Request/Response API Hardening", () => {
   describe("Request API", () => {
     it("should accurately expose method, url, headers, and case-insensitive header lookup", () => {
       const mockRaw = {
