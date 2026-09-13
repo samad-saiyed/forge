@@ -60,3 +60,50 @@ export {
 } from "./route-scanner.js";
 export { loadRouteModule, loadRouteModules, type LoadedRouteModule } from "./route-loader.js";
 export { registerLoadedRoutes } from "./route-registrar.js";
+
+export {
+  BUILD_OUTPUT_DIR,
+  BUILD_STAGING_DIR,
+  BUILD_FORMAT_VERSION,
+  type BuildMetadata,
+  type BuildRouteEntry,
+  type BuildManifest,
+  BuildOutputManager,
+  getBuildDir,
+  getStagingBuildDir,
+  getManifestPath,
+  toPosixPath,
+  mapSourceToBuildPath,
+  validateBuildManifest,
+  formatBuildManifest,
+  parseBuildManifest,
+} from "./build.js";
+
+export {
+  compileTypeScriptProject,
+  TypeScriptCompileError,
+  type CompileOptions,
+  type CompileResult,
+} from "./compiler.js";
+
+export {
+  processJavaScriptProject,
+  JavaScriptBuildError,
+  detectProjectLanguage,
+  type JavaScriptBuildOptions,
+  type JavaScriptBuildResult,
+} from "./js-builder.js";
+
+export {
+  loadProductionBuildConfig,
+  BuildConfigError,
+  type ProductionBuildConfig,
+} from "./build-config.js";
+
+export { discoverBuildRouteEntries, type DiscoverBuildRoutesOptions } from "./build-routes.js";
+
+export {
+  generateBuildManifest,
+  ManifestGenerationError,
+  type GenerateManifestOptions,
+} from "./build-manifest.js";

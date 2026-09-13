@@ -9,13 +9,14 @@ describe("Filesystem Route Path Resolver", () => {
       expect(isRouteFile("C:/project/src/app/users/[id]/route.ts")).toBe(true);
     });
 
-    test("returns false for non-route.ts files", () => {
-      expect(isRouteFile("app/route.js")).toBe(false);
+    test("returns false for non-route files", () => {
       expect(isRouteFile("app/route.ts.bak")).toBe(false);
       expect(isRouteFile("app/route.test.ts")).toBe(false);
+      expect(isRouteFile("app/route.test.js")).toBe(false);
       expect(isRouteFile("app/users/page.ts")).toBe(false);
       expect(isRouteFile("app/users/schema.ts")).toBe(false);
       expect(isRouteFile("app/users/README.md")).toBe(false);
+      expect(isRouteFile("app/users/helper.js")).toBe(false);
     });
   });
 
@@ -45,7 +46,8 @@ describe("Filesystem Route Path Resolver", () => {
 
     test("returns null for non-route files", () => {
       expect(resolveRoutePath("app/users/page.ts")).toBeNull();
-      expect(resolveRoutePath("app/users/route.js")).toBeNull();
+      expect(resolveRoutePath("app/users/helper.js")).toBeNull();
+      expect(resolveRoutePath("app/users/route.ts.bak")).toBeNull();
     });
 
     test("handles root directory options correctly", () => {

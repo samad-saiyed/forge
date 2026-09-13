@@ -34,7 +34,13 @@ export function isRouteFile(filePath: string): boolean {
     return false;
   }
   const basename = path.basename(filePath);
-  return basename === "route.ts";
+  return (
+    basename === "route.ts" ||
+    basename === "route.js" ||
+    basename === "route.tsx" ||
+    basename === "route.jsx" ||
+    basename === "route.mjs"
+  );
 }
 
 function convertAndValidateSegment(segment: string, filePath: string): string {
@@ -77,10 +83,9 @@ export function resolveRoutePath(filePath: string, appRoot?: string): string | n
   }
 
   let dirPath = relativePath;
-  if (dirPath.endsWith("/route.ts")) {
-    dirPath = dirPath.slice(0, -9);
-  } else if (dirPath === "route.ts") {
-    dirPath = "";
+  const routeMatch = dirPath.match(/\/?route\.(ts|js|tsx|jsx|mjs)$/);
+  if (routeMatch) {
+    dirPath = dirPath.slice(0, -routeMatch[0].length);
   }
 
   dirPath = dirPath.replace(/^\/?(src\/)?app(\/|$)/, "");

@@ -70,7 +70,7 @@ describe("Route Scanner (scanRouteFiles)", () => {
     const rootRoute = path.join(tempDir, "route.ts");
     const helperFile = path.join(tempDir, "helper.ts");
     const schemaFile = path.join(tempDir, "schema.ts");
-    const jsRoute = path.join(tempDir, "route.js");
+    const otherJsFile = path.join(tempDir, "other.js");
     const testRoute = path.join(tempDir, "route.test.ts");
     const privateCompRoute = path.join(tempDir, "_components", "route.ts");
     const privateUtilsFile = path.join(tempDir, "_utils", "helper.ts");
@@ -81,7 +81,7 @@ describe("Route Scanner (scanRouteFiles)", () => {
     fs.writeFileSync(rootRoute, "export const GET = () => {};");
     fs.writeFileSync(helperFile, "export const helper = () => {};");
     fs.writeFileSync(schemaFile, "export const schema = {};");
-    fs.writeFileSync(jsRoute, "export const GET = () => {};");
+    fs.writeFileSync(otherJsFile, "export const GET = () => {};");
     fs.writeFileSync(testRoute, "test()");
     fs.writeFileSync(privateCompRoute, "export const GET = () => {};");
     fs.writeFileSync(privateUtilsFile, "export const util = () => {};");
