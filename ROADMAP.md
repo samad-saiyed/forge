@@ -402,10 +402,10 @@ Implement:
 app.use(middleware);
 ```
 
-- [ ] Global middleware
-- [ ] Path-specific middleware
-- [ ] Route middleware
-- [ ] Multiple middleware functions
+- [x] Global middleware
+- [x] Path-specific middleware
+- [x] Route middleware
+- [x] Multiple middleware functions
 
 ## 3.2 Middleware Execution
 
@@ -415,20 +415,20 @@ Support:
 (req, res, next);
 ```
 
-- [ ] `next()`
-- [ ] Async middleware
-- [ ] Middleware ordering
-- [ ] Multiple middleware
-- [ ] Early response termination
+- [x] `next()`
+- [x] Async middleware
+- [x] Middleware ordering
+- [x] Multiple middleware
+- [x] Early response termination
 
 ## 3.3 Error Middleware
 
 Support error handlers.
 
-- [ ] Error propagation
-- [ ] Error middleware
-- [ ] Async errors
-- [ ] Default error handler
+- [x] Error propagation
+- [x] Error middleware
+- [x] Async errors
+- [x] Default error handler
 
 ## 3.4 Middleware Composition
 
@@ -451,14 +451,14 @@ Error middleware
 
 ## 3.6 Tests
 
-- [ ] Single middleware
-- [ ] Multiple middleware
-- [ ] Async middleware
-- [ ] Middleware ordering
-- [ ] Error middleware
-- [ ] Route middleware
-- [ ] Early responses
-- [ ] Middleware exceptions
+- [x] Single middleware
+- [x] Multiple middleware
+- [x] Async middleware
+- [x] Middleware ordering
+- [x] Error middleware
+- [x] Route middleware
+- [x] Early responses
+- [x] Middleware exceptions
 
 ---
 

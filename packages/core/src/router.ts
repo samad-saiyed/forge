@@ -1,4 +1,4 @@
-import type { RouteHandler } from "./application.js";
+import type { Middleware, RouteHandler } from "./application.js";
 
 type SegmentType = "static" | "param" | "wildcard";
 
@@ -10,15 +10,26 @@ interface Segment {
 
 export interface RouteMatch {
   handler: RouteHandler;
+  middlewares?: Middleware[];
   params: Record<string, string>;
+  order?: number;
 }
 
-interface InternalRoute {
-  method: string;
-  path: string;
-  handler: RouteHandler;
-  segments: Segment[];
-  score: number;
+interface DynamicNode {
+  staticChildren?: Map<string, DynamicNode>;
+  paramChild?: {
+    paramName: string;
+    node: DynamicNode;
+  };
+  wildcardChild?: {
+    paramName: string;
+    handler: RouteHandler;
+    middlewares?: Middleware[];
+    order?: number;
+  };
+  handler?: RouteHandler;
+  middlewares?: Middleware[];
+  order?: number;
 }
 
 function normalizePath(path: string): string {
@@ -33,40 +44,195 @@ function normalizePath(path: string): string {
   return cleaned;
 }
 
-function parsePathSegments(path: string): { segments: Segment[]; score: number } {
+function parsePathSegments(path: string): Segment[] {
   const normalized = normalizePath(path);
   const rawSegments = normalized === "/" ? [] : normalized.split("/").slice(1);
   const segments: Segment[] = [];
-  let score = 0;
 
   for (let i = 0; i < rawSegments.length; i++) {
     const seg = rawSegments[i];
     if (seg === "*") {
       segments.push({ type: "wildcard", value: "*", name: "*" });
-      score = score * 10 + 1;
       break;
     } else if (seg.startsWith("*")) {
       const paramName = seg.slice(1) || "*";
       segments.push({ type: "wildcard", value: seg, name: paramName });
-      score = score * 10 + 1;
       break;
     } else if (seg.startsWith(":")) {
       const paramName = seg.slice(1);
       segments.push({ type: "param", value: seg, name: paramName });
-      score = score * 10 + 2;
     } else {
       segments.push({ type: "static", value: seg });
-      score = score * 10 + 3;
     }
   }
 
-  return { segments, score };
+  return segments;
+}
+
+function insertDynamicRoute(
+  root: DynamicNode,
+  segments: Segment[],
+  handler: RouteHandler,
+  middlewares?: Middleware[],
+  order?: number,
+): void {
+  let curr = root;
+
+  for (let i = 0; i < segments.length; i++) {
+    const seg = segments[i];
+
+    if (seg.type === "static") {
+      if (!curr.staticChildren) {
+        curr.staticChildren = new Map<string, DynamicNode>();
+      }
+      let nextNode = curr.staticChildren.get(seg.value);
+      if (!nextNode) {
+        nextNode = {};
+        curr.staticChildren.set(seg.value, nextNode);
+      }
+      curr = nextNode;
+    } else if (seg.type === "param") {
+      const paramName = seg.name!;
+      if (!curr.paramChild) {
+        curr.paramChild = {
+          paramName,
+          node: {},
+        };
+      } else {
+        curr.paramChild.paramName = paramName;
+      }
+      curr = curr.paramChild.node;
+    } else if (seg.type === "wildcard") {
+      const paramName = seg.name ?? "*";
+      curr.wildcardChild = {
+        paramName,
+        handler,
+        middlewares,
+        order,
+      };
+      return;
+    }
+  }
+
+  curr.handler = handler;
+  curr.middlewares = middlewares;
+  curr.order = order;
+}
+
+function searchDynamicTree(
+  node: DynamicNode,
+  segments: string[],
+  index: number,
+  params: Record<string, string>,
+): RouteMatch | null {
+  if (index === segments.length) {
+    if (node.handler) {
+      return {
+        handler: node.handler,
+        middlewares: node.middlewares,
+        params: { ...params },
+        order: node.order,
+      };
+    }
+    if (node.wildcardChild) {
+      const paramName = node.wildcardChild.paramName;
+      const finalParams = { ...params };
+      finalParams[paramName] = "";
+      return {
+        handler: node.wildcardChild.handler,
+        middlewares: node.wildcardChild.middlewares,
+        params: finalParams,
+        order: node.wildcardChild.order,
+      };
+    }
+    return null;
+  }
+
+  const seg = segments[index];
+
+  // 1. Static branch precedence
+  if (node.staticChildren?.has(seg)) {
+    const staticChild = node.staticChildren.get(seg)!;
+    const result = searchDynamicTree(staticChild, segments, index + 1, params);
+    if (result) return result;
+  }
+
+  // 2. Param branch precedence
+  if (node.paramChild) {
+    const { paramName, node: paramNode } = node.paramChild;
+    let decodedValue = seg;
+    try {
+      decodedValue = decodeURIComponent(seg);
+    } catch {
+      decodedValue = seg;
+    }
+    params[paramName] = decodedValue;
+    const result = searchDynamicTree(paramNode, segments, index + 1, params);
+    if (result) return result;
+    delete params[paramName];
+  }
+
+  // 3. Wildcard branch precedence
+  if (node.wildcardChild) {
+    const { paramName, handler, middlewares, order } = node.wildcardChild;
+    const restPath = segments.slice(index).join("/");
+    let decodedRest = restPath;
+    try {
+      decodedRest = decodeURIComponent(restPath);
+    } catch {
+      decodedRest = restPath;
+    }
+    const finalParams = { ...params };
+    finalParams[paramName] = decodedRest;
+    return { handler, middlewares, params: finalParams, order };
+  }
+
+  return null;
+}
+
+function hasPathInDynamicTree(node: DynamicNode, segments: string[], index: number): boolean {
+  if (index === segments.length) {
+    return Boolean(node.handler || node.wildcardChild);
+  }
+
+  const seg = segments[index];
+
+  if (node.staticChildren?.has(seg)) {
+    if (hasPathInDynamicTree(node.staticChildren.get(seg)!, segments, index + 1)) {
+      return true;
+    }
+  }
+
+  if (node.paramChild) {
+    if (hasPathInDynamicTree(node.paramChild.node, segments, index + 1)) {
+      return true;
+    }
+  }
+
+  if (node.wildcardChild) {
+    return true;
+  }
+
+  return false;
+}
+
+interface RouteEntry {
+  handler: RouteHandler;
+  middlewares?: Middleware[];
+  order?: number;
 }
 
 export class Router {
-  private readonly routes: InternalRoute[] = [];
+  private readonly staticRoutes = new Map<string, Map<string, RouteEntry>>();
+  private readonly dynamicTrees = new Map<string, DynamicNode>();
 
-  add(method: string, path: string, handler: RouteHandler): void {
+  add(
+    method: string,
+    path: string,
+    handler: RouteHandler,
+    middlewares?: Middleware[],
+    order?: number,
+  ): void {
     if (!method.trim()) {
       throw new Error("Route method cannot be empty");
     }
@@ -80,93 +246,87 @@ export class Router {
     }
 
     const uppercaseMethod = method.toUpperCase();
-    const { segments, score } = parsePathSegments(path);
+    const normalizedPath = normalizePath(path);
+    const segments = parsePathSegments(path);
 
-    const existingIndex = this.routes.findIndex(
-      (route) => route.method === uppercaseMethod && route.path === normalizePath(path),
-    );
+    const isStatic = segments.every((seg) => seg.type === "static");
 
-    if (existingIndex !== -1) {
-      this.routes.splice(existingIndex, 1);
+    if (isStatic) {
+      let methodMap = this.staticRoutes.get(uppercaseMethod);
+      if (!methodMap) {
+        methodMap = new Map<string, RouteEntry>();
+        this.staticRoutes.set(uppercaseMethod, methodMap);
+      }
+      methodMap.set(normalizedPath, { handler, middlewares, order });
+    } else {
+      const staticMap = this.staticRoutes.get(uppercaseMethod);
+      if (staticMap) {
+        staticMap.delete(normalizedPath);
+      }
+
+      let tree = this.dynamicTrees.get(uppercaseMethod);
+      if (!tree) {
+        tree = {};
+        this.dynamicTrees.set(uppercaseMethod, tree);
+      }
+
+      insertDynamicRoute(tree, segments, handler, middlewares, order);
     }
-
-    this.routes.push({
-      method: uppercaseMethod,
-      path: normalizePath(path),
-      handler,
-      segments,
-      score,
-    });
-
-    // Sort routes by score descending so static > dynamic > wildcard precedence is automatic
-    this.routes.sort((a, b) => b.score - a.score);
   }
 
   find(method: string, pathname: string): RouteMatch | null {
     const uppercaseMethod = method.toUpperCase();
+    const isHead = uppercaseMethod === "HEAD";
 
-    const methods = uppercaseMethod === "HEAD" ? ["HEAD", "GET"] : [uppercaseMethod];
+    const qIdx = pathname.indexOf("?");
+    const pathOnly = qIdx === -1 ? pathname : pathname.slice(0, qIdx);
+    const normalized = normalizePath(pathOnly);
 
-    const normalized = normalizePath(pathname);
+    if (isHead) {
+      const headMap = this.staticRoutes.get("HEAD");
+      if (headMap?.has(normalized)) {
+        const entry = headMap.get(normalized)!;
+        return {
+          handler: entry.handler,
+          middlewares: entry.middlewares,
+          params: {},
+          order: entry.order,
+        };
+      }
+      const getMap = this.staticRoutes.get("GET");
+      if (getMap?.has(normalized)) {
+        const entry = getMap.get(normalized)!;
+        return {
+          handler: entry.handler,
+          middlewares: entry.middlewares,
+          params: {},
+          order: entry.order,
+        };
+      }
+    } else {
+      const methodMap = this.staticRoutes.get(uppercaseMethod);
+      if (methodMap?.has(normalized)) {
+        const entry = methodMap.get(normalized)!;
+        return {
+          handler: entry.handler,
+          middlewares: entry.middlewares,
+          params: {},
+          order: entry.order,
+        };
+      }
+    }
+
+    const methodsToScan = isHead ? ["HEAD", "GET"] : [uppercaseMethod];
     const reqSegments = normalized === "/" ? [] : normalized.split("/").slice(1);
 
-    for (const lookupMethod of methods) {
-      for (const route of this.routes) {
-        if (route.method !== lookupMethod) {
-          continue;
-        }
+    for (const candidateMethod of methodsToScan) {
+      const tree = this.dynamicTrees.get(candidateMethod);
+      if (!tree) continue;
 
-        const params: Record<string, string> = {};
-        let isMatch = true;
-
-        for (let i = 0; i < route.segments.length; i++) {
-          const seg = route.segments[i];
-
-          if (seg.type === "wildcard") {
-            const restPath = reqSegments.slice(i).join("/");
-            try {
-              params[seg.name ?? "*"] = decodeURIComponent(restPath);
-            } catch {
-              params[seg.name ?? "*"] = restPath;
-            }
-            break;
-          }
-
-          if (i >= reqSegments.length) {
-            isMatch = false;
-            break;
-          }
-
-          const reqSeg = reqSegments[i];
-
-          if (seg.type === "static") {
-            if (seg.value !== reqSeg) {
-              isMatch = false;
-              break;
-            }
-          } else if (seg.type === "param") {
-            try {
-              params[seg.name!] = decodeURIComponent(reqSeg);
-            } catch {
-              params[seg.name!] = reqSeg;
-            }
-          }
-        }
-
-        // Check for length match if no wildcard
-        const lastSeg = route.segments[route.segments.length - 1];
-        const hasWildcard = lastSeg && lastSeg.type === "wildcard";
-
-        if (isMatch && !hasWildcard && route.segments.length !== reqSegments.length) {
-          isMatch = false;
-        }
-
-        if (isMatch) {
-          return {
-            handler: route.handler,
-            params,
-          };
-        }
+      const params: Record<string, string> = {};
+      const match = searchDynamicTree(tree, reqSegments, 0, params);
+      if (match) {
+        return match;
       }
     }
 
@@ -174,35 +334,24 @@ export class Router {
   }
 
   hasPath(pathname: string): boolean {
-    const normalized = normalizePath(pathname);
+    const qIdx = pathname.indexOf("?");
+    const pathOnly = qIdx === -1 ? pathname : pathname.slice(0, qIdx);
+    const normalized = normalizePath(pathOnly);
+
+    for (const methodMap of this.staticRoutes.values()) {
+      if (methodMap.has(normalized)) {
+        return true;
+      }
+    }
+
     const reqSegments = normalized === "/" ? [] : normalized.split("/").slice(1);
 
-    return this.routes.some((route) => {
-      if (route.segments.length > reqSegments.length) {
-        const last = route.segments[route.segments.length - 1];
-
-        if (last?.type !== "wildcard") {
-          return false;
-        }
+    for (const tree of this.dynamicTrees.values()) {
+      if (hasPathInDynamicTree(tree, reqSegments, 0)) {
+        return true;
       }
+    }
 
-      for (let i = 0; i < route.segments.length; i++) {
-        const segment = route.segments[i];
-
-        if (segment.type === "wildcard") {
-          return true;
-        }
-
-        if (i >= reqSegments.length) {
-          return false;
-        }
-
-        if (segment.type === "static" && segment.value !== reqSegments[i]) {
-          return false;
-        }
-      }
-
-      return route.segments.length === reqSegments.length;
-    });
+    return false;
   }
 }

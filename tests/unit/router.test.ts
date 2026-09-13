@@ -280,4 +280,139 @@ describe("Router", () => {
 
     expect(router.find("GET", "/users")?.handler).toBe(secondHandler);
   });
+
+  it("does not match when a parameter route has extra segments", () => {
+    const router = new Router();
+
+    router.add("GET", "/users/:id", () => {});
+
+    expect(router.find("GET", "/users/123/profile")).toBeNull();
+  });
+
+  it("preserves an encoded slash inside a parameter", () => {
+    const router = new Router();
+    const handler = () => {};
+
+    router.add("GET", "/files/:path", handler);
+
+    const match = router.find("GET", "/files/a%2Fb");
+
+    expect(match?.params).toEqual({
+      path: "a/b",
+    });
+  });
+
+  it("does not treat query strings as part of the route path", () => {
+    const router = new Router();
+    const handler = () => {};
+
+    router.add("GET", "/users", handler);
+
+    expect(router.find("GET", "/users?active=true")?.handler).toBe(handler);
+  });
+
+  it("matches nested static and dynamic paths", () => {
+    const router = new Router();
+    const handler = () => {};
+
+    router.add("GET", "/users/:id/posts", handler);
+
+    const match = router.find("GET", "/users/42/posts");
+
+    expect(match?.handler).toBe(handler);
+    expect(match?.params).toEqual({
+      id: "42",
+    });
+  });
+
+  it("matches deeply nested routes with multiple parameters", () => {
+    const router = new Router();
+    const handler = () => {};
+
+    router.add("GET", "/products/:productId/reviews/:reviewId", handler);
+
+    const match = router.find("GET", "/products/123/reviews/456");
+
+    expect(match?.handler).toBe(handler);
+    expect(match?.params).toEqual({
+      productId: "123",
+      reviewId: "456",
+    });
+  });
+
+  it("allows static and parameter routes with the same shape", () => {
+    const router = new Router();
+    const staticHandler = () => {};
+    const paramHandler = () => {};
+
+    router.add("GET", "/users/me", staticHandler);
+    router.add("GET", "/users/:id", paramHandler);
+
+    expect(router.find("GET", "/users/me")?.handler).toBe(staticHandler);
+    expect(router.find("GET", "/users/42")?.handler).toBe(paramHandler);
+  });
+
+  it("uses the correct parameter names for each route", () => {
+    const router = new Router();
+    const firstHandler = () => {};
+    const secondHandler = () => {};
+
+    router.add("GET", "/users/:id", firstHandler);
+    router.add("GET", "/accounts/:accountId", secondHandler);
+
+    expect(router.find("GET", "/users/10")?.params).toEqual({
+      id: "10",
+    });
+
+    expect(router.find("GET", "/accounts/20")?.params).toEqual({
+      accountId: "20",
+    });
+  });
+
+  it("enforces full precedence hierarchy across static, param, and wildcard routes", () => {
+    const router = new Router();
+    const staticHandler = () => {};
+    const paramHandler = () => {};
+    const wildcardHandler = () => {};
+
+    router.add("GET", "/users/me", staticHandler);
+    router.add("GET", "/users/:id", paramHandler);
+    router.add("GET", "/users/*rest", wildcardHandler);
+
+    expect(router.find("GET", "/users/me")?.handler).toBe(staticHandler);
+
+    const paramMatch = router.find("GET", "/users/123");
+    expect(paramMatch?.handler).toBe(paramHandler);
+    expect(paramMatch?.params).toEqual({ id: "123" });
+
+    const wildcardMatch = router.find("GET", "/users/123/x");
+    expect(wildcardMatch?.handler).toBe(wildcardHandler);
+    expect(wildcardMatch?.params).toEqual({ rest: "123/x" });
+  });
+
+  it("overwrites handlers and param names when registered at the same structural position", () => {
+    const router = new Router();
+    const firstHandler = () => {};
+    const secondHandler = () => {};
+
+    router.add("GET", "/users/:id", firstHandler);
+    router.add("GET", "/users/:userId", secondHandler);
+
+    const match = router.find("GET", "/users/123");
+    expect(match?.handler).toBe(secondHandler);
+    expect(match?.params).toEqual({ userId: "123" });
+  });
+
+  it("prefers explicit HEAD route over GET route for dynamic routes", () => {
+    const router = new Router();
+    const getHandler = () => {};
+    const headHandler = () => {};
+
+    router.add("GET", "/users/:id", getHandler);
+    router.add("HEAD", "/users/:id", headHandler);
+
+    const match = router.find("HEAD", "/users/123");
+    expect(match?.handler).toBe(headHandler);
+    expect(match?.params).toEqual({ id: "123" });
+  });
 });

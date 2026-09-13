@@ -6,6 +6,9 @@ export class Response {
   constructor(public readonly raw: ServerResponse) {}
 
   status(code: number): this {
+    if (this.isEnded || this.raw.headersSent) {
+      return this;
+    }
     this.raw.statusCode = code;
     return this;
   }
@@ -14,6 +17,9 @@ export class Response {
     field: string | Record<string, string | number | string[]>,
     value?: string | number | string[],
   ): this {
+    if (this.isEnded || this.raw.headersSent) {
+      return this;
+    }
     if (typeof field === "object" && field !== null) {
       for (const [key, val] of Object.entries(field)) {
         this.set(key, val);

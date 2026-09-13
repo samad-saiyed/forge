@@ -7,12 +7,58 @@ import { Router } from "./router.js";
 
 export type ApplicationState = "created" | "starting" | "running" | "stopping" | "stopped";
 
-export type RouteHandler = (request: Request, response: Response) => void | Promise<void>;
+export type NextFunction = (err?: unknown) => Promise<void>;
+
+export type Middleware = (
+  request: Request,
+  response: Response,
+  next: NextFunction,
+) => void | Promise<void>;
+
+export type ErrorMiddleware = (
+  error: unknown,
+  request: Request,
+  response: Response,
+  next: NextFunction,
+) => void | Promise<void>;
+
+export type AnyMiddleware = Middleware | ErrorMiddleware;
+export type RouteHandler = Middleware;
+export type RequestHandler = Middleware;
+
+interface MiddlewareEntry {
+  prefix?: string;
+  middleware: AnyMiddleware;
+  isError: boolean;
+  order: number;
+}
+
+function matchesPrefix(prefix: string | undefined, pathname: string): boolean {
+  if (!prefix || prefix === "/" || prefix === "") {
+    return true;
+  }
+
+  let normPrefix = prefix;
+  if (normPrefix.endsWith("/") && normPrefix.length > 1) {
+    normPrefix = normPrefix.slice(0, -1);
+  }
+  if (!normPrefix.startsWith("/")) {
+    normPrefix = `/${normPrefix}`;
+  }
+
+  if (pathname === normPrefix || pathname.startsWith(`${normPrefix}/`)) {
+    return true;
+  }
+
+  return false;
+}
 
 export class Application {
   private readonly server: Server;
   private readonly settings = new Map<string, unknown>();
   private readonly router = new Router();
+  private readonly middlewares: MiddlewareEntry[] = [];
+  private registrationCounter = 0;
   private state: ApplicationState = "created";
   private startPromise?: Promise<void>;
   private stopPromise?: Promise<void>;
@@ -26,8 +72,62 @@ export class Application {
     });
   }
 
-  private addRoute(method: string, path: string, handler: RouteHandler): this {
-    this.router.add(method, path, handler);
+  use(...handlers: Middleware[]): this;
+  use(...handlers: (Middleware | Middleware[])[]): this;
+  use(...handlers: ErrorMiddleware[]): this;
+  use(...handlers: (ErrorMiddleware | ErrorMiddleware[])[]): this;
+  use(path: string, ...handlers: Middleware[]): this;
+  use(path: string, ...handlers: (Middleware | Middleware[])[]): this;
+  use(path: string, ...handlers: ErrorMiddleware[]): this;
+  use(path: string, ...handlers: (ErrorMiddleware | ErrorMiddleware[])[]): this;
+  use(...args: (string | AnyMiddleware | (AnyMiddleware | AnyMiddleware[])[])[]): this {
+    if (args.length === 0) {
+      return this;
+    }
+
+    let prefix: string | undefined = undefined;
+    let mwArgs = args;
+
+    if (typeof args[0] === "string") {
+      prefix = args[0];
+      mwArgs = args.slice(1);
+    }
+
+    const flatMiddlewares = mwArgs.flat(Infinity) as AnyMiddleware[];
+    for (const mw of flatMiddlewares) {
+      if (typeof mw === "function") {
+        this.middlewares.push({
+          prefix,
+          middleware: mw,
+          isError: mw.length === 4,
+          order: ++this.registrationCounter,
+        });
+      }
+    }
+
+    return this;
+  }
+
+  private addRoute(
+    method: string,
+    path: string,
+    handlers: (RouteHandler | RouteHandler[])[],
+  ): this {
+    const flat = handlers.flat(Infinity) as RouteHandler[];
+    if (flat.length === 0) {
+      throw new Error("Route requires at least one handler function");
+    }
+
+    const routeHandler = flat[flat.length - 1];
+    const routeMiddlewares = flat.slice(0, -1) as Middleware[];
+
+    this.router.add(
+      method,
+      path,
+      routeHandler,
+      routeMiddlewares.length > 0 ? routeMiddlewares : undefined,
+      ++this.registrationCounter,
+    );
     return this;
   }
 
@@ -85,32 +185,46 @@ export class Application {
 
   protected async onStop(): Promise<void> {}
 
-  get(path: string, handler: RouteHandler): this {
-    return this.addRoute("GET", path, handler);
+  get(path: string, ...handlers: RouteHandler[]): this;
+  get(path: string, ...handlers: (RouteHandler | RouteHandler[])[]): this;
+  get(path: string, ...handlers: (RouteHandler | RouteHandler[])[]): this {
+    return this.addRoute("GET", path, handlers);
   }
 
-  post(path: string, handler: RouteHandler): this {
-    return this.addRoute("POST", path, handler);
+  post(path: string, ...handlers: RouteHandler[]): this;
+  post(path: string, ...handlers: (RouteHandler | RouteHandler[])[]): this;
+  post(path: string, ...handlers: (RouteHandler | RouteHandler[])[]): this {
+    return this.addRoute("POST", path, handlers);
   }
 
-  put(path: string, handler: RouteHandler): this {
-    return this.addRoute("PUT", path, handler);
+  put(path: string, ...handlers: RouteHandler[]): this;
+  put(path: string, ...handlers: (RouteHandler | RouteHandler[])[]): this;
+  put(path: string, ...handlers: (RouteHandler | RouteHandler[])[]): this {
+    return this.addRoute("PUT", path, handlers);
   }
 
-  patch(path: string, handler: RouteHandler): this {
-    return this.addRoute("PATCH", path, handler);
+  patch(path: string, ...handlers: RouteHandler[]): this;
+  patch(path: string, ...handlers: (RouteHandler | RouteHandler[])[]): this;
+  patch(path: string, ...handlers: (RouteHandler | RouteHandler[])[]): this {
+    return this.addRoute("PATCH", path, handlers);
   }
 
-  delete(path: string, handler: RouteHandler): this {
-    return this.addRoute("DELETE", path, handler);
+  delete(path: string, ...handlers: RouteHandler[]): this;
+  delete(path: string, ...handlers: (RouteHandler | RouteHandler[])[]): this;
+  delete(path: string, ...handlers: (RouteHandler | RouteHandler[])[]): this {
+    return this.addRoute("DELETE", path, handlers);
   }
 
-  options(path: string, handler: RouteHandler): this {
-    return this.addRoute("OPTIONS", path, handler);
+  options(path: string, ...handlers: RouteHandler[]): this;
+  options(path: string, ...handlers: (RouteHandler | RouteHandler[])[]): this;
+  options(path: string, ...handlers: (RouteHandler | RouteHandler[])[]): this {
+    return this.addRoute("OPTIONS", path, handlers);
   }
 
-  head(path: string, handler: RouteHandler): this {
-    return this.addRoute("HEAD", path, handler);
+  head(path: string, ...handlers: RouteHandler[]): this;
+  head(path: string, ...handlers: (RouteHandler | RouteHandler[])[]): this;
+  head(path: string, ...handlers: (RouteHandler | RouteHandler[])[]): this {
+    return this.addRoute("HEAD", path, handlers);
   }
 
   private async handleRequest(request: Request, response: Response): Promise<void> {
@@ -122,22 +236,122 @@ export class Application {
 
     if (match) {
       request.params = match.params;
+    }
 
-      try {
-        await match.handler(request, response);
-      } catch (error) {
-        this.handleError(error, request, response);
+    interface PipelineItem {
+      fn: AnyMiddleware;
+      isError: boolean;
+      order: number;
+    }
+
+    const pipeline: PipelineItem[] = [];
+
+    for (const entry of this.middlewares) {
+      if (matchesPrefix(entry.prefix, pathname)) {
+        pipeline.push({
+          fn: entry.middleware,
+          isError: entry.isError,
+          order: entry.order,
+        });
+      }
+    }
+
+    if (match) {
+      const routeOrder = match.order ?? 0;
+      if (match.middlewares) {
+        for (const mw of match.middlewares) {
+          pipeline.push({
+            fn: mw,
+            isError: mw.length === 4,
+            order: routeOrder,
+          });
+        }
+      }
+      pipeline.push({
+        fn: match.handler,
+        isError: match.handler.length === 4,
+        order: routeOrder,
+      });
+    }
+
+    pipeline.sort((a, b) => a.order - b.order);
+
+    let hasError = false;
+    let currentError: unknown = undefined;
+
+    const dispatch = async (index: number, err?: unknown): Promise<void> => {
+      if (err !== undefined) {
+        hasError = true;
+        currentError = err;
       }
 
-      return;
-    }
+      if (index >= pipeline.length) {
+        if (hasError) {
+          this.handleError(currentError, request, response);
+          return;
+        }
+        if (!match) {
+          if (this.router.hasPath(pathname)) {
+            response.status(405).end();
+          } else {
+            this.handleNotFound(request, response);
+          }
+        }
+        return;
+      }
 
-    if (this.router.hasPath(pathname)) {
-      response.status(405).end();
-      return;
-    }
+      const item = pipeline[index];
 
-    this.handleNotFound(request, response);
+      if (hasError) {
+        if (!item.isError) {
+          return dispatch(index + 1);
+        }
+
+        let nextCalled = false;
+        const next = async (nextErr?: unknown): Promise<void> => {
+          if (nextCalled) {
+            return;
+          }
+          nextCalled = true;
+          await dispatch(index + 1, nextErr !== undefined ? nextErr : currentError);
+        };
+
+        try {
+          await (item.fn as ErrorMiddleware)(currentError, request, response, next);
+        } catch (error) {
+          if (!nextCalled) {
+            await dispatch(index + 1, error);
+          }
+        }
+      } else {
+        if (item.isError) {
+          return dispatch(index + 1);
+        }
+
+        let nextCalled = false;
+        const next = async (nextErr?: unknown): Promise<void> => {
+          if (nextCalled) {
+            return;
+          }
+          nextCalled = true;
+          await dispatch(index + 1, nextErr);
+        };
+
+        try {
+          await (item.fn as Middleware)(request, response, next);
+        } catch (error) {
+          if (!nextCalled) {
+            await dispatch(index + 1, error);
+          }
+        }
+      }
+    };
+
+    try {
+      await dispatch(0);
+    } catch (error) {
+      this.handleError(error, request, response);
+    }
   }
 
   protected handleError(error: unknown, _request: Request, response: Response): void {

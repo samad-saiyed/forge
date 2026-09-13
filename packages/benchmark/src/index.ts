@@ -1,10 +1,13 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import type { EventEmitter } from "node:events";
 import { request as httpRequest, type RequestOptions } from "node:http";
 import express from "express";
 import { createApp } from "@forge/core";
 import { runBodyParserBenchmark } from "./body-parser.js";
+import { runRouterBenchmark } from "./router.js";
 
 export { runBodyParserBenchmark } from "./body-parser.js";
+export { runRouterBenchmark } from "./router.js";
 
 interface BenchmarkResult {
   name: string;
@@ -203,11 +206,14 @@ async function runPostBenchmarkForUrl(
   };
 }
 
-async function main() {
+async function runHttpBenchmark(): Promise<void> {
   console.log("Starting Forge vs Express Benchmark Baseline...\n");
 
   // 1. Setup Forge Server
   const forgeApp = createApp();
+  forgeApp.get("/json", (_req, res) => {
+    res.json({ message: "Hello World" });
+  });
   forgeApp.post("/json", async (req, res) => {
     await req.parseBody();
     res.json({ message: "Hello World" });
@@ -283,13 +289,21 @@ async function main() {
         Errors: forgeBodyResults.errorCount,
       },
     ]);
-
-    console.log("\nRunning isolated body parser benchmark...");
-    await runBodyParserBenchmark();
   } finally {
     await forgeApp.close();
     await new Promise<void>((resolve) => expressServer.close(() => resolve()));
   }
+}
+
+async function main() {
+  // 1. HTTP Server Baseline Benchmark (Forge vs Express GET & POST JSON Body)
+  // await runHttpBenchmark();
+
+  // 2. Body Parser / Multipart Benchmark
+  // await runBodyParserBenchmark();
+
+  // 3. Isolated Router Benchmark (Static & Dynamic Radix Trie)
+  await runRouterBenchmark();
 }
 
 void main();
