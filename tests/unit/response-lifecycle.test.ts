@@ -280,7 +280,7 @@ describe("Response Lifecycle & Middleware Short-Circuiting", () => {
       res.status(200).json({ first: true });
       // Attempting to modify status or headers after sending response should not mutate statusCode/headers
       res.status(500);
-      res.header("X-Test", "ShouldNotBeSet");
+      res.setHeader("X-Test", "ShouldNotBeSet");
     });
 
     const req = new Request({ method: "GET", url: "/test" } as never);

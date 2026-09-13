@@ -39,6 +39,13 @@ export class Response {
     return this.set(field, value);
   }
 
+  setHeader(
+    field: string | Record<string, string | number | string[]>,
+    value?: string | number | string[],
+  ): this {
+    return this.set(field, value);
+  }
+
   json(body: unknown): this {
     if (this.isEnded || this.raw.headersSent) {
       throw new Error("Cannot send response after headers are sent or response is ended");
