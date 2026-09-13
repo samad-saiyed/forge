@@ -1,4 +1,31 @@
 import * as path from "node:path";
+import type { ParseRouteParams } from "./application.js";
+
+export type ConvertFsPathToRoutePath<S extends string> = S extends `${infer Prefix}/route.${string}`
+  ? ConvertFsPathToRoutePath<Prefix>
+  : S extends `route.${string}`
+    ? "/"
+    : S extends `${infer Head}/[...${infer Param}]/${infer Tail}`
+      ? ConvertFsPathToRoutePath<`${Head}/*${Param}/${Tail}`>
+      : S extends `${infer Head}/[...${infer Param}]`
+        ? `${Head}/*${Param}`
+        : S extends `[...${infer Param}]/${infer Tail}`
+          ? ConvertFsPathToRoutePath<`*${Param}/${Tail}`>
+          : S extends `[...${infer Param}]`
+            ? `*${Param}`
+            : S extends `${infer Head}/[${infer Param}]/${infer Tail}`
+              ? ConvertFsPathToRoutePath<`${Head}/:${Param}/${Tail}`>
+              : S extends `${infer Head}/[${infer Param}]`
+                ? `${Head}/:${Param}`
+                : S extends `[${infer Param}]/${infer Tail}`
+                  ? ConvertFsPathToRoutePath<`:${Param}/${Tail}`>
+                  : S extends `[${infer Param}]`
+                    ? `:${Param}`
+                    : S;
+
+export type ParseFilesystemRouteParams<Path extends string> = string extends Path
+  ? Record<string, string>
+  : ParseRouteParams<ConvertFsPathToRoutePath<Path>>;
 
 const VALID_PARAM_NAME_REGEX = /^[a-zA-Z0-9_]+$/;
 

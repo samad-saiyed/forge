@@ -26,6 +26,63 @@ describe("Request", () => {
     expect(request.query).toEqual({ search: "test", sort: "asc" });
     expect(request.header("content-type")).toBe("application/json");
   });
+
+  it("parses single, multiple, repeated, and empty query parameters correctly", () => {
+    const emptyReq = new Request({ url: "/users" } as IncomingMessage);
+    expect(emptyReq.query).toEqual({});
+
+    const singleReq = new Request({ url: "/users?page=2" } as IncomingMessage);
+    expect(singleReq.query).toEqual({ page: "2" });
+
+    const multiReq = new Request({ url: "/users?page=2&search=test" } as IncomingMessage);
+    expect(multiReq.query).toEqual({ page: "2", search: "test" });
+
+    const repeatedReq = new Request({ url: "/users?tag=a&tag=b" } as IncomingMessage);
+    expect(repeatedReq.query).toEqual({ tag: ["a", "b"] });
+  });
+
+  it("parses JSON object, JSON array, empty body, and non-JSON body correctly", async () => {
+    const createMockReq = (headers: Record<string, string>, bodyContent?: string | Buffer) => {
+      const listeners = new Map<string, (...args: unknown[]) => void>();
+      const on = (event: string, fn: (...args: unknown[]) => void) => {
+        listeners.set(event, fn);
+        if (event === "data" && bodyContent !== undefined) {
+          fn(Buffer.isBuffer(bodyContent) ? bodyContent : Buffer.from(bodyContent));
+        }
+        if (event === "end") {
+          fn();
+        }
+      };
+      const raw = {
+        headers,
+        on,
+        once(event: string, fn: (...args: unknown[]) => void) {
+          on(event, fn);
+        },
+      } as unknown as IncomingMessage;
+      return new Request(raw);
+    };
+
+    const jsonObjReq = createMockReq(
+      { "content-type": "application/json" },
+      JSON.stringify({ name: "Alice", email: "alice@example.com" }),
+    );
+    expect(await jsonObjReq.body).toEqual({ name: "Alice", email: "alice@example.com" });
+
+    const jsonArrReq = createMockReq(
+      { "content-type": "application/json" },
+      JSON.stringify([{ id: 1 }, { id: 2 }]),
+    );
+    expect(await jsonArrReq.body).toEqual([{ id: 1 }, { id: 2 }]);
+
+    const emptyBodyReq = createMockReq({ "content-type": "application/json" }, "");
+    expect(await emptyBodyReq.body).toBeUndefined();
+
+    const plainTextReq = createMockReq({ "content-type": "text/plain" }, "Hello world");
+    const plainBody = await plainTextReq.body;
+    expect(Buffer.isBuffer(plainBody)).toBe(true);
+    expect((plainBody as unknown as Buffer).toString("utf8")).toBe("Hello world");
+  });
 });
 
 describe("Response", () => {
@@ -79,5 +136,24 @@ describe("Response", () => {
     expect(() => response.send("Second response")).toThrow(
       "Cannot send response after headers are sent or response is ended",
     );
+  });
+
+  it("supports status(code).json(payload) chaining and status(204).end()", () => {
+    const raw1 = new ServerResponse(new IncomingMessage(null as never));
+    const res1 = new Response<{ id: string; name: string }>(raw1);
+
+    res1.status(201).json({ id: "1", name: "Alice" });
+
+    expect(raw1.statusCode).toBe(201);
+    expect(raw1.getHeader("content-type")).toBe("application/json; charset=utf-8");
+    expect(raw1.writableEnded).toBe(true);
+
+    const raw2 = new ServerResponse(new IncomingMessage(null as never));
+    const res2 = new Response<{ id: string }>(raw2);
+
+    res2.status(204).end();
+
+    expect(raw2.statusCode).toBe(204);
+    expect(raw2.writableEnded).toBe(true);
   });
 });

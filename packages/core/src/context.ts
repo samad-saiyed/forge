@@ -23,3 +23,23 @@ export type FileRouteHandler<
   Body = unknown,
   ResBody = unknown,
 > = (context: RouteContext<Params, Query, Body, ResBody>) => void | Promise<void>;
+
+import type { ParseFilesystemRouteParams } from "./filesystem-router.js";
+
+export type FilesystemRouteHandler<
+  Path extends string = string,
+  Query = Record<string, string | string[]>,
+  Body = unknown,
+  ResBody = unknown,
+> = FileRouteHandler<ParseFilesystemRouteParams<Path>, Query, Body, ResBody>;
+
+export function defineRouteHandler<
+  Path extends string = string,
+  Query = Record<string, string | string[]>,
+  Body = unknown,
+  ResBody = unknown,
+>(
+  handler: FileRouteHandler<ParseFilesystemRouteParams<Path>, Query, Body, ResBody>,
+): FileRouteHandler<ParseFilesystemRouteParams<Path>, Query, Body, ResBody> {
+  return handler;
+}

@@ -148,11 +148,11 @@ describe("Route Registrar (registerLoadedRoutes)", () => {
     };
 
     expect(() => registerLoadedRoutes(router, [route1, route2])).toThrow(
-      /Duplicate route registration: GET \/users/,
+      /Ambiguous filesystem route collision: GET \/users/,
     );
   });
 
-  it("throws duplicate route error for programmatic + filesystem duplicates", () => {
+  it("allows programmatic route to take precedence over filesystem route (programmatic + filesystem)", () => {
     const router = new Router();
     const programHandler: RouteHandler = vi.fn();
     const fsHandler: RouteHandler = vi.fn();
@@ -165,12 +165,14 @@ describe("Route Registrar (registerLoadedRoutes)", () => {
       handlers: new Map([["GET", fsHandler]]),
     };
 
-    expect(() => registerLoadedRoutes(router, [fsRoute])).toThrow(
-      /Duplicate route registration: GET \/users/,
-    );
+    // Registration should succeed without throwing; programmatic route takes precedence
+    expect(() => registerLoadedRoutes(router, [fsRoute])).not.toThrow();
+
+    const match = router.find("GET", "/users");
+    expect(match?.handler).toBe(programHandler);
   });
 
-  it("throws duplicate route error for filesystem + programmatic duplicates", () => {
+  it("allows programmatic route to take precedence over filesystem route (filesystem + programmatic)", () => {
     const router = new Router();
     const programHandler: RouteHandler = vi.fn();
     const fsHandler: RouteHandler = vi.fn();
@@ -183,9 +185,13 @@ describe("Route Registrar (registerLoadedRoutes)", () => {
 
     registerLoadedRoutes(router, [fsRoute]);
 
+    // Programmatic registration overrides existing filesystem route
     expect(() =>
       router.add("GET", "/users", programHandler, undefined, undefined, "programmatic"),
-    ).toThrow(/Duplicate route registration: GET \/users/);
+    ).not.toThrow();
+
+    const match = router.find("GET", "/users");
+    expect(match?.handler).toBe(programHandler);
   });
 
   it("supports FileRouteHandler signature receiving RouteContext", async () => {

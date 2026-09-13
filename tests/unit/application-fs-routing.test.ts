@@ -181,15 +181,17 @@ describe("Application Filesystem Routing Integration", () => {
     expect(fsCall.getData()).toEqual({ source: "fs" });
   });
 
-  test("throws useful error on duplicate route registration", async () => {
-    const usersDir = path.join(tmpDir, "users");
-    await fs.mkdir(usersDir, { recursive: true });
-    await fs.writeFile(path.join(usersDir, "route.ts"), `export const GET = () => {};`, "utf-8");
+  test("throws useful error on ambiguous filesystem route collision", async () => {
+    const idDir = path.join(tmpDir, "users", "[id]");
+    const userIdDir = path.join(tmpDir, "users", "[userId]");
+    await fs.mkdir(idDir, { recursive: true });
+    await fs.mkdir(userIdDir, { recursive: true });
+    await fs.writeFile(path.join(idDir, "route.ts"), `export const GET = () => {};`, "utf-8");
+    await fs.writeFile(path.join(userIdDir, "route.ts"), `export const GET = () => {};`, "utf-8");
 
     const app = createTestApp({ appDir: tmpDir });
-    app.get("/users", () => {});
 
-    await expect(app.start()).rejects.toThrow(/Duplicate route registration/);
+    await expect(app.start()).rejects.toThrow(/Ambiguous filesystem route collision/);
   });
 
   test("handles startup failure cleanly and transitions to stopped", async () => {

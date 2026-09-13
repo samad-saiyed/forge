@@ -227,10 +227,22 @@ interface RouteEntry {
   order?: number;
 }
 
+function getCanonicalRouteKey(method: string, path: string): string {
+  const uppercaseMethod = method.toUpperCase();
+  const segments = parsePathSegments(path);
+  const canonicalSegments = segments.map((seg) => {
+    if (seg.type === "static") return seg.value;
+    if (seg.type === "param") return ":_param_";
+    return "*_wildcard_";
+  });
+  return `${uppercaseMethod} /${canonicalSegments.join("/")}`;
+}
+
 export class Router {
   private readonly staticRoutes = new Map<string, Map<string, RouteEntry>>();
   private readonly dynamicTrees = new Map<string, DynamicNode>();
   private readonly registeredRoutes = new Map<string, string>();
+  private readonly canonicalRegisteredRoutes = new Map<string, string>();
 
   add(
     method: string,
@@ -254,17 +266,41 @@ export class Router {
 
     const uppercaseMethod = method.toUpperCase();
     const normalizedPath = normalizePath(path);
-    const routeKey = `${uppercaseMethod} ${normalizedPath}`;
+    const exactRouteKey = `${uppercaseMethod} ${normalizedPath}`;
+    const canonicalRouteKey = getCanonicalRouteKey(uppercaseMethod, path);
 
-    const existingSource = this.registeredRoutes.get(routeKey);
-    if (existingSource !== undefined) {
-      const currentSource = source ?? "programmatic";
-      throw new Error(
-        `Duplicate route registration: ${uppercaseMethod} ${normalizedPath} (already registered from ${existingSource}, attempted from ${currentSource})`,
-      );
+    const currentSource = source ?? "programmatic";
+    const isCurrentProgrammatic = currentSource === "programmatic";
+
+    const exactExistingSource = this.registeredRoutes.get(exactRouteKey);
+    if (exactExistingSource !== undefined) {
+      const isExistingProgrammatic = exactExistingSource === "programmatic";
+
+      if (isExistingProgrammatic && isCurrentProgrammatic) {
+        throw new Error(
+          `Duplicate route registration: ${uppercaseMethod} ${normalizedPath} (already registered from ${exactExistingSource}, attempted from ${currentSource})`,
+        );
+      }
     }
 
-    this.registeredRoutes.set(routeKey, source ?? "programmatic");
+    const canonicalExistingSource = this.canonicalRegisteredRoutes.get(canonicalRouteKey);
+    if (canonicalExistingSource !== undefined) {
+      const isExistingProgrammatic = canonicalExistingSource === "programmatic";
+
+      if (!isExistingProgrammatic && !isCurrentProgrammatic) {
+        throw new Error(
+          `Ambiguous filesystem route collision: ${uppercaseMethod} ${normalizedPath} (defined in both "${canonicalExistingSource}" and "${currentSource}")`,
+        );
+      }
+
+      if (isExistingProgrammatic && !isCurrentProgrammatic) {
+        // Programmatic route takes precedence over filesystem route
+        return;
+      }
+    }
+
+    this.registeredRoutes.set(exactRouteKey, currentSource);
+    this.canonicalRegisteredRoutes.set(canonicalRouteKey, currentSource);
 
     const segments = parsePathSegments(path);
 
