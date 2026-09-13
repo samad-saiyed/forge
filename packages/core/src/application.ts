@@ -15,6 +15,7 @@ import { registerLoadedRoutes } from "./route-registrar.js";
 export interface ApplicationOptions {
   appDir?: string;
   config?: ResolvedForgeConfig | ForgeConfigInput;
+  skipFsRouting?: boolean;
 }
 
 export type ApplicationState = "created" | "starting" | "running" | "stopping" | "stopped";
@@ -204,10 +205,13 @@ export class Application {
     let rawAppDir: string | undefined = undefined;
 
     if (options !== null && typeof options === "object") {
-      if ("appDir" in options || "config" in options) {
+      if ("appDir" in options || "config" in options || "skipFsRouting" in options) {
         const opts = options as ApplicationOptions;
         rawAppDir = opts.appDir;
         rawConfig = opts.config;
+        if (opts.skipFsRouting) {
+          this.fsRoutesLoaded = true;
+        }
       } else {
         rawConfig = options as ResolvedForgeConfig | ForgeConfigInput;
       }

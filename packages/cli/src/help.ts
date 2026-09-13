@@ -11,6 +11,7 @@ export function getHelpText(): string {
     "Commands:",
     "  dev         Start development server with live reload",
     "  build       Build production application artifact",
+    "  start       Start production application server",
     "  new         Scaffold a new Forge project",
     "",
     "Options:",

@@ -13,6 +13,11 @@ export {
 } from "./commands/build.js";
 export { handleDevCommand, type DevCommandOptions, type DevCommandResult } from "./commands/dev.js";
 export { handleNewCommand, type NewCommandOptions } from "./commands/new.js";
+export {
+  handleStartCommand,
+  type StartCommandOptions,
+  type StartCommandResult,
+} from "./commands/start.js";
 export { runCli, type BaseCliOptions, type CliResult, type RunCliOptions } from "./dispatcher.js";
 export { getHelpText } from "./help.js";
 export { initializeGitRepo, type GitInitResult } from "./project/git.js";

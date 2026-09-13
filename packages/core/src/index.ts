@@ -116,3 +116,11 @@ export {
   type BuildOptions,
   type BuildResult,
 } from "./build-orchestrator.js";
+
+export {
+  startProductionServer,
+  loadProductionApplication,
+  ProductionArtifactError,
+  type ProductionRunnerOptions,
+  type ProductionRunnerResult,
+} from "./production-runner.js";
