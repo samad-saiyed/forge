@@ -1,8 +1,8 @@
-// /* eslint-disable @typescript-eslint/no-unused-vars */
 import type { EventEmitter } from "node:events";
 import { request as httpRequest, type RequestOptions } from "node:http";
 import express from "express";
-import { createApp } from "@forge/core";
+import { z } from "zod";
+import { createApp, defineRoute } from "@forge/core";
 import { runBodyParserBenchmark } from "./body-parser.js";
 import { runMiddlewareBenchmark } from "./middleware.js";
 import { runRouterBenchmark } from "./router.js";
@@ -221,6 +221,20 @@ async function runHttpBenchmark(): Promise<void> {
     await req.parseBody();
     res.json({ message: "Hello World" });
   });
+
+  const BodyZodSchema = z.object({
+    name: z.string(),
+    version: z.number(),
+    framework: z.boolean(),
+  });
+
+  forgeApp.post(
+    "/validated-json",
+    defineRoute({ validate: { body: BodyZodSchema } }, async (req, res) => {
+      const body = await req.body;
+      res.json(body);
+    }),
+  );
   const forgeServer = forgeApp.listen(0);
   await new Promise<void>((resolve) => forgeServer.once("listening", resolve));
   const forgeAddress = forgeServer.address();
@@ -277,9 +291,22 @@ async function runHttpBenchmark(): Promise<void> {
       framework: true,
     });
 
-    console.log("\nRunning Forge JSON body benchmark...");
+    console.log(
+      "\nRunning Forge JSON body benchmark (without validation vs with Zod validation)...",
+    );
 
-    const forgeBodyResults = await runPostBenchmarkForUrl("Forge JSON Body", forgeUrl, body);
+    const forgeBodyResults = await runPostBenchmarkForUrl(
+      "Forge JSON Body (No Val)",
+      forgeUrl,
+      body,
+    );
+
+    const forgeZodUrl = `http://127.0.0.1:${forgeAddress.port}/validated-json`;
+    const forgeZodResults = await runPostBenchmarkForUrl(
+      "Forge JSON Body (Zod Val)",
+      forgeZodUrl,
+      body,
+    );
 
     console.table([
       {
@@ -291,6 +318,15 @@ async function runHttpBenchmark(): Promise<void> {
         "p99 (ms)": forgeBodyResults.p99Ms.toFixed(3),
         Errors: forgeBodyResults.errorCount,
       },
+      {
+        Benchmark: forgeZodResults.name,
+        "Req/Sec": Math.round(forgeZodResults.requestsPerSec),
+        "Avg Latency (ms)": forgeZodResults.avgLatencyMs.toFixed(3),
+        "p50 (ms)": forgeZodResults.p50Ms.toFixed(3),
+        "p95 (ms)": forgeZodResults.p95Ms.toFixed(3),
+        "p99 (ms)": forgeZodResults.p99Ms.toFixed(3),
+        Errors: forgeZodResults.errorCount,
+      },
     ]);
   } finally {
     await forgeApp.close();
@@ -301,12 +337,12 @@ async function runHttpBenchmark(): Promise<void> {
 async function main() {
   // 1. HTTP Server Baseline Benchmark (Forge vs Express GET & POST JSON Body)
   await runHttpBenchmark();
-  // 2. Body Parser / Multipart Benchmark
-  await runBodyParserBenchmark();
-  // 3. Isolated Router Benchmark (Static & Dynamic Radix Trie)
-  await runRouterBenchmark();
-  // 4. Middleware Benchmark (Median of 3 runs)
-  await runMiddlewareBenchmark();
+  // // 2. Body Parser / Multipart Benchmark
+  // await runBodyParserBenchmark();
+  // // 3. Isolated Router Benchmark (Static & Dynamic Radix Trie)
+  // await runRouterBenchmark();
+  // // 4. Middleware Benchmark (Median of 3 runs)
+  // await runMiddlewareBenchmark();
 }
 
 void main();

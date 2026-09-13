@@ -1,0 +1,27 @@
+{
+  "name": "@forge/zod",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Zod schema adapter for Forge",
+  "type": "module",
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "dependencies": {
+    "zod": "^3.24.2"
+  },
+  "peerDependencies": {
+    "@forge/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@forge/core": "workspace:*",
+    "@types/node": "22.12.0",
+    "typescript": "^5.0.0"
+  }
+}

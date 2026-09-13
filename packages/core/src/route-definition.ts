@@ -90,6 +90,7 @@ export function isRouteDefinition(value: unknown): value is RouteDefinition {
 import type { Request } from "./request.js";
 import {
   isForgeSchema,
+  executeSchemaValidation,
   ForgeValidationError,
   type ValidationIssue,
   type ValidationSource,
@@ -118,7 +119,7 @@ export async function executeRouteValidation(
 
   // 1. params
   if (validate.params && isForgeSchema(validate.params)) {
-    const result = await validate.params.validate(request.params);
+    const result = await executeSchemaValidation(validate.params, request.params);
     if (!result.success) {
       throw new ForgeValidationError(formatValidationIssues("params", result.error.issues));
     }
@@ -127,7 +128,7 @@ export async function executeRouteValidation(
 
   // 2. query
   if (validate.query && isForgeSchema(validate.query)) {
-    const result = await validate.query.validate(request.query);
+    const result = await executeSchemaValidation(validate.query, request.query);
     if (!result.success) {
       throw new ForgeValidationError(formatValidationIssues("query", result.error.issues));
     }
@@ -136,7 +137,7 @@ export async function executeRouteValidation(
 
   // 3. headers
   if (validate.headers && isForgeSchema(validate.headers)) {
-    const result = await validate.headers.validate(request.headers);
+    const result = await executeSchemaValidation(validate.headers, request.headers);
     if (!result.success) {
       throw new ForgeValidationError(formatValidationIssues("headers", result.error.issues));
     }
@@ -146,7 +147,7 @@ export async function executeRouteValidation(
   // 4. body
   if (validate.body && isForgeSchema(validate.body)) {
     const rawBody = await request.body;
-    const result = await validate.body.validate(rawBody);
+    const result = await executeSchemaValidation(validate.body, rawBody);
     if (!result.success) {
       throw new ForgeValidationError(formatValidationIssues("body", result.error.issues));
     }

@@ -68,6 +68,7 @@ export {
 export {
   createSchema,
   isForgeSchema,
+  executeSchemaValidation,
   ForgeValidationError,
   type ForgeSchema,
   type SchemaResult,
