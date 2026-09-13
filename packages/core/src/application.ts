@@ -4,6 +4,7 @@ import { Request } from "./request.js";
 import { Response } from "./response.js";
 
 import { Router } from "./router.js";
+import { resolveConfig, type ForgeConfigInput, type ResolvedForgeConfig } from "./config.js";
 
 export type ApplicationState = "created" | "starting" | "running" | "stopping" | "stopped";
 
@@ -186,6 +187,7 @@ function extractPrefixParams(
 }
 
 export class Application {
+  private readonly configState: ResolvedForgeConfig;
   private readonly server: Server;
   private readonly settings = new Map<string, unknown>();
   private readonly router = new Router();
@@ -195,13 +197,18 @@ export class Application {
   private startPromise?: Promise<void>;
   private stopPromise?: Promise<void>;
 
-  constructor() {
+  constructor(config?: ResolvedForgeConfig | ForgeConfigInput) {
+    this.configState = resolveConfig(config);
     this.server = createServer((request: IncomingMessage, response: ServerResponse) => {
       const req = new Request(request);
       const res = new Response(response);
 
       void this.handleRequest(req, res);
     });
+  }
+
+  public get config(): ResolvedForgeConfig {
+    return this.configState;
   }
 
   use(...handlers: Middleware[]): this;
@@ -679,9 +686,26 @@ export class Application {
     return transitions[this.state].includes(nextState);
   }
 
-  listen(port: number): Server {
+  listen(port?: number, host?: string, callback?: () => void): Server;
+  listen(port?: number, callback?: () => void): Server;
+  listen(port?: number, hostOrCallback?: string | (() => void), callback?: () => void): Server {
     if (this.state !== "created") {
       throw new Error(`Cannot listen when application state is "${this.state}"`);
+    }
+
+    const targetPort = port ?? this.configState.server.port;
+    let targetHost: string | undefined;
+    let listener: (() => void) | undefined;
+
+    if (typeof hostOrCallback === "function") {
+      listener = hostOrCallback;
+      targetHost = undefined;
+    } else if (typeof hostOrCallback === "string") {
+      targetHost = hostOrCallback;
+      listener = callback;
+    } else {
+      targetHost = port === undefined ? this.configState.server.host : undefined;
+      listener = callback;
     }
 
     this.transitionTo("starting");
@@ -690,9 +714,18 @@ export class Application {
       this.transitionTo("stopped");
     });
 
-    this.server.listen(port, () => {
+    const onListening = () => {
       this.transitionTo("running");
-    });
+      if (listener) {
+        listener();
+      }
+    };
+
+    if (targetHost !== undefined) {
+      this.server.listen(targetPort, targetHost, onListening);
+    } else {
+      this.server.listen(targetPort, onListening);
+    }
 
     return this.server;
   }
@@ -729,6 +762,6 @@ export class Application {
   }
 }
 
-export function createApp(): Application {
-  return new Application();
+export function createApp(config?: ResolvedForgeConfig | ForgeConfigInput): Application {
+  return new Application(config);
 }
