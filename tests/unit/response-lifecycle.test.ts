@@ -301,4 +301,32 @@ describe("Response Lifecycle & Middleware Short-Circuiting", () => {
     expect(resMock.statusCode).toBe(200);
     expect(setHeaderFn).not.toHaveBeenCalledWith("X-Test", "ShouldNotBeSet");
   });
+
+  it("10. Typed response handler sends exact expected JSON body and status code at runtime", async () => {
+    type UserResponse = { id: string; name: string };
+    const app = createApp();
+
+    app.get<UserResponse>("/users/:id", (req, res) => {
+      res.status(201).json({ id: req.params.id, name: "Samad" });
+    });
+
+    const req = new Request({ method: "GET", url: "/users/42" } as never);
+    let endData = "";
+    const resMock = {
+      statusCode: 200,
+      headersSent: false,
+      setHeader: vi.fn(),
+      getHeader: vi.fn(),
+      end: vi.fn((data) => {
+        endData = data;
+        resMock.headersSent = true;
+      }),
+    };
+    const res = new Response<UserResponse>(resMock as never);
+
+    await (app as unknown as InternalApp).handleRequest(req, res);
+
+    expect(resMock.statusCode).toBe(201);
+    expect(JSON.parse(endData)).toEqual({ id: "42", name: "Samad" });
+  });
 });

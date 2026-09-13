@@ -96,17 +96,18 @@ app.use((req, _res, next) => {
 });
 
 // 5. Typed query parameter tests
-app.get<unknown, { search: string; page?: string }>("/users", (req) => {
+app.get<unknown, unknown, { search: string; page?: string }>("/users", (req) => {
   const search: string = req.query.search;
   const page: string | undefined = req.query.page;
   void search;
   void page;
+
   // @ts-expect-error invalid property access on typed query
   const invalid = req.query.invalid;
   void invalid;
 });
 
-app.get<unknown, { search: string }, "/users/:id">("/users/:id", (req) => {
+app.get<unknown, unknown, { search: string }, "/users/:id">("/users/:id", (req) => {
   const id: string = req.params.id;
   const search: string = req.query.search;
   void id;
@@ -120,7 +121,12 @@ app.get<unknown, { search: string }, "/users/:id">("/users/:id", (req) => {
 });
 
 // 6. RouteContext type tests
-type TestUserCtx = RouteContext<{ id: string }, { search?: string }, { name: string }>;
+type TestUserCtx = RouteContext<
+  { id: string },
+  { search?: string },
+  { name: string },
+  { id: string; name: string }
+>;
 
 export const checkCtxParams: AssertEqual<TestUserCtx["params"], { id: string }> = true;
 export const checkCtxQuery: AssertEqual<TestUserCtx["query"], { search?: string }> = true;
@@ -129,18 +135,26 @@ export const checkCtxReq: AssertEqual<
   TestUserCtx["request"],
   Request<{ id: string }, { search?: string }, { name: string }>
 > = true;
-export const checkCtxRes: AssertEqual<TestUserCtx["response"], Response> = true;
+export const checkCtxRes: AssertEqual<
+  TestUserCtx["response"],
+  Response<{ id: string; name: string }>
+> = true;
 
 // Verify RouteHandler usability with RouteContext
 type HandlerFromCtx = RouteHandler<TestUserCtx>;
-type DirectHandler = RouteHandler<{ id: string }, { search?: string }, { name: string }>;
+type DirectHandler = RouteHandler<
+  { id: string },
+  { search?: string },
+  { name: string },
+  { id: string; name: string }
+>;
 
 export const checkRouteHandlerFromCtx: AssertEqual<HandlerFromCtx, DirectHandler> = true;
 
 // 7. Typed body tests
 type UserPayload = { name: string; age?: number };
 
-app.post<UserPayload>("/users", async (req) => {
+app.post<unknown, UserPayload>("/users", async (req) => {
   const body = await req.body;
   const name: string = body.name;
   const age: number | undefined = body.age;
@@ -151,7 +165,7 @@ app.post<UserPayload>("/users", async (req) => {
   void invalid;
 });
 
-app.post<UserPayload, { search?: string }, "/users/:id">("/users/:id", async (req) => {
+app.post<unknown, UserPayload, { search?: string }, "/users/:id">("/users/:id", async (req) => {
   const id: string = req.params.id;
   const search: string | undefined = req.query.search;
   const body = await req.body;
@@ -159,4 +173,30 @@ app.post<UserPayload, { search?: string }, "/users/:id">("/users/:id", async (re
   void id;
   void search;
   void name;
+});
+
+// 8. Typed response tests
+type UserResponse = { id: string; name: string };
+
+app.get<UserResponse>("/users/:id", async (req, res) => {
+  // Valid res.json
+  res.json({ id: req.params.id, name: "Samad" });
+
+  // Valid status chainability
+  res.status(200).json({ id: req.params.id, name: "Samad" });
+
+  // @ts-expect-error invalid property type on res.json
+  res.json({ id: req.params.id, name: 123 });
+
+  // @ts-expect-error missing required field on res.json
+  res.json({ id: req.params.id });
+
+  // @ts-expect-error invalid property type in chained call
+  res.status(200).json({ id: 123, name: "Samad" });
+});
+
+// Untyped response usage allows any json payload
+app.get("/untyped-users/:id", (req, res) => {
+  res.json({ id: req.params.id, name: "Samad", extra: true });
+  res.status(200).json("text");
 });

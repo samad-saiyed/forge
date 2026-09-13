@@ -1,6 +1,6 @@
 import type { ServerResponse } from "node:http";
 
-export class Response {
+export class Response<ResBody = unknown> {
   private isEnded = false;
 
   constructor(public readonly raw: ServerResponse) {}
@@ -46,7 +46,7 @@ export class Response {
     return this.set(field, value);
   }
 
-  json(body: unknown): this {
+  json(body: ResBody): this {
     if (this.isEnded || this.raw.headersSent) {
       throw new Error("Cannot send response after headers are sent or response is ended");
     }
@@ -83,7 +83,7 @@ export class Response {
     }
 
     if (typeof body === "object" || typeof body === "number" || typeof body === "boolean") {
-      return this.json(body);
+      return this.json(body as ResBody);
     }
 
     return this.end();
