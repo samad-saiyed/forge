@@ -1,10 +1,18 @@
 import type { IncomingMessage, Server, ServerResponse } from "node:http";
 import { createServer } from "node:http";
+import * as path from "node:path";
 import { Request } from "./request.js";
 import { Response } from "./response.js";
 
 import { Router } from "./router.js";
 import { resolveConfig, type ForgeConfigInput, type ResolvedForgeConfig } from "./config.js";
+import { discoverRoutes } from "./file-router.js";
+import type { FileRouteHandler, RouteContext } from "./context.js";
+
+export interface ApplicationOptions {
+  appDir?: string;
+  config?: ResolvedForgeConfig | ForgeConfigInput;
+}
 
 export type ApplicationState = "created" | "starting" | "running" | "stopping" | "stopped";
 
@@ -59,18 +67,7 @@ export type AnyMiddleware =
   | Middleware<Record<string, string>, Record<string, string | string[]>, unknown, unknown>
   | ErrorMiddleware<Record<string, string>, Record<string, string | string[]>, unknown, unknown>;
 
-export interface RouteContext<
-  Params = Record<string, string>,
-  Query = Record<string, string | string[]>,
-  Body = unknown,
-  ResBody = unknown,
-> {
-  params: Params;
-  query: Query;
-  body: Promise<Body>;
-  request: Request<Params, Query, Body>;
-  response: Response<ResBody>;
-}
+export { type RouteContext };
 
 export type RouteHandler<
   Params = Record<string, string>,
@@ -192,13 +189,28 @@ export class Application {
   private readonly settings = new Map<string, unknown>();
   private readonly router = new Router();
   private readonly middlewares: MiddlewareEntry[] = [];
+  private readonly appDir: string;
   private registrationCounter = 0;
   private state: ApplicationState = "created";
   private startPromise?: Promise<void>;
   private stopPromise?: Promise<void>;
 
-  constructor(config?: ResolvedForgeConfig | ForgeConfigInput) {
-    this.configState = resolveConfig(config);
+  constructor(options?: ApplicationOptions | ResolvedForgeConfig | ForgeConfigInput) {
+    let rawConfig: ResolvedForgeConfig | ForgeConfigInput | undefined = undefined;
+    let rawAppDir: string | undefined = undefined;
+
+    if (options !== null && typeof options === "object") {
+      if ("appDir" in options || "config" in options) {
+        const opts = options as ApplicationOptions;
+        rawAppDir = opts.appDir;
+        rawConfig = opts.config;
+      } else {
+        rawConfig = options as ResolvedForgeConfig | ForgeConfigInput;
+      }
+    }
+
+    this.appDir = rawAppDir ? path.resolve(rawAppDir) : path.resolve(process.cwd(), "src/app");
+    this.configState = resolveConfig(rawConfig);
     this.server = createServer((request: IncomingMessage, response: ServerResponse) => {
       const req = new Request(request);
       const res = new Response(response);
@@ -303,12 +315,100 @@ export class Application {
     this.transitionTo("starting");
 
     try {
+      await this.loadFilesystemRoutes();
       await this.onStart();
       this.transitionTo("running");
     } catch (error) {
       this.transitionTo("stopped");
       throw error;
     }
+  }
+
+  private async loadFilesystemRoutes(): Promise<void> {
+    const routes = await discoverRoutes({ root: this.appDir });
+    for (const route of routes) {
+      const rawHandler = route.handler;
+      const adaptedHandler: RouteHandler = (req, res, next) => {
+        if (rawHandler.length <= 1) {
+          return (rawHandler as FileRouteHandler)({
+            app: this,
+            request: req,
+            response: res,
+          });
+        }
+        return (rawHandler as RouteHandler)(req, res, next);
+      };
+
+      this.router.add(
+        route.method,
+        route.path,
+        adaptedHandler,
+        undefined,
+        undefined,
+        route.filePath,
+      );
+    }
+  }
+
+  listen(port?: number, host?: string, callback?: () => void): Server;
+  listen(port?: number, callback?: () => void): Server;
+  listen(port?: number, hostOrCallback?: string | (() => void), callback?: () => void): Server {
+    if (this.state !== "created") {
+      throw new Error(`Cannot listen when application state is "${this.state}"`);
+    }
+
+    const targetPort = port ?? this.configState.server.port;
+    let targetHost: string | undefined;
+    let listener: (() => void) | undefined;
+
+    if (typeof hostOrCallback === "function") {
+      listener = hostOrCallback;
+      targetHost = undefined;
+    } else if (typeof hostOrCallback === "string") {
+      targetHost = hostOrCallback;
+      listener = callback;
+    } else {
+      targetHost = port === undefined ? this.configState.server.host : undefined;
+      listener = callback;
+    }
+
+    this.transitionTo("starting");
+
+    this.server.once("error", () => {
+      if (this.state === "starting" || this.state === "running") {
+        if (this.state === "running") {
+          this.transitionTo("stopping");
+        }
+        this.transitionTo("stopped");
+      }
+    });
+
+    const onListening = () => {
+      this.transitionTo("running");
+      if (listener) {
+        listener();
+      }
+    };
+
+    void (async () => {
+      try {
+        await this.loadFilesystemRoutes();
+        await this.onStart();
+
+        if (targetHost !== undefined) {
+          this.server.listen(targetPort, targetHost, onListening);
+        } else {
+          this.server.listen(targetPort, onListening);
+        }
+      } catch (err) {
+        if (this.state === "starting") {
+          this.transitionTo("stopped");
+        }
+        this.server.emit("error", err);
+      }
+    })();
+
+    return this.server;
   }
 
   async stop(): Promise<void> {
@@ -494,7 +594,7 @@ export class Application {
     return this.addRoute("HEAD", path, handlers);
   }
 
-  private async handleRequest(request: Request, response: Response): Promise<void> {
+  protected async handleRequest(request: Request, response: Response): Promise<void> {
     const method = (request.raw.method ?? "GET").toUpperCase();
     const rawUrl = request.raw.url ?? "/";
     const pathname = new URL(rawUrl, "http://localhost").pathname;
@@ -686,50 +786,6 @@ export class Application {
     return transitions[this.state].includes(nextState);
   }
 
-  listen(port?: number, host?: string, callback?: () => void): Server;
-  listen(port?: number, callback?: () => void): Server;
-  listen(port?: number, hostOrCallback?: string | (() => void), callback?: () => void): Server {
-    if (this.state !== "created") {
-      throw new Error(`Cannot listen when application state is "${this.state}"`);
-    }
-
-    const targetPort = port ?? this.configState.server.port;
-    let targetHost: string | undefined;
-    let listener: (() => void) | undefined;
-
-    if (typeof hostOrCallback === "function") {
-      listener = hostOrCallback;
-      targetHost = undefined;
-    } else if (typeof hostOrCallback === "string") {
-      targetHost = hostOrCallback;
-      listener = callback;
-    } else {
-      targetHost = port === undefined ? this.configState.server.host : undefined;
-      listener = callback;
-    }
-
-    this.transitionTo("starting");
-
-    this.server.once("error", () => {
-      this.transitionTo("stopped");
-    });
-
-    const onListening = () => {
-      this.transitionTo("running");
-      if (listener) {
-        listener();
-      }
-    };
-
-    if (targetHost !== undefined) {
-      this.server.listen(targetPort, targetHost, onListening);
-    } else {
-      this.server.listen(targetPort, onListening);
-    }
-
-    return this.server;
-  }
-
   close(): Promise<void> {
     if (this.state === "stopped") {
       return Promise.resolve();
@@ -762,6 +818,8 @@ export class Application {
   }
 }
 
-export function createApp(config?: ResolvedForgeConfig | ForgeConfigInput): Application {
-  return new Application(config);
+export function createApp(
+  options?: ApplicationOptions | ResolvedForgeConfig | ForgeConfigInput,
+): Application {
+  return new Application(options);
 }

@@ -1,13 +1,13 @@
 export {
   Application,
   createApp,
+  type ApplicationOptions,
   type Middleware,
   type ErrorMiddleware,
   type RouteHandler,
   type RequestHandler,
   type NextFunction,
   type ParseRouteParams,
-  type RouteContext,
 } from "./application.js";
 export { Request } from "./request.js";
 export { Response } from "./response.js";
@@ -34,3 +34,5 @@ export {
   type ResolvedDevelopmentConfig,
   type ResolvedForgeConfig,
 } from "./config.js";
+export { discoverRoutes, type FileRoute, type FileRouterOptions } from "./file-router.js";
+export { type ApplicationContext, type RouteContext, type FileRouteHandler } from "./context.js";

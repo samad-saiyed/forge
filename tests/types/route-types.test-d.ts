@@ -1,4 +1,5 @@
 import {
+  Application,
   createApp,
   Request,
   Response,
@@ -128,9 +129,6 @@ type TestUserCtx = RouteContext<
   { id: string; name: string }
 >;
 
-export const checkCtxParams: AssertEqual<TestUserCtx["params"], { id: string }> = true;
-export const checkCtxQuery: AssertEqual<TestUserCtx["query"], { search?: string }> = true;
-export const checkCtxBody: AssertEqual<TestUserCtx["body"], Promise<{ name: string }>> = true;
 export const checkCtxReq: AssertEqual<
   TestUserCtx["request"],
   Request<{ id: string }, { search?: string }, { name: string }>
@@ -139,6 +137,7 @@ export const checkCtxRes: AssertEqual<
   TestUserCtx["response"],
   Response<{ id: string; name: string }>
 > = true;
+export const checkCtxApp: AssertEqual<TestUserCtx["app"], Application> = true;
 
 // Verify RouteHandler usability with RouteContext
 type HandlerFromCtx = RouteHandler<TestUserCtx>;
@@ -200,3 +199,59 @@ app.get("/untyped-users/:id", (req, res) => {
   res.json({ id: req.params.id, name: "Samad", extra: true });
   res.status(200).json("text");
 });
+
+// 9. FileRoute type compatibility test
+import { type FileRoute, discoverRoutes } from "../../packages/core/src/index.js";
+
+const sampleFileRoute: FileRoute = {
+  method: "GET",
+  path: "/users/:id",
+  handler: (req, res, next) => {
+    void req;
+    void res;
+    void next();
+  },
+  filePath: "/src/app/users/[id]/route.ts",
+};
+
+export const checkFileRouteHandler: AssertEqual<
+  typeof sampleFileRoute.handler,
+  RouteHandler | FileRouteHandler
+> = true;
+void sampleFileRoute;
+void discoverRoutes;
+
+// 10. RouteContext and FileRouteHandler type tests
+import {
+  type ApplicationContext,
+  type FileRouteHandler,
+  type RouteContext as AppRouteContext,
+} from "../../packages/core/src/index.js";
+
+const sampleFileHandler: FileRouteHandler<{ id: string }> = async ({ app, request, response }) => {
+  void app;
+  const id: string = request.params.id;
+  void id;
+  // @ts-expect-error invalid property access on params
+  const invalid = request.params.invalid;
+  void invalid;
+  response.status(200);
+};
+
+export const checkAppContext: AssertEqual<
+  AppRouteContext<{ id: string }>,
+  {
+    app: Application;
+    request: Request<{ id: string }>;
+    response: Response<unknown>;
+  }
+> = true;
+
+export const checkApplicationContext: AssertEqual<
+  ApplicationContext,
+  {
+    app: Application;
+  }
+> = true;
+
+void sampleFileHandler;

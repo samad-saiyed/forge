@@ -230,6 +230,7 @@ interface RouteEntry {
 export class Router {
   private readonly staticRoutes = new Map<string, Map<string, RouteEntry>>();
   private readonly dynamicTrees = new Map<string, DynamicNode>();
+  private readonly registeredRoutes = new Map<string, string>();
 
   add(
     method: string,
@@ -237,6 +238,7 @@ export class Router {
     handler: RouteHandler,
     middlewares?: Middleware[],
     order?: number,
+    source?: string,
   ): void {
     if (!method.trim()) {
       throw new Error("Route method cannot be empty");
@@ -252,6 +254,18 @@ export class Router {
 
     const uppercaseMethod = method.toUpperCase();
     const normalizedPath = normalizePath(path);
+    const routeKey = `${uppercaseMethod} ${normalizedPath}`;
+
+    const existingSource = this.registeredRoutes.get(routeKey);
+    if (existingSource !== undefined) {
+      const currentSource = source ?? "programmatic";
+      throw new Error(
+        `Duplicate route registration: ${uppercaseMethod} ${normalizedPath} (already registered from ${existingSource}, attempted from ${currentSource})`,
+      );
+    }
+
+    this.registeredRoutes.set(routeKey, source ?? "programmatic");
+
     const segments = parsePathSegments(path);
 
     const isStatic = segments.every((seg) => seg.type === "static");

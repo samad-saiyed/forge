@@ -270,15 +270,16 @@ describe("Router", () => {
     );
   });
 
-  it("uses the most recently registered handler for duplicate routes", () => {
+  it("rejects duplicate route registration with a clear error", () => {
     const router = new Router();
     const firstHandler = () => {};
     const secondHandler = () => {};
 
     router.add("GET", "/users", firstHandler);
-    router.add("GET", "/users", secondHandler);
 
-    expect(router.find("GET", "/users")?.handler).toBe(secondHandler);
+    expect(() => router.add("GET", "/users", secondHandler)).toThrow(
+      "Duplicate route registration: GET /users",
+    );
   });
 
   it("does not match when a parameter route has extra segments", () => {
