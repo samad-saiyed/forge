@@ -1,3 +1,4 @@
+import { handleBuildCommand, type BuildCommandOptions } from "./commands/build.js";
 import { handleDevCommand, type DevCommandOptions } from "./commands/dev.js";
 import { handleNewCommand, type NewCommandOptions } from "./commands/new.js";
 import { getHelpText } from "./help.js";
@@ -8,7 +9,8 @@ export interface BaseCliOptions {
   stderr?: (msg: string) => void;
 }
 
-export interface RunCliOptions extends BaseCliOptions, NewCommandOptions, DevCommandOptions {}
+export interface RunCliOptions
+  extends BaseCliOptions, NewCommandOptions, DevCommandOptions, BuildCommandOptions {}
 
 export interface CliResult {
   exitCode: number;
@@ -45,6 +47,10 @@ export async function runCli(args: string[] = [], options: RunCliOptions = {}): 
 
   if (firstArg === "dev") {
     return handleDevCommand(args.slice(1), options);
+  }
+
+  if (firstArg === "build") {
+    return handleBuildCommand(args.slice(1), options);
   }
 
   if (firstArg === "new") {

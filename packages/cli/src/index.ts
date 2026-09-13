@@ -6,6 +6,11 @@ import {
   type ResolvedForgeConfig,
 } from "@forge/core";
 
+export {
+  handleBuildCommand,
+  type BuildCommandOptions,
+  type BuildCommandResult,
+} from "./commands/build.js";
 export { handleDevCommand, type DevCommandOptions, type DevCommandResult } from "./commands/dev.js";
 export { handleNewCommand, type NewCommandOptions } from "./commands/new.js";
 export { runCli, type BaseCliOptions, type CliResult, type RunCliOptions } from "./dispatcher.js";

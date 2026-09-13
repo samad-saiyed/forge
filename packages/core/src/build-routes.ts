@@ -36,7 +36,13 @@ export async function discoverBuildRouteEntries(
     let importFilePath = discovered.filePath;
     if (options.stagingDir) {
       const relBuildPath = mapSourceToBuildPath(relSourcePath, language);
-      const stagingFilePath = join(resolve(options.stagingDir), relBuildPath);
+      let stagingFilePath = join(resolve(options.stagingDir), relBuildPath);
+      if (
+        !existsSync(stagingFilePath) &&
+        existsSync(join(resolve(options.stagingDir), "src", relBuildPath))
+      ) {
+        stagingFilePath = join(resolve(options.stagingDir), "src", relBuildPath);
+      }
       if (existsSync(stagingFilePath)) {
         importFilePath = stagingFilePath;
       }

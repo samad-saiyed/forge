@@ -1,3 +1,4 @@
+import { existsSync } from "node:fs";
 import * as fs from "node:fs/promises";
 import { isAbsolute, join, resolve } from "node:path";
 import {
@@ -14,6 +15,7 @@ export interface GenerateManifestOptions {
   language: "typescript" | "javascript";
   configPathRelative: string;
   routes: BuildRouteEntry[];
+  appDirRelative?: string;
   forgeVersion?: string;
 }
 
@@ -56,7 +58,8 @@ export async function generateBuildManifest(
       builtAt: new Date().toISOString(),
       language: options.language,
       configPath: options.configPathRelative,
-      appDir: "app",
+      appDir:
+        options.appDirRelative ?? (existsSync(join(stagingDir, "src", "app")) ? "src/app" : "app"),
     },
     routes: sortedRoutes,
   };

@@ -107,3 +107,12 @@ export {
   ManifestGenerationError,
   type GenerateManifestOptions,
 } from "./build-manifest.js";
+
+export {
+  BuildOrchestrator,
+  ArtifactValidationError,
+  buildProject,
+  validateStagingArtifact,
+  type BuildOptions,
+  type BuildResult,
+} from "./build-orchestrator.js";
