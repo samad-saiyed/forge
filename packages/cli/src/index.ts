@@ -6,6 +6,21 @@ import {
   type ResolvedForgeConfig,
 } from "@forge/core";
 
+export { handleNewCommand, type NewCommandOptions } from "./commands/new.js";
+export { runCli, type BaseCliOptions, type CliResult, type RunCliOptions } from "./dispatcher.js";
+export { getHelpText } from "./help.js";
+export { initializeGitRepo, type GitInitResult } from "./project/git.js";
+export {
+  type PackageManager,
+  type ProjectCreationOptions,
+  type ProjectLanguage,
+} from "./project/options.js";
+export { installDependencies, type InstallResult } from "./project/package-manager.js";
+export { scaffoldProject } from "./project/scaffolder.js";
+export { validateProjectName, type ValidationResult } from "./project/validation.js";
+export { CancelledError, runWizard, type WizardOptions } from "./project/wizard.js";
+export { getVersion } from "./version.js";
+
 export interface CliOptions {
   projectRoot?: string;
   mode?: "development" | "production";
