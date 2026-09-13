@@ -11,6 +11,11 @@ import type { RouteContext } from "./context.js";
 import { scanRouteFiles } from "./route-scanner.js";
 import { loadRouteModules } from "./route-loader.js";
 import { registerLoadedRoutes } from "./route-registrar.js";
+import {
+  executeRouteValidation,
+  isRouteDefinition,
+  type RouteDefinition,
+} from "./route-definition.js";
 
 export interface ApplicationOptions {
   appDir?: string;
@@ -53,7 +58,7 @@ export type Middleware<
   request: Request<Params, Query, Body>,
   response: Response<ResBody>,
   next: NextFunction,
-) => void | Promise<void>;
+) => void | Promise<unknown>;
 
 export type ErrorMiddleware<
   Params = Record<string, string>,
@@ -65,7 +70,7 @@ export type ErrorMiddleware<
   request: Request<Params, Query, Body>,
   response: Response<ResBody>,
   next: NextFunction,
-) => void | Promise<void>;
+) => void | Promise<unknown>;
 
 export type AnyMiddleware =
   | Middleware<Record<string, string>, Record<string, string | string[]>, unknown, unknown>
@@ -286,20 +291,34 @@ export class Application {
   private addRoute(
     method: string,
     path: string,
-    handlers: (RouteHandler | RouteHandler[])[],
+    handlers: (RouteHandler | RouteDefinition | (RouteHandler | RouteDefinition[])[])[],
   ): this {
-    const flat = handlers.flat(Infinity) as RouteHandler[];
+    const flat = handlers.flat(Infinity) as (RouteHandler | RouteDefinition)[];
     if (flat.length === 0) {
       throw new Error("Route requires at least one handler function");
     }
 
-    const routeHandler = flat[flat.length - 1];
+    const rawRoute = flat[flat.length - 1];
     const routeMiddlewares = flat.slice(0, -1) as Middleware[];
+
+    const isDef = isRouteDefinition(rawRoute);
+    const targetHandler = isDef ? rawRoute.handler : rawRoute;
+    const options = isDef ? rawRoute.options : undefined;
+
+    let finalHandler: RouteHandler;
+    if (options?.validate) {
+      finalHandler = async (req, res, next) => {
+        await executeRouteValidation(options, req);
+        return (targetHandler as RouteHandler)(req, res, next);
+      };
+    } else {
+      finalHandler = targetHandler as RouteHandler;
+    }
 
     this.router.add(
       method,
       path,
-      routeHandler,
+      finalHandler,
       routeMiddlewares.length > 0 ? routeMiddlewares : undefined,
       ++this.registrationCounter,
     );
@@ -444,7 +463,12 @@ export class Application {
     Body = unknown,
     Query = Record<string, string | string[]>,
     P extends string = string,
-  >(path: P, ...handlers: RouteHandler<ParseRouteParams<NoInfer<P>>, Query, Body, ResBody>[]): this;
+  >(
+    path: P,
+    ...handlers: (
+      RouteHandler<ParseRouteParams<NoInfer<P>>, Query, Body, ResBody> | RouteDefinition
+    )[]
+  ): this;
   get<
     ResBody = unknown,
     Body = unknown,
@@ -454,11 +478,12 @@ export class Application {
     path: P,
     ...handlers: (
       | RouteHandler<ParseRouteParams<NoInfer<P>>, Query, Body, ResBody>
-      | RouteHandler<ParseRouteParams<NoInfer<P>>, Query, Body, ResBody>[]
+      | RouteDefinition
+      | (RouteHandler<ParseRouteParams<NoInfer<P>>, Query, Body, ResBody> | RouteDefinition)[]
     )[]
   ): this;
-  get(path: string, ...handlers: (RouteHandler | RouteHandler[])[]): this {
-    return this.addRoute("GET", path, handlers);
+  get(path: string, ...handlers: unknown[]): this {
+    return this.addRoute("GET", path, handlers as (RouteHandler | RouteDefinition)[]);
   }
 
   post<
@@ -466,7 +491,12 @@ export class Application {
     Body = unknown,
     Query = Record<string, string | string[]>,
     P extends string = string,
-  >(path: P, ...handlers: RouteHandler<ParseRouteParams<NoInfer<P>>, Query, Body, ResBody>[]): this;
+  >(
+    path: P,
+    ...handlers: (
+      RouteHandler<ParseRouteParams<NoInfer<P>>, Query, Body, ResBody> | RouteDefinition
+    )[]
+  ): this;
   post<
     ResBody = unknown,
     Body = unknown,
@@ -476,11 +506,12 @@ export class Application {
     path: P,
     ...handlers: (
       | RouteHandler<ParseRouteParams<NoInfer<P>>, Query, Body, ResBody>
-      | RouteHandler<ParseRouteParams<NoInfer<P>>, Query, Body, ResBody>[]
+      | RouteDefinition
+      | (RouteHandler<ParseRouteParams<NoInfer<P>>, Query, Body, ResBody> | RouteDefinition)[]
     )[]
   ): this;
-  post(path: string, ...handlers: (RouteHandler | RouteHandler[])[]): this {
-    return this.addRoute("POST", path, handlers);
+  post(path: string, ...handlers: unknown[]): this {
+    return this.addRoute("POST", path, handlers as (RouteHandler | RouteDefinition)[]);
   }
 
   put<
@@ -488,7 +519,12 @@ export class Application {
     Body = unknown,
     Query = Record<string, string | string[]>,
     P extends string = string,
-  >(path: P, ...handlers: RouteHandler<ParseRouteParams<NoInfer<P>>, Query, Body, ResBody>[]): this;
+  >(
+    path: P,
+    ...handlers: (
+      RouteHandler<ParseRouteParams<NoInfer<P>>, Query, Body, ResBody> | RouteDefinition
+    )[]
+  ): this;
   put<
     ResBody = unknown,
     Body = unknown,
@@ -498,11 +534,12 @@ export class Application {
     path: P,
     ...handlers: (
       | RouteHandler<ParseRouteParams<NoInfer<P>>, Query, Body, ResBody>
-      | RouteHandler<ParseRouteParams<NoInfer<P>>, Query, Body, ResBody>[]
+      | RouteDefinition
+      | (RouteHandler<ParseRouteParams<NoInfer<P>>, Query, Body, ResBody> | RouteDefinition)[]
     )[]
   ): this;
-  put(path: string, ...handlers: (RouteHandler | RouteHandler[])[]): this {
-    return this.addRoute("PUT", path, handlers);
+  put(path: string, ...handlers: unknown[]): this {
+    return this.addRoute("PUT", path, handlers as (RouteHandler | RouteDefinition)[]);
   }
 
   patch<
@@ -510,7 +547,12 @@ export class Application {
     Body = unknown,
     Query = Record<string, string | string[]>,
     P extends string = string,
-  >(path: P, ...handlers: RouteHandler<ParseRouteParams<NoInfer<P>>, Query, Body, ResBody>[]): this;
+  >(
+    path: P,
+    ...handlers: (
+      RouteHandler<ParseRouteParams<NoInfer<P>>, Query, Body, ResBody> | RouteDefinition
+    )[]
+  ): this;
   patch<
     ResBody = unknown,
     Body = unknown,
@@ -520,11 +562,12 @@ export class Application {
     path: P,
     ...handlers: (
       | RouteHandler<ParseRouteParams<NoInfer<P>>, Query, Body, ResBody>
-      | RouteHandler<ParseRouteParams<NoInfer<P>>, Query, Body, ResBody>[]
+      | RouteDefinition
+      | (RouteHandler<ParseRouteParams<NoInfer<P>>, Query, Body, ResBody> | RouteDefinition)[]
     )[]
   ): this;
-  patch(path: string, ...handlers: (RouteHandler | RouteHandler[])[]): this {
-    return this.addRoute("PATCH", path, handlers);
+  patch(path: string, ...handlers: unknown[]): this {
+    return this.addRoute("PATCH", path, handlers as (RouteHandler | RouteDefinition)[]);
   }
 
   delete<
@@ -532,7 +575,12 @@ export class Application {
     Body = unknown,
     Query = Record<string, string | string[]>,
     P extends string = string,
-  >(path: P, ...handlers: RouteHandler<ParseRouteParams<NoInfer<P>>, Query, Body, ResBody>[]): this;
+  >(
+    path: P,
+    ...handlers: (
+      RouteHandler<ParseRouteParams<NoInfer<P>>, Query, Body, ResBody> | RouteDefinition
+    )[]
+  ): this;
   delete<
     ResBody = unknown,
     Body = unknown,
@@ -542,11 +590,12 @@ export class Application {
     path: P,
     ...handlers: (
       | RouteHandler<ParseRouteParams<NoInfer<P>>, Query, Body, ResBody>
-      | RouteHandler<ParseRouteParams<NoInfer<P>>, Query, Body, ResBody>[]
+      | RouteDefinition
+      | (RouteHandler<ParseRouteParams<NoInfer<P>>, Query, Body, ResBody> | RouteDefinition)[]
     )[]
   ): this;
-  delete(path: string, ...handlers: (RouteHandler | RouteHandler[])[]): this {
-    return this.addRoute("DELETE", path, handlers);
+  delete(path: string, ...handlers: unknown[]): this {
+    return this.addRoute("DELETE", path, handlers as (RouteHandler | RouteDefinition)[]);
   }
 
   options<
@@ -554,7 +603,12 @@ export class Application {
     Body = unknown,
     Query = Record<string, string | string[]>,
     P extends string = string,
-  >(path: P, ...handlers: RouteHandler<ParseRouteParams<NoInfer<P>>, Query, Body, ResBody>[]): this;
+  >(
+    path: P,
+    ...handlers: (
+      RouteHandler<ParseRouteParams<NoInfer<P>>, Query, Body, ResBody> | RouteDefinition
+    )[]
+  ): this;
   options<
     ResBody = unknown,
     Body = unknown,
@@ -564,11 +618,12 @@ export class Application {
     path: P,
     ...handlers: (
       | RouteHandler<ParseRouteParams<NoInfer<P>>, Query, Body, ResBody>
-      | RouteHandler<ParseRouteParams<NoInfer<P>>, Query, Body, ResBody>[]
+      | RouteDefinition
+      | (RouteHandler<ParseRouteParams<NoInfer<P>>, Query, Body, ResBody> | RouteDefinition)[]
     )[]
   ): this;
-  options(path: string, ...handlers: (RouteHandler | RouteHandler[])[]): this {
-    return this.addRoute("OPTIONS", path, handlers);
+  options(path: string, ...handlers: unknown[]): this {
+    return this.addRoute("OPTIONS", path, handlers as (RouteHandler | RouteDefinition)[]);
   }
 
   head<
@@ -576,7 +631,12 @@ export class Application {
     Body = unknown,
     Query = Record<string, string | string[]>,
     P extends string = string,
-  >(path: P, ...handlers: RouteHandler<ParseRouteParams<NoInfer<P>>, Query, Body, ResBody>[]): this;
+  >(
+    path: P,
+    ...handlers: (
+      RouteHandler<ParseRouteParams<NoInfer<P>>, Query, Body, ResBody> | RouteDefinition
+    )[]
+  ): this;
   head<
     ResBody = unknown,
     Body = unknown,
@@ -586,11 +646,12 @@ export class Application {
     path: P,
     ...handlers: (
       | RouteHandler<ParseRouteParams<NoInfer<P>>, Query, Body, ResBody>
-      | RouteHandler<ParseRouteParams<NoInfer<P>>, Query, Body, ResBody>[]
+      | RouteDefinition
+      | (RouteHandler<ParseRouteParams<NoInfer<P>>, Query, Body, ResBody> | RouteDefinition)[]
     )[]
   ): this;
-  head(path: string, ...handlers: (RouteHandler | RouteHandler[])[]): this {
-    return this.addRoute("HEAD", path, handlers);
+  head(path: string, ...handlers: unknown[]): this {
+    return this.addRoute("HEAD", path, handlers as (RouteHandler | RouteDefinition)[]);
   }
 
   protected async handleRequest(request: Request, response: Response): Promise<void> {

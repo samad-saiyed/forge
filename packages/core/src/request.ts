@@ -34,6 +34,10 @@ export class Request<
     return this.bodyPromise;
   }
 
+  set body(val: unknown) {
+    this.parsedBody = val as Body;
+  }
+
   get method(): string {
     return this.raw.method ?? "GET";
   }
@@ -42,8 +46,14 @@ export class Request<
     return this.raw.url ?? "/";
   }
 
+  private customHeaders?: IncomingHttpHeaders;
+
   get headers(): IncomingHttpHeaders {
-    return this.raw.headers;
+    return this.customHeaders ?? this.raw.headers;
+  }
+
+  set headers(val: IncomingHttpHeaders) {
+    this.customHeaders = val as IncomingHttpHeaders;
   }
 
   get query(): Query {
@@ -69,6 +79,10 @@ export class Request<
       }
     }
     return this.parsedQuery;
+  }
+
+  set query(val: Query) {
+    this.parsedQuery = val;
   }
 
   async readBody(): Promise<Buffer> {

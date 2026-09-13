@@ -130,7 +130,7 @@ describe("Route Loader (loadRouteModule / loadRouteModules)", () => {
     };
 
     await expect(loadRouteModule(discovered)).rejects.toThrow(
-      `Invalid handler for HTTP method "GET" in route module "${routeFile}": expected function, got string`,
+      `Invalid handler for HTTP method "GET" in route module "${routeFile}": expected function or route definition, got string`,
     );
   });
 

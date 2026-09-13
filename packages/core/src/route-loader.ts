@@ -1,12 +1,14 @@
 import { pathToFileURL } from "node:url";
 import type { RouteHandler } from "./application.js";
 import type { FileRouteHandler } from "./context.js";
+
+import { isRouteDefinition, type RouteDefinition } from "./route-definition.js";
 import type { DiscoveredRouteFile } from "./route-scanner.js";
 
 export interface LoadedRouteModule {
   filePath: string;
   routePath: string;
-  handlers: Map<string, RouteHandler | FileRouteHandler>;
+  handlers: Map<string, RouteHandler | FileRouteHandler | RouteDefinition>;
 }
 
 const SUPPORTED_HTTP_METHODS = new Set([
@@ -38,17 +40,18 @@ export async function loadRouteModule(discovered: DiscoveredRouteFile): Promise<
       ? (rawModule as Record<string, unknown>)
       : {};
 
-  const handlers = new Map<string, RouteHandler | FileRouteHandler>();
+  const handlers = new Map<string, RouteHandler | FileRouteHandler | RouteDefinition>();
 
   for (const [exportName, exportValue] of Object.entries(moduleExports)) {
     const upperMethod = exportName.toUpperCase();
     if (SUPPORTED_HTTP_METHODS.has(upperMethod)) {
-      if (typeof exportValue !== "function") {
+      if (typeof exportValue === "function" || isRouteDefinition(exportValue)) {
+        handlers.set(upperMethod, exportValue as RouteHandler | FileRouteHandler | RouteDefinition);
+      } else {
         throw new Error(
-          `Invalid handler for HTTP method "${upperMethod}" in route module "${filePath}": expected function, got ${typeof exportValue}`,
+          `Invalid handler for HTTP method "${upperMethod}" in route module "${filePath}": expected function or route definition, got ${typeof exportValue}`,
         );
       }
-      handlers.set(upperMethod, exportValue as RouteHandler | FileRouteHandler);
     }
   }
 

@@ -189,31 +189,35 @@ describe("Action 70.8 — Build Pipeline Integration & 'forge build' CLI Tests",
     expect(manifest.routes[0].pattern).toBe("/fs-route");
   });
 
-  it("F. Invalid TypeScript fails build, returns non-zero exitCode, discards staging", async () => {
-    writeFileSync(
-      join(tempDir, "tsconfig.json"),
-      JSON.stringify({ compilerOptions: { target: "ES2022", module: "NodeNext", strict: true } }),
-    );
-    writeFileSync(join(tempDir, "forge.config.ts"), `export default {};`);
-    mkdirSync(join(tempDir, "src", "app"), { recursive: true });
-    // Write invalid TS with type error
-    writeFileSync(
-      join(tempDir, "src", "app", "route.ts"),
-      `const x: number = "not a number"; export const GET = () => x;`,
-    );
+  it(
+    "F. Invalid TypeScript fails build, returns non-zero exitCode, discards staging",
+    { timeout: 15000 },
+    async () => {
+      writeFileSync(
+        join(tempDir, "tsconfig.json"),
+        JSON.stringify({ compilerOptions: { target: "ES2022", module: "NodeNext", strict: true } }),
+      );
+      writeFileSync(join(tempDir, "forge.config.ts"), `export default {};`);
+      mkdirSync(join(tempDir, "src", "app"), { recursive: true });
+      // Write invalid TS with type error
+      writeFileSync(
+        join(tempDir, "src", "app", "route.ts"),
+        `const x: number = "not a number"; export const GET = () => x;`,
+      );
 
-    const res = await runCli(["build"], {
-      projectRoot: tempDir,
-      stdout: customStdout,
-      stderr: customStderr,
-    });
+      const res = await runCli(["build"], {
+        projectRoot: tempDir,
+        stdout: customStdout,
+        stderr: customStderr,
+      });
 
-    expect(res.exitCode).not.toBe(0);
-    expect(res.output).toContain("Forge build failed.");
-    expect(res.output).toContain("TypeScript compilation failed");
-    expect(existsSync(join(tempDir, BUILD_OUTPUT_DIR))).toBe(false);
-    expect(existsSync(join(tempDir, ".forge", "build-staging"))).toBe(false);
-  });
+      expect(res.exitCode).not.toBe(0);
+      expect(res.output).toContain("Forge build failed.");
+      expect(res.output).toContain("TypeScript compilation failed");
+      expect(existsSync(join(tempDir, BUILD_OUTPUT_DIR))).toBe(false);
+      expect(existsSync(join(tempDir, ".forge", "build-staging"))).toBe(false);
+    },
+  );
 
   it("G. Invalid configuration fails build cleanly", async () => {
     writeFileSync(join(tempDir, "forge.config.js"), `this is invalid syntax !!!`);

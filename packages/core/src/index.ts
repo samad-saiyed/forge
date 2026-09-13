@@ -52,6 +52,21 @@ export {
   type FilesystemRouteHandler,
   defineRouteHandler,
 } from "./context.js";
+export {
+  defineRoute,
+  isRouteDefinition,
+  type RouteOptions,
+  type RouteDefinition,
+} from "./route-definition.js";
+export {
+  createSchema,
+  isForgeSchema,
+  type ForgeSchema,
+  type SchemaResult,
+  type SchemaValidationError,
+  type SchemaIssue,
+  type InferSchemaOutput,
+} from "./schema.js";
 
 export {
   scanRouteFiles,

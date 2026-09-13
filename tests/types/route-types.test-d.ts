@@ -700,3 +700,21 @@ app.head<Action57Response, unknown, Record<string, string | string[]>, "/action5
     res.json({ id: true, name: "head" });
   },
 );
+
+// 16. defineRoute compatibility with Application HTTP methods
+import { defineRoute } from "../../packages/core/src/index.js";
+
+const definedRouteDef = defineRoute(
+  {
+    validate: {},
+  },
+  (_req, res) => {
+    res.json({ ok: true });
+  },
+);
+
+app.get("/defined-route/:id", definedRouteDef);
+app.post("/defined-route/:id", definedRouteDef);
+app.put("/defined-route/:id", definedRouteDef);
+app.patch("/defined-route/:id", definedRouteDef);
+app.delete("/defined-route/:id", definedRouteDef);

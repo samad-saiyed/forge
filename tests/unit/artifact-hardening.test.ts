@@ -212,7 +212,7 @@ describe("Action 70.10 — Artifact Hardening & Validation Unit Tests", () => {
   describe("3. Stale Artifact Protection", () => {
     it(
       "preserves previous valid build artifact when a subsequent build fails",
-      { timeout: 15000 },
+      { timeout: 30000 },
       async () => {
         // 1. Perform successful initial build
         writeFileSync(

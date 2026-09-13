@@ -26,6 +26,7 @@ const SUPPORTED_HTTP_METHODS = new Set([
 ]);
 
 import { isRouteFile, resolveRoutePath } from "./filesystem-router.js";
+import { isRouteDefinition } from "./route-definition.js";
 
 async function collectRouteFiles(
   rootDir: string,
@@ -87,16 +88,21 @@ export async function discoverRoutes(options: FileRouterOptions): Promise<FileRo
 
     for (const [exportName, exportValue] of Object.entries(moduleExports)) {
       if (SUPPORTED_HTTP_METHODS.has(exportName)) {
-        if (typeof exportValue !== "function") {
+        let handler: FileRouteHandler | RouteHandler;
+        if (isRouteDefinition(exportValue)) {
+          handler = exportValue.handler as FileRouteHandler | RouteHandler;
+        } else if (typeof exportValue === "function") {
+          handler = exportValue as FileRouteHandler | RouteHandler;
+        } else {
           throw new Error(
-            `Invalid route handler for ${exportName} in "${filePath}": expected function, got ${typeof exportValue}`,
+            `Invalid route handler for ${exportName} in "${filePath}": expected function or route definition, got ${typeof exportValue}`,
           );
         }
 
         routes.push({
           method: exportName,
           path: routePath,
-          handler: exportValue as RouteHandler,
+          handler,
           filePath,
         });
       }

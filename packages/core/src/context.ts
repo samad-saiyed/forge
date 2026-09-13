@@ -70,7 +70,7 @@ export type FileRouteHandler<
   Query = Record<string, string | string[]>,
   Body = unknown,
   ResBody = unknown,
-> = (context: RouteContext<Params, Query, Body, ResBody>) => void | Promise<void>;
+> = (context: RouteContext<Params, Query, Body, ResBody>) => void | Promise<unknown>;
 
 import type { ParseFilesystemRouteParams } from "./filesystem-router.js";
 
