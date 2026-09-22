@@ -721,7 +721,7 @@ I recommend we agree on these **before Action 70**:
 | HMR                                | **No**               |
 | Atomic/staged build output         | **Yes**              |
 | Build artifact version metadata    | **Yes**              |
-| `kyuu clean`                      | **Later**            |
+| `kyuu clean`                       | **Later**            |
 
 ### One thing I'd change from the table if we discover a constraint
 

@@ -323,11 +323,7 @@ async function runHttpBenchmark(): Promise<void> {
       "\nRunning Kyuu JSON body benchmark (without validation vs with Zod validation)...",
     );
 
-    const kyuuBodyResults = await runPostBenchmarkForUrl(
-      "Kyuu JSON Body (No Val)",
-      kyuuUrl,
-      body,
-    );
+    const kyuuBodyResults = await runPostBenchmarkForUrl("Kyuu JSON Body (No Val)", kyuuUrl, body);
 
     const kyuuZodUrl = `http://127.0.0.1:${kyuuAddress.port}/validated-json`;
     const kyuuZodResults = await runPostBenchmarkForUrl(

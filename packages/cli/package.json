@@ -16,6 +16,6 @@
     }
   },
   "dependencies": {
-    "@kyuujs/core": "workspace:*"
+    "@kyuujs/core": "0.1.0-alpha.0"
   }
 }

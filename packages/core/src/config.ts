@@ -255,14 +255,7 @@ export function resolveConfig(config?: KyuuConfigInput | ResolvedKyuuConfig): Re
   });
 }
 
-const SUPPORTED_CONFIG_FILES = [
-  "kyuu.config.ts",
-  "kyuu.config.js",
-  "kyuu.config.mjs",
-  "kyuu.config.ts",
-  "kyuu.config.js",
-  "kyuu.config.mjs",
-] as const;
+const SUPPORTED_CONFIG_FILES = ["kyuu.config.ts", "kyuu.config.js", "kyuu.config.mjs"] as const;
 
 export function findConfigFile(cwd: string = process.cwd()): string | null {
   const absoluteDir = resolve(cwd);

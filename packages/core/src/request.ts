@@ -138,4 +138,3 @@ export type KyuuRequest<
   Body = unknown,
   Headers = IncomingHttpHeaders,
 > = Request<Params, Query, Body, Headers>;
-

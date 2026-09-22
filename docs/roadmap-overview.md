@@ -33,11 +33,11 @@ For complete specifications, see [`SPEC.md`](../SPEC.md) and [`ROADMAP.md`](../R
 
 ## Planned Future Phases
 
-| Phase          | Feature Module              | Target Capabilities                                                                  |
-| -------------- | --------------------------- | ------------------------------------------------------------------------------------ |
-| **Phase 3**    | **Middleware System**       | Global, route-level, and error middleware chains (`app.use`)                         |
-| **Phase 4**    | **Type Safety**             | Inferred route parameter typing, typed request body, typed JSON responses            |
-| **Phase 5**    | **Configuration System**    | Central `kyuu.config.ts` configuration loader                                       |
-| **Phase 6**    | **Filesystem Architecture** | Next.js-style file-based routing (`src/app/`) alongside explicit routing             |
+| Phase          | Feature Module              | Target Capabilities                                                              |
+| -------------- | --------------------------- | -------------------------------------------------------------------------------- |
+| **Phase 3**    | **Middleware System**       | Global, route-level, and error middleware chains (`app.use`)                     |
+| **Phase 4**    | **Type Safety**             | Inferred route parameter typing, typed request body, typed JSON responses        |
+| **Phase 5**    | **Configuration System**    | Central `kyuu.config.ts` configuration loader                                    |
+| **Phase 6**    | **Filesystem Architecture** | Next.js-style file-based routing (`src/app/`) alongside explicit routing         |
 | **Phase 7**    | **CLI Tooling**             | Command-line scaffolding (`kyuu new`, `kyuu dev`, `kyuu build`, `kyuu generate`) |
-| **Phase 8-21** | **Integrations & Scaling**  | Database ORMs, Redis, Background Jobs, Docker, Multi-worker cluster scaling          |
+| **Phase 8-21** | **Integrations & Scaling**  | Database ORMs, Redis, Background Jobs, Docker, Multi-worker cluster scaling      |
