@@ -1,9 +1,12 @@
 {
   "name": "@kyuujs/core",
-  "version": "0.1.0-alpha.0",
+  "version": "0.1.0-alpha.1",
   "description": "Core HTTP runtime and framework for Kyuu",
   "type": "module",
   "license": "MIT",
+  "files": [
+    "dist"
+  ],
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
