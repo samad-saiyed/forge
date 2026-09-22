@@ -23,6 +23,7 @@ export interface ApplicationOptions {
   appDir?: string;
   config?: ResolvedKyuuConfig | KyuuConfigInput;
   skipFsRouting?: boolean;
+  logger?: Logger;
 }
 
 export type ApplicationState = "created" | "starting" | "running" | "stopping" | "stopped";
@@ -215,12 +216,19 @@ export class Application {
   constructor(options?: ApplicationOptions | ResolvedKyuuConfig | KyuuConfigInput) {
     let rawConfig: ResolvedKyuuConfig | KyuuConfigInput | undefined = undefined;
     let rawAppDir: string | undefined = undefined;
+    let customLogger: Logger | undefined = undefined;
 
     if (options !== null && typeof options === "object") {
-      if ("appDir" in options || "config" in options || "skipFsRouting" in options) {
+      if (
+        "appDir" in options ||
+        "config" in options ||
+        "skipFsRouting" in options ||
+        "logger" in options
+      ) {
         const opts = options as ApplicationOptions;
         rawAppDir = opts.appDir;
         rawConfig = opts.config;
+        customLogger = opts.logger;
         if (opts.skipFsRouting) {
           this.fsRoutesLoaded = true;
         }
@@ -231,7 +239,7 @@ export class Application {
 
     this.appDir = rawAppDir ? path.resolve(rawAppDir) : path.resolve(process.cwd(), "src/app");
     this.configState = resolveConfig(rawConfig);
-    this.loggerInstance = createLogger(this.configState.logging);
+    this.loggerInstance = customLogger ?? createLogger(this.configState.logging);
     this.server = createServer((request: IncomingMessage, response: ServerResponse) => {
       const req = new Request(request);
       const res = new Response(response);

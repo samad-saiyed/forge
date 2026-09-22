@@ -63,8 +63,8 @@ describe("Kyuu CLI Foundation Unit Tests", () => {
     });
 
     expect(result.exitCode).toBe(0);
-    expect(result.output).toBe("0.1.0-alpha.0");
-    expect(output).toBe("0.1.0-alpha.0");
+    expect(result.output).toBe("0.1.0-alpha.1");
+    expect(output).toBe("0.1.0-alpha.1");
   });
 
   it("'kyuu -v' prints version and exits 0", async () => {
@@ -76,8 +76,8 @@ describe("Kyuu CLI Foundation Unit Tests", () => {
     });
 
     expect(result.exitCode).toBe(0);
-    expect(result.output).toBe("0.1.0-alpha.0");
-    expect(output).toBe("0.1.0-alpha.0");
+    expect(result.output).toBe("0.1.0-alpha.1");
+    expect(output).toBe("0.1.0-alpha.1");
   });
 
   it("handles '--help' flag when combined with other args", async () => {

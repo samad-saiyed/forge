@@ -160,4 +160,39 @@ describe("Action 74 — Logger Core Implementation", () => {
     expect(appEnabled.logger.enabled).toBe(true);
     expect(appEnabled.logger.level).toBe("warn");
   });
+
+  it("creates independent logger instances for separate applications", () => {
+    const app1 = createApp({
+      skipFsRouting: true,
+      config: { logging: { enabled: true, level: "info" } },
+    });
+    const app2 = createApp({
+      skipFsRouting: true,
+      config: { logging: { enabled: true, level: "debug" } },
+    });
+
+    expect(app1.logger).not.toBe(app2.logger);
+    expect(app1.logger.level).toBe("info");
+    expect(app2.logger.level).toBe("debug");
+  });
+
+  it("supports custom logger injection via ApplicationOptions", () => {
+    const transport = new MemoryTransport();
+    const customLogger = createLogger({ enabled: true, level: "info" }, [transport]);
+
+    const app = createApp({
+      skipFsRouting: true,
+      logger: customLogger,
+    });
+
+    expect(app.logger).toBe(customLogger);
+    app.logger.info("Custom logger test message", { key: "val" });
+
+    expect(transport.records).toHaveLength(1);
+    expect(transport.records[0]).toMatchObject({
+      level: "info",
+      message: "Custom logger test message",
+      metadata: { key: "val" },
+    });
+  });
 });
