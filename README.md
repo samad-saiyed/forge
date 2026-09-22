@@ -1,4 +1,4 @@
-# Kyuu
+# KyuuJS
 
 Kyuu is an experimental, TypeScript-first Node.js backend framework designed to provide the simplicity and familiarity of Express.js with a more structured and opinionated application architecture.
 
