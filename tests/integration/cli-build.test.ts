@@ -5,7 +5,7 @@ import { BUILD_OUTPUT_DIR, parseBuildManifest } from "../../packages/core/src/in
 import { handleBuildCommand, runCli } from "../../packages/cli/src/index.js";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-describe("Action 70.8 — Build Pipeline Integration & 'forge build' CLI Tests", () => {
+describe("Action 70.8 — Build Pipeline Integration & 'kyuu build' CLI Tests", () => {
   let tempDir: string;
   let stdoutLogs: string[];
   let stderrLogs: string[];
@@ -16,7 +16,7 @@ describe("Action 70.8 — Build Pipeline Integration & 'forge build' CLI Tests",
   beforeEach(() => {
     tempDir = join(
       tmpdir(),
-      `forge-cli-build-test-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+      `kyuu-cli-build-test-${Date.now()}-${Math.random().toString(36).slice(2)}`,
     );
     mkdirSync(tempDir, { recursive: true });
     stdoutLogs = [];
@@ -29,12 +29,12 @@ describe("Action 70.8 — Build Pipeline Integration & 'forge build' CLI Tests",
     }
   });
 
-  it("A. Basic TypeScript build through CLI 'forge build'", { timeout: 15000 }, async () => {
+  it("A. Basic TypeScript build through CLI 'kyuu build'", { timeout: 15000 }, async () => {
     writeFileSync(
       join(tempDir, "tsconfig.json"),
       JSON.stringify({ compilerOptions: { target: "ES2022", module: "NodeNext" } }),
     );
-    writeFileSync(join(tempDir, "forge.config.ts"), `export default {};`);
+    writeFileSync(join(tempDir, "kyuu.config.ts"), `export default {};`);
     mkdirSync(join(tempDir, "src", "app", "hello"), { recursive: true });
     writeFileSync(
       join(tempDir, "src", "app", "hello", "route.ts"),
@@ -48,7 +48,7 @@ describe("Action 70.8 — Build Pipeline Integration & 'forge build' CLI Tests",
     });
 
     expect(res.exitCode).toBe(0);
-    expect(res.output).toContain("Forge build complete.");
+    expect(res.output).toContain("Kyuu build complete.");
     expect(res.output).toContain("Language:     typescript");
     expect(res.output).toContain("Routes:       1");
 
@@ -57,7 +57,7 @@ describe("Action 70.8 — Build Pipeline Integration & 'forge build' CLI Tests",
 
     const manifest = parseBuildManifest(readFileSync(manifestPath, "utf8"));
     expect(manifest.metadata.language).toBe("typescript");
-    expect(manifest.metadata.configPath).toBe("forge.config.js");
+    expect(manifest.metadata.configPath).toBe("kyuu.config.js");
     expect(manifest.routes[0].pattern).toBe("/hello");
     expect(manifest.routes[0].modulePath).toBe("app/hello/route.js");
     expect(existsSync(join(tempDir, BUILD_OUTPUT_DIR, "src", manifest.routes[0].modulePath))).toBe(
@@ -65,12 +65,12 @@ describe("Action 70.8 — Build Pipeline Integration & 'forge build' CLI Tests",
     );
   });
 
-  it("B. JavaScript build through CLI 'forge build'", async () => {
+  it("B. JavaScript build through CLI 'kyuu build'", async () => {
     writeFileSync(
       join(tempDir, "package.json"),
       JSON.stringify({ name: "js-app", type: "module" }),
     );
-    writeFileSync(join(tempDir, "forge.config.js"), `export default {};`);
+    writeFileSync(join(tempDir, "kyuu.config.js"), `export default {};`);
     mkdirSync(join(tempDir, "src", "app", "js-route"), { recursive: true });
     writeFileSync(
       join(tempDir, "src", "app", "js-route", "route.js"),
@@ -84,7 +84,7 @@ describe("Action 70.8 — Build Pipeline Integration & 'forge build' CLI Tests",
     });
 
     expect(res.exitCode).toBe(0);
-    expect(res.output).toContain("Forge build complete.");
+    expect(res.output).toContain("Kyuu build complete.");
     expect(res.output).toContain("Language:     javascript");
 
     const manifestPath = join(tempDir, BUILD_OUTPUT_DIR, "manifest.json");
@@ -92,13 +92,13 @@ describe("Action 70.8 — Build Pipeline Integration & 'forge build' CLI Tests",
 
     const manifest = parseBuildManifest(readFileSync(manifestPath, "utf8"));
     expect(manifest.metadata.language).toBe("javascript");
-    expect(manifest.metadata.configPath).toBe("forge.config.js");
+    expect(manifest.metadata.configPath).toBe("kyuu.config.js");
     expect(manifest.routes[0].pattern).toBe("/js-route");
     expect(manifest.routes[0].modulePath).toBe("app/js-route/route.js");
   });
 
   it("C. Filesystem routes: params and wildcards", async () => {
-    writeFileSync(join(tempDir, "forge.config.js"), `export default {};`);
+    writeFileSync(join(tempDir, "kyuu.config.js"), `export default {};`);
     mkdirSync(join(tempDir, "src", "app", "users", "[id]"), { recursive: true });
     mkdirSync(join(tempDir, "src", "app", "files", "[...filepath]"), { recursive: true });
 
@@ -134,7 +134,7 @@ describe("Action 70.8 — Build Pipeline Integration & 'forge build' CLI Tests",
   });
 
   it("D. Multiple HTTP methods in a single route file", async () => {
-    writeFileSync(join(tempDir, "forge.config.js"), `export default {};`);
+    writeFileSync(join(tempDir, "kyuu.config.js"), `export default {};`);
     mkdirSync(join(tempDir, "src", "app", "api", "items"), { recursive: true });
     writeFileSync(
       join(tempDir, "src", "app", "api", "items", "route.js"),
@@ -161,7 +161,7 @@ describe("Action 70.8 — Build Pipeline Integration & 'forge build' CLI Tests",
   });
 
   it("E. Manual route regression: app.get() route registrations do not pollute manifest", async () => {
-    writeFileSync(join(tempDir, "forge.config.js"), `export default {};`);
+    writeFileSync(join(tempDir, "kyuu.config.js"), `export default {};`);
     mkdirSync(join(tempDir, "src", "app", "fs-route"), { recursive: true });
     writeFileSync(
       join(tempDir, "src", "app", "fs-route", "route.js"),
@@ -171,7 +171,7 @@ describe("Action 70.8 — Build Pipeline Integration & 'forge build' CLI Tests",
     // Add custom index file with app.get() manual handler
     writeFileSync(
       join(tempDir, "src", "index.js"),
-      `import { createApp } from "@forge/core"; const app = createApp(); app.get("/manual-health", (_req, res) => { res.json({ ok: true }); });`,
+      `import { createApp } from "@kyuujs/core"; const app = createApp(); app.get("/manual-health", (_req, res) => { res.json({ ok: true }); });`,
     );
 
     const res = await handleBuildCommand([], {
@@ -197,7 +197,7 @@ describe("Action 70.8 — Build Pipeline Integration & 'forge build' CLI Tests",
         join(tempDir, "tsconfig.json"),
         JSON.stringify({ compilerOptions: { target: "ES2022", module: "NodeNext", strict: true } }),
       );
-      writeFileSync(join(tempDir, "forge.config.ts"), `export default {};`);
+      writeFileSync(join(tempDir, "kyuu.config.ts"), `export default {};`);
       mkdirSync(join(tempDir, "src", "app"), { recursive: true });
       // Write invalid TS with type error
       writeFileSync(
@@ -212,15 +212,15 @@ describe("Action 70.8 — Build Pipeline Integration & 'forge build' CLI Tests",
       });
 
       expect(res.exitCode).not.toBe(0);
-      expect(res.output).toContain("Forge build failed.");
+      expect(res.output).toContain("Kyuu build failed.");
       expect(res.output).toContain("TypeScript compilation failed");
       expect(existsSync(join(tempDir, BUILD_OUTPUT_DIR))).toBe(false);
-      expect(existsSync(join(tempDir, ".forge", "build-staging"))).toBe(false);
+      expect(existsSync(join(tempDir, ".kyuu", "build-staging"))).toBe(false);
     },
   );
 
   it("G. Invalid configuration fails build cleanly", async () => {
-    writeFileSync(join(tempDir, "forge.config.js"), `this is invalid syntax !!!`);
+    writeFileSync(join(tempDir, "kyuu.config.js"), `this is invalid syntax !!!`);
 
     const res = await runCli(["build"], {
       projectRoot: tempDir,
@@ -229,11 +229,11 @@ describe("Action 70.8 — Build Pipeline Integration & 'forge build' CLI Tests",
     });
 
     expect(res.exitCode).not.toBe(0);
-    expect(res.output).toContain("Forge build failed.");
+    expect(res.output).toContain("Kyuu build failed.");
   });
 
   it("H. Invalid filesystem route file fails build cleanly", async () => {
-    writeFileSync(join(tempDir, "forge.config.js"), `export default {};`);
+    writeFileSync(join(tempDir, "kyuu.config.js"), `export default {};`);
     mkdirSync(join(tempDir, "src", "app", "broken"), { recursive: true });
     writeFileSync(
       join(tempDir, "src", "app", "broken", "route.js"),
@@ -247,11 +247,11 @@ describe("Action 70.8 — Build Pipeline Integration & 'forge build' CLI Tests",
     });
 
     expect(res.exitCode).not.toBe(0);
-    expect(res.output).toContain("Forge build failed.");
+    expect(res.output).toContain("Kyuu build failed.");
   });
 
   it("I. Repeated builds succeed without stale output files", async () => {
-    writeFileSync(join(tempDir, "forge.config.js"), `export default {};`);
+    writeFileSync(join(tempDir, "kyuu.config.js"), `export default {};`);
     mkdirSync(join(tempDir, "src", "app", "v1"), { recursive: true });
     writeFileSync(join(tempDir, "src", "app", "v1", "route.js"), `export const GET = () => "v1";`);
 
@@ -290,7 +290,7 @@ describe("Action 70.8 — Build Pipeline Integration & 'forge build' CLI Tests",
         join(tempDir, "tsconfig.json"),
         JSON.stringify({ compilerOptions: { target: "ES2022", module: "NodeNext" } }),
       );
-      writeFileSync(join(tempDir, "forge.config.ts"), `export default {};`);
+      writeFileSync(join(tempDir, "kyuu.config.ts"), `export default {};`);
       mkdirSync(join(tempDir, "src", "app", "valid"), { recursive: true });
       writeFileSync(
         join(tempDir, "src", "app", "valid", "route.ts"),
@@ -319,7 +319,7 @@ describe("Action 70.8 — Build Pipeline Integration & 'forge build' CLI Tests",
       });
 
       expect(res2.exitCode).toBe(1);
-      expect(res2.output).toContain("Forge build failed.");
+      expect(res2.output).toContain("Kyuu build failed.");
 
       // Previous build output remains intact!
       expect(existsSync(manifestPath)).toBe(true);
@@ -329,7 +329,7 @@ describe("Action 70.8 — Build Pipeline Integration & 'forge build' CLI Tests",
   );
 
   it("K. CLI exit codes: 0 on success, 1 on failure", async () => {
-    writeFileSync(join(tempDir, "forge.config.js"), `export default {};`);
+    writeFileSync(join(tempDir, "kyuu.config.js"), `export default {};`);
     mkdirSync(join(tempDir, "src", "app"), { recursive: true });
     writeFileSync(join(tempDir, "src", "app", "route.js"), `export const GET = () => "ok";`);
 

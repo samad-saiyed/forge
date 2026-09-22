@@ -1,13 +1,13 @@
 Yes. This is worth designing **before we touch the scanner**, because the combination of filesystem routes + imperative `app.get()` routes + an exported app instance creates several ordering, ownership, and lifecycle questions that will become painful if we don't settle them now.
 
-I think your direction is good, and importantly, **Forge should not become an Express clone**. The imperative API is a compatibility/flexibility layer; the filesystem convention should be the higher-level architecture.
+I think your direction is good, and importantly, **Kyuu should not become an Express clone**. The imperative API is a compatibility/flexibility layer; the filesystem convention should be the higher-level architecture.
 
 ## 1. The model I think we should build
 
-A Forge application has **two route registration mechanisms**:
+A Kyuu application has **two route registration mechanisms**:
 
 ```text
-                 Forge Application
+                 Kyuu Application
                         │
              ┌──────────┴──────────┐
              │                     │
@@ -142,7 +142,7 @@ app.get("/internal/stats", ...)
 
 I think **hybrid is essential**.
 
-It gives Forge a convention without turning the convention into a prison.
+It gives Kyuu a convention without turning the convention into a prison.
 
 ---
 
@@ -243,7 +243,7 @@ export const middleware = ...
 
 But **not yet**.
 
-We should avoid turning `route.ts` into a dumping ground for every possible Forge feature.
+We should avoid turning `route.ts` into a dumping ground for every possible Kyuu feature.
 
 A route module should primarily describe:
 
@@ -374,7 +374,7 @@ or potentially:
 export const app = createApp();
 ```
 
-Then Forge's runtime/CLI discovers the application and routes.
+Then Kyuu's runtime/CLI discovers the application and routes.
 
 This gives us a clean division:
 
@@ -846,7 +846,7 @@ but the module itself throws while importing:
 throw new Error("broken");
 ```
 
-Forge should fail **application startup**, not produce a mysterious 500 when someone eventually hits that route.
+Kyuu should fail **application startup**, not produce a mysterious 500 when someone eventually hits that route.
 
 Similarly:
 
@@ -954,7 +954,7 @@ We should design the route loader so it can receive an `ApplicationContext` late
 I'd aim for this:
 
 ```text
-                    Forge CLI / bootstrap
+                    Kyuu CLI / bootstrap
                             │
                             ▼
                     ApplicationContext
@@ -990,7 +990,7 @@ app.get(...)
 
 is merely one low-level registration mechanism.
 
-Forge's actual architectural value becomes:
+Kyuu's actual architectural value becomes:
 
 ```text
 filesystem conventions

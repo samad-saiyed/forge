@@ -1,8 +1,8 @@
-# Contributing to Forge
+# Contributing to Kyuu
 
-Thank you for your interest in contributing to Forge.
+Thank you for your interest in contributing to Kyuu.
 
-Forge is an experimental, TypeScript-first backend framework designed to bring the familiarity and ergonomics of Express.js together with a structured, opinionated application architecture.
+Kyuu is an experimental, TypeScript-first backend framework designed to bring the familiarity and ergonomics of Express.js together with a structured, opinionated application architecture.
 
 ---
 
@@ -10,13 +10,13 @@ Forge is an experimental, TypeScript-first backend framework designed to bring t
 
 **Experimental / Active Internal Development**
 
-Forge is currently in its early development phases. Core APIs, architectural patterns, and package layouts are actively evolving. As such, development is currently focused and iterative. We are prioritizing disciplined foundational engineering over broad feature expansion.
+Kyuu is currently in its early development phases. Core APIs, architectural patterns, and package layouts are actively evolving. As such, development is currently focused and iterative. We are prioritizing disciplined foundational engineering over broad feature expansion.
 
 ---
 
 ## Development Philosophy
 
-When contributing to Forge, keep our core principles in mind:
+When contributing to Kyuu, keep our core principles in mind:
 
 1. **Express-like Familiarity:** The developer experience should feel intuitive to anyone with an Express.js background.
 2. **Incremental Execution:** Build one foundation at a time according to the phase roadmap. Do not implement features planned for future phases prematurely.
@@ -30,8 +30,8 @@ When contributing to Forge, keep our core principles in mind:
 
 All work and architectural proposals **must stay strictly aligned with:**
 
-- [SPEC.md](file:///d:/Forge/SPEC.md) — Technical specification and design constraints.
-- [ROADMAP.md](file:///d:/Forge/ROADMAP.md) — Phased master development plan.
+- [SPEC.md](file:///d:/Kyuu/SPEC.md) — Technical specification and design constraints.
+- [ROADMAP.md](file:///d:/Kyuu/ROADMAP.md) — Phased master development plan.
 
 Before proposing significant changes, consult both documents to ensure the work fits into the current phase and adheres to established design decisions.
 
@@ -50,8 +50,8 @@ Before proposing significant changes, consult both documents to ensure the work 
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/samad-saiyed/forge.git
-   cd forge
+   git clone https://github.com/samad-saiyed/kyuu.git
+   cd kyuu
    ```
 
 2. Install dependencies:
@@ -103,9 +103,9 @@ _(Note: Specific commands may evolve as packages and tooling are added during Ph
 
 ## Performance Expectations
 
-Performance is a foundational requirement for Forge:
+Performance is a foundational requirement for Kyuu:
 
-- The primary performance target is: **Forge ≈ Express.js**.
+- The primary performance target is: **Kyuu ≈ Express.js**.
 - Changes to core HTTP execution, routing, or middleware dispatching must not introduce performance regressions.
 - Performance-sensitive changes should be backed by benchmarks rather than assumptions.
 

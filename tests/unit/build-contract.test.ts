@@ -19,10 +19,10 @@ describe("Action 70.1 — Production Build Contract", () => {
   const sampleManifest: BuildManifest = {
     metadata: {
       formatVersion: BUILD_FORMAT_VERSION,
-      forgeVersion: "0.1.0",
+      kyuuVersion: "0.1.0",
       builtAt: new Date().toISOString(),
       language: "typescript",
-      configPath: "forge.config.js",
+      configPath: "kyuu.config.js",
       appDir: "app",
     },
     routes: [
@@ -43,11 +43,11 @@ describe("Action 70.1 — Production Build Contract", () => {
 
   it("defines standard build output directory paths", () => {
     const root = "/project/root";
-    expect(BUILD_OUTPUT_DIR).toBe(".forge/build");
-    expect(BUILD_STAGING_DIR).toBe(".forge/build-staging");
-    expect(getBuildDir(root)).toBe(join(root, ".forge/build"));
-    expect(getStagingBuildDir(root)).toBe(join(root, ".forge/build-staging"));
-    expect(getManifestPath(root)).toBe(join(root, ".forge/build/manifest.json"));
+    expect(BUILD_OUTPUT_DIR).toBe(".kyuu/build");
+    expect(BUILD_STAGING_DIR).toBe(".kyuu/build-staging");
+    expect(getBuildDir(root)).toBe(join(root, ".kyuu/build"));
+    expect(getStagingBuildDir(root)).toBe(join(root, ".kyuu/build-staging"));
+    expect(getManifestPath(root)).toBe(join(root, ".kyuu/build/manifest.json"));
   });
 
   it("normalizes paths to POSIX slashes for machine independence", () => {
@@ -63,7 +63,7 @@ describe("Action 70.1 — Production Build Contract", () => {
     expect(mapSourceToBuildPath("src/app/products/route.js", "javascript")).toBe(
       "app/products/route.js",
     );
-    expect(mapSourceToBuildPath("forge.config.ts", "typescript")).toBe("forge.config.js");
+    expect(mapSourceToBuildPath("kyuu.config.ts", "typescript")).toBe("kyuu.config.js");
   });
 
   it("formats and parses valid BuildManifest objects", () => {

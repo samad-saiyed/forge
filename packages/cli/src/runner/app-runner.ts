@@ -1,7 +1,8 @@
-import { loadApplicationContext } from "@forge/core";
+import { loadApplicationContext } from "@kyuujs/core";
 
 async function run(): Promise<void> {
-  const projectRoot = process.env.FORGE_PROJECT_ROOT ?? process.cwd();
+  const projectRoot =
+    process.env.KYUU_PROJECT_ROOT ?? process.env.KYUU_PROJECT_ROOT ?? process.cwd();
 
   try {
     const context = await loadApplicationContext({ projectRoot });

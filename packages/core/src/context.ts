@@ -3,20 +3,20 @@ import { createApp, Application } from "./application.js";
 import {
   loadConfig,
   resolveConfig,
-  type ForgeConfigInput,
-  type ResolvedForgeConfig,
+  type KyuuConfigInput,
+  type ResolvedKyuuConfig,
 } from "./config.js";
 import type { Request } from "./request.js";
 import type { Response } from "./response.js";
 
 export interface ApplicationContext {
   app: Application;
-  config: ResolvedForgeConfig;
+  config: ResolvedKyuuConfig;
 }
 
 export interface ApplicationContextOptions {
   appDir?: string;
-  config?: ResolvedForgeConfig | ForgeConfigInput;
+  config?: ResolvedKyuuConfig | KyuuConfigInput;
 }
 
 export function createApplicationContext(options?: ApplicationContextOptions): ApplicationContext {
@@ -35,7 +35,7 @@ export function createApplicationContext(options?: ApplicationContextOptions): A
 export interface LoadApplicationContextOptions {
   projectRoot?: string;
   appDir?: string;
-  config?: ResolvedForgeConfig | ForgeConfigInput;
+  config?: ResolvedKyuuConfig | KyuuConfigInput;
 }
 
 export async function loadApplicationContext(

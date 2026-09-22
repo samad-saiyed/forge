@@ -1,13 +1,13 @@
 import { relative, resolve } from "node:path";
 import { mapSourceToBuildPath, toPosixPath } from "./build.js";
-import { findConfigFile, loadConfig, type ResolvedForgeConfig } from "./config.js";
+import { findConfigFile, loadConfig, type ResolvedKyuuConfig } from "./config.js";
 import { detectProjectLanguage } from "./js-builder.js";
 
 export interface ProductionBuildConfig {
   projectRoot: string;
   configFile: string | null;
   configPathRelative: string;
-  resolvedConfig: ResolvedForgeConfig;
+  resolvedConfig: ResolvedKyuuConfig;
   language: "typescript" | "javascript";
 }
 
@@ -19,13 +19,13 @@ export class BuildConfigError extends Error {
 }
 
 /**
- * Loads, validates, and resolves configuration for a production build using Forge's core config loader.
+ * Loads, validates, and resolves configuration for a production build using Kyuu's core config loader.
  */
 export async function loadProductionBuildConfig(
   projectRoot: string,
 ): Promise<ProductionBuildConfig> {
   const root = resolve(projectRoot);
-  let resolvedConfig: ResolvedForgeConfig;
+  let resolvedConfig: ResolvedKyuuConfig;
   let configFileFullPath: string | null = null;
 
   try {
@@ -40,7 +40,7 @@ export async function loadProductionBuildConfig(
 
   const language = detectProjectLanguage(root);
 
-  let configPathRelative = "forge.config.js";
+  let configPathRelative = "kyuu.config.js";
   if (configFileFullPath) {
     const rawRelative = toPosixPath(relative(root, configFileFullPath));
     configPathRelative = mapSourceToBuildPath(rawRelative, language);

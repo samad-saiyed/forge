@@ -16,7 +16,7 @@ export interface GenerateManifestOptions {
   configPathRelative: string;
   routes: BuildRouteEntry[];
   appDirRelative?: string;
-  forgeVersion?: string;
+  kyuuVersion?: string;
 }
 
 export class ManifestGenerationError extends Error {
@@ -33,7 +33,7 @@ export async function generateBuildManifest(
   options: GenerateManifestOptions,
 ): Promise<BuildManifest> {
   const stagingDir = resolve(options.stagingDir);
-  const forgeVersion = options.forgeVersion ?? "0.1.0";
+  const kyuuVersion = options.kyuuVersion ?? "0.1.0";
 
   // Ensure deterministic route ordering (sorted by pattern then method)
   const sortedRoutes = [...options.routes].sort((a, b) => {
@@ -54,7 +54,7 @@ export async function generateBuildManifest(
   const manifest: BuildManifest = {
     metadata: {
       formatVersion: BUILD_FORMAT_VERSION,
-      forgeVersion,
+      kyuuVersion,
       builtAt: new Date().toISOString(),
       language: options.language,
       configPath: options.configPathRelative,

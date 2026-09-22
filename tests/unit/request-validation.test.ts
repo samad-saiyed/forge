@@ -50,7 +50,7 @@ describe("Action 72.4 — Request Validation Pipeline", () => {
   let tempDir: string;
 
   beforeEach(() => {
-    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "forge-val-pipeline-test-"));
+    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "kyuu-val-pipeline-test-"));
   });
 
   afterEach(() => {
@@ -130,9 +130,9 @@ describe("Action 72.4 — Request Validation Pipeline", () => {
 
     const { doRequest, close } = await setupTestServer(app);
     try {
-      const validRes = await doRequest("GET", "/search?search=forge");
+      const validRes = await doRequest("GET", "/search?search=kyuu");
       expect(validRes.status).toBe(200);
-      expect(validRes.json()).toEqual({ search: "forge" });
+      expect(validRes.json()).toEqual({ search: "kyuu" });
       expect(handlerSpy).toHaveBeenCalledTimes(1);
 
       handlerSpy.mockClear();

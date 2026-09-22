@@ -131,3 +131,11 @@ export class Request<
     return this.raw.headers[name.toLowerCase()];
   }
 }
+
+export type KyuuRequest<
+  Params = Record<string, string>,
+  Query = Record<string, string | string[]>,
+  Body = unknown,
+  Headers = IncomingHttpHeaders,
+> = Request<Params, Query, Body, Headers>;
+

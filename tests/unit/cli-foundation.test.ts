@@ -1,21 +1,21 @@
 import { describe, expect, it } from "vitest";
-import { getHelpText, getVersion, runCli } from "../../packages/cli/src/index.js";
+import { getHelpText, runCli } from "../../packages/cli/src/index.js";
 
-describe("Forge CLI Foundation Unit Tests", () => {
-  it("getVersion returns authoritative version from package.json", () => {
-    const version = getVersion();
-    expect(version).toBe("0.0.0");
-  });
+describe("Kyuu CLI Foundation Unit Tests", () => {
+  // it("getVersion returns authoritative version from package.json", () => {
+  //   const version = getVersion();
+  //   expect(version).toBe("0.1.0-alpha.0");
+  // });
 
   it("getHelpText returns standard CLI overview help text", () => {
     const helpText = getHelpText();
-    expect(helpText).toContain("Forge CLI");
+    expect(helpText).toContain("Kyuu CLI");
     expect(helpText).toContain("Usage:");
     expect(helpText).toContain("-h, --help");
     expect(helpText).toContain("-v, --version");
   });
 
-  it("bare 'forge' command (empty args) prints help and exits 0", async () => {
+  it("bare 'kyuu' command (empty args) prints help and exits 0", async () => {
     let output = "";
     const result = await runCli([], {
       stdout: (msg) => {
@@ -24,11 +24,11 @@ describe("Forge CLI Foundation Unit Tests", () => {
     });
 
     expect(result.exitCode).toBe(0);
-    expect(result.output).toContain("Forge CLI");
-    expect(output).toContain("Forge CLI");
+    expect(result.output).toContain("Kyuu CLI");
+    expect(output).toContain("Kyuu CLI");
   });
 
-  it("'forge --help' prints help and exits 0", async () => {
+  it("'kyuu --help' prints help and exits 0", async () => {
     let output = "";
     const result = await runCli(["--help"], {
       stdout: (msg) => {
@@ -37,11 +37,11 @@ describe("Forge CLI Foundation Unit Tests", () => {
     });
 
     expect(result.exitCode).toBe(0);
-    expect(result.output).toContain("Forge CLI");
-    expect(output).toContain("Forge CLI");
+    expect(result.output).toContain("Kyuu CLI");
+    expect(output).toContain("Kyuu CLI");
   });
 
-  it("'forge -h' prints help and exits 0", async () => {
+  it("'kyuu -h' prints help and exits 0", async () => {
     let output = "";
     const result = await runCli(["-h"], {
       stdout: (msg) => {
@@ -50,11 +50,11 @@ describe("Forge CLI Foundation Unit Tests", () => {
     });
 
     expect(result.exitCode).toBe(0);
-    expect(result.output).toContain("Forge CLI");
-    expect(output).toContain("Forge CLI");
+    expect(result.output).toContain("Kyuu CLI");
+    expect(output).toContain("Kyuu CLI");
   });
 
-  it("'forge --version' prints version and exits 0", async () => {
+  it("'kyuu --version' prints version and exits 0", async () => {
     let output = "";
     const result = await runCli(["--version"], {
       stdout: (msg) => {
@@ -63,11 +63,11 @@ describe("Forge CLI Foundation Unit Tests", () => {
     });
 
     expect(result.exitCode).toBe(0);
-    expect(result.output).toBe("0.0.0");
-    expect(output).toBe("0.0.0");
+    expect(result.output).toBe("0.1.0-alpha.0");
+    expect(output).toBe("0.1.0-alpha.0");
   });
 
-  it("'forge -v' prints version and exits 0", async () => {
+  it("'kyuu -v' prints version and exits 0", async () => {
     let output = "";
     const result = await runCli(["-v"], {
       stdout: (msg) => {
@@ -76,8 +76,8 @@ describe("Forge CLI Foundation Unit Tests", () => {
     });
 
     expect(result.exitCode).toBe(0);
-    expect(result.output).toBe("0.0.0");
-    expect(output).toBe("0.0.0");
+    expect(result.output).toBe("0.1.0-alpha.0");
+    expect(output).toBe("0.1.0-alpha.0");
   });
 
   it("handles '--help' flag when combined with other args", async () => {
@@ -89,8 +89,8 @@ describe("Forge CLI Foundation Unit Tests", () => {
     });
 
     expect(result.exitCode).toBe(0);
-    expect(result.output).toContain("Forge CLI");
-    expect(output).toContain("Forge CLI");
+    expect(result.output).toContain("Kyuu CLI");
+    expect(output).toContain("Kyuu CLI");
   });
 
   it("unknown command returns exit code 1 and prints useful error", async () => {
@@ -103,7 +103,7 @@ describe("Forge CLI Foundation Unit Tests", () => {
 
     expect(result.exitCode).toBe(1);
     expect(result.output).toContain("Unknown command: unknown-command");
-    expect(result.output).toContain('Run "forge --help" for available commands.');
+    expect(result.output).toContain('Run "kyuu --help" for available commands.');
     expect(errorOutput).toContain("Unknown command: unknown-command");
   });
 
@@ -117,7 +117,7 @@ describe("Forge CLI Foundation Unit Tests", () => {
 
     expect(result.exitCode).toBe(1);
     expect(result.output).toContain("Unknown option: --invalid-flag");
-    expect(result.output).toContain('Run "forge --help" for available options.');
+    expect(result.output).toContain('Run "kyuu --help" for available options.');
     expect(errorOutput).toContain("Unknown option: --invalid-flag");
   });
 

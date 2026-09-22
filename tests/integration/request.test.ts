@@ -58,12 +58,12 @@ describe("Request integration", () => {
         );
 
         clientReq.once("error", reject);
-        clientReq.write("hello forge");
+        clientReq.write("hello kyuu");
         clientReq.end();
       });
 
       expect(serverReqBody).toBeDefined();
-      expect(serverReqBody?.toString()).toBe("hello forge");
+      expect(serverReqBody?.toString()).toBe("hello kyuu");
       expect(firstRead).toBeDefined();
       expect(secondRead).toBeDefined();
       expect(secondRead).toEqual(firstRead);
@@ -117,12 +117,12 @@ describe("Request integration", () => {
         );
 
         clientReq.once("error", reject);
-        clientReq.write(JSON.stringify({ name: "Forge", version: 1 }));
+        clientReq.write(JSON.stringify({ name: "Kyuu", version: 1 }));
         clientReq.end();
       });
 
       expect(parsedBody).toEqual({
-        name: "Forge",
+        name: "Kyuu",
         version: 1,
       });
     } finally {
@@ -282,12 +282,12 @@ describe("Request integration", () => {
         );
 
         clientReq.once("error", reject);
-        clientReq.write("hello forge");
+        clientReq.write("hello kyuu");
         clientReq.end();
       });
 
       expect(Buffer.isBuffer(parsedBody)).toBe(true);
-      expect((parsedBody as Buffer).toString()).toBe("hello forge");
+      expect((parsedBody as Buffer).toString()).toBe("hello kyuu");
     } finally {
       await new Promise<void>((resolve) => server.close(() => resolve()));
     }
@@ -348,12 +348,12 @@ describe("Request integration", () => {
         );
 
         clientReq.once("error", reject);
-        clientReq.write(JSON.stringify({ name: "Forge", version: 1 }));
+        clientReq.write(JSON.stringify({ name: "Kyuu", version: 1 }));
         clientReq.end();
       });
 
       expect(bodyResult).toEqual({
-        name: "Forge",
+        name: "Kyuu",
         version: 1,
       });
 
@@ -365,10 +365,10 @@ describe("Request integration", () => {
 
   it("should parse query parameters correctly with generic query type", () => {
     type UserQuery = { search: string; page?: string };
-    const rawReq = { url: "/users?search=forge&page=2", headers: {} } as never;
+    const rawReq = { url: "/users?search=kyuu&page=2", headers: {} } as never;
     const request = new Request<Record<string, string>, UserQuery>(rawReq);
 
-    expect(request.query.search).toBe("forge");
+    expect(request.query.search).toBe("kyuu");
     expect(request.query.page).toBe("2");
   });
 
@@ -418,12 +418,12 @@ describe("Request integration", () => {
         );
 
         clientReq.once("error", reject);
-        clientReq.write(JSON.stringify({ name: "Forge", version: 1 }));
+        clientReq.write(JSON.stringify({ name: "Kyuu", version: 1 }));
         clientReq.end();
       });
 
-      expect(capturedBody).toEqual({ name: "Forge", version: 1 });
-      expect(capturedBody?.name).toBe("Forge");
+      expect(capturedBody).toEqual({ name: "Kyuu", version: 1 });
+      expect(capturedBody?.name).toBe("Kyuu");
     } finally {
       await new Promise<void>((resolve) => server.close(() => resolve()));
     }

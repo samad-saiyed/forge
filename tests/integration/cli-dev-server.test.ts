@@ -4,11 +4,11 @@ import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { handleDevCommand, runCli, startDevServer } from "../../packages/cli/src/index.js";
 
-describe("Forge CLI 'forge dev' Server & Lifecycle Tests", () => {
+describe("Kyuu CLI 'kyuu dev' Server & Lifecycle Tests", () => {
   let tempDir: string;
 
   beforeEach(() => {
-    tempDir = join(tmpdir(), `forge-dev-test-${Date.now()}-${Math.random()}`);
+    tempDir = join(tmpdir(), `kyuu-dev-test-${Date.now()}-${Math.random()}`);
     mkdirSync(tempDir, { recursive: true });
   });
 
@@ -16,7 +16,7 @@ describe("Forge CLI 'forge dev' Server & Lifecycle Tests", () => {
     rmSync(tempDir, { recursive: true, force: true });
   });
 
-  it("returns exit code 3 when executed outside a Forge project directory", async () => {
+  it("returns exit code 3 when executed outside a Kyuu project directory", async () => {
     let errorOutput = "";
     const result = await runCli(["dev"], {
       cwd: tempDir,
@@ -26,15 +26,15 @@ describe("Forge CLI 'forge dev' Server & Lifecycle Tests", () => {
     });
 
     expect(result.exitCode).toBe(3);
-    expect(errorOutput).toContain("Forge project not found.");
-    expect(errorOutput).toContain("Could not locate forge.config.ts");
-    expect(errorOutput).toContain('Run "forge new <name>" to create a new project.');
+    expect(errorOutput).toContain("Kyuu project not found.");
+    expect(errorOutput).toContain("Could not locate kyuu.config.ts");
+    expect(errorOutput).toContain('Run "kyuu new <name>" to create a new project.');
   });
 
-  it("starts the development server and discovers routes in a valid Forge project", async () => {
-    // Setup Forge project
+  it("starts the development server and discovers routes in a valid Kyuu project", async () => {
+    // Setup Kyuu project
     writeFileSync(
-      join(tempDir, "forge.config.ts"),
+      join(tempDir, "kyuu.config.ts"),
       `export default { server: { port: 4850, host: "127.0.0.1" } };`,
       "utf8",
     );
@@ -55,7 +55,7 @@ describe("Forge CLI 'forge dev' Server & Lifecycle Tests", () => {
     });
 
     expect(result.exitCode).toBe(0);
-    expect(output).toContain("Forge");
+    expect(output).toContain("Kyuu");
     expect(output).toContain("✓ Configuration loaded");
     expect(output).toContain("✓ Routes loaded");
     expect(output).toContain("✓ Server started");
@@ -64,7 +64,7 @@ describe("Forge CLI 'forge dev' Server & Lifecycle Tests", () => {
 
   it("verifies HTTP requests to discovered routes on dev server", async () => {
     writeFileSync(
-      join(tempDir, "forge.config.ts"),
+      join(tempDir, "kyuu.config.ts"),
       `export default { server: { port: 4851, host: "127.0.0.1" } };`,
       "utf8",
     );
@@ -92,7 +92,7 @@ describe("Forge CLI 'forge dev' Server & Lifecycle Tests", () => {
 
   it("restarts cleanly when a route file is modified without port collision (EADDRINUSE)", async () => {
     writeFileSync(
-      join(tempDir, "forge.config.ts"),
+      join(tempDir, "kyuu.config.ts"),
       `export default { server: { port: 4852, host: "127.0.0.1" } };`,
       "utf8",
     );
@@ -129,7 +129,7 @@ describe("Forge CLI 'forge dev' Server & Lifecycle Tests", () => {
     { timeout: 15000 },
     async () => {
       writeFileSync(
-        join(tempDir, "forge.config.ts"),
+        join(tempDir, "kyuu.config.ts"),
         `export default { server: { port: 4853, host: "127.0.0.1" } };`,
         "utf8",
       );
@@ -154,7 +154,7 @@ describe("Forge CLI 'forge dev' Server & Lifecycle Tests", () => {
       writeFileSync(routePath, `throw new Error("Syntax broken");`, "utf8");
 
       await controller.restart();
-      expect(stderrOutput).toContain("Unable to start Forge server");
+      expect(stderrOutput).toContain("Unable to start Kyuu server");
 
       // Fix the code and restart again
       writeFileSync(

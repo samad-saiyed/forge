@@ -2,14 +2,14 @@ import Busboy, { type BusboyConstructor, type BusboyHeaders } from "@fastify/bus
 import { performance } from "node:perf_hooks";
 import { Readable } from "node:stream";
 
-const boundary = "----ForgeBenchmarkBoundary";
+const boundary = "----KyuuBenchmarkBoundary";
 
 const fileContent = Buffer.alloc(1024 * 1024, "a");
 
 function createMultipartPayload(): Buffer {
   const chunks = [
     Buffer.from(
-      `--${boundary}\r\n` + `Content-Disposition: form-data; name="name"\r\n\r\n` + `Forge\r\n`,
+      `--${boundary}\r\n` + `Content-Disposition: form-data; name="name"\r\n\r\n` + `Kyuu\r\n`,
     ),
     Buffer.from(
       `--${boundary}\r\n` +

@@ -9,8 +9,8 @@ export {
   type NextFunction,
   type ParseRouteParams,
 } from "./application.js";
-export { Request } from "./request.js";
-export { Response } from "./response.js";
+export { Request, type KyuuRequest } from "./request.js";
+export { Response, type KyuuResponse } from "./response.js";
 export { Router, type RouteMatch } from "./router.js";
 export {
   defineConfig,
@@ -27,12 +27,12 @@ export {
   type BenchmarkingConfig,
   type DevelopmentOptions,
   type DevelopmentConfig,
-  type ForgeConfigInput,
+  type KyuuConfigInput,
   type ResolvedServerConfig,
   type ResolvedLoggingConfig,
   type ResolvedBenchmarkingConfig,
   type ResolvedDevelopmentConfig,
-  type ResolvedForgeConfig,
+  type ResolvedKyuuConfig,
 } from "./config.js";
 export { discoverRoutes, type FileRoute, type FileRouterOptions } from "./file-router.js";
 export {
@@ -67,11 +67,11 @@ export {
 
 export {
   createSchema,
-  isForgeSchema,
+  isKyuuSchema,
   executeSchemaValidation,
-  ForgeValidationError,
+  KyuuValidationError,
   ResponseValidationError,
-  type ForgeSchema,
+  type KyuuSchema,
   type SchemaResult,
   type SchemaValidationError,
   type SchemaIssue,
@@ -151,3 +151,16 @@ export {
   type ProductionRunnerOptions,
   type ProductionRunnerResult,
 } from "./production-runner.js";
+
+export {
+  KyuuLogger,
+  ConsoleTransport,
+  createLogger,
+  normalizeErrorMetadata,
+  normalizeMetadata,
+  type LogLevel,
+  type LogMetadata,
+  type LogRecord,
+  type LogTransport,
+  type Logger,
+} from "./logger.js";

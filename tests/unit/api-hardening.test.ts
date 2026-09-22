@@ -81,11 +81,11 @@ describe("Request/Response API Hardening", () => {
       };
 
       const validParsePromise = validReq.parseBody();
-      (validEmitter as EventEmitter).emit("data", Buffer.from(JSON.stringify({ name: "Forge" })));
+      (validEmitter as EventEmitter).emit("data", Buffer.from(JSON.stringify({ name: "Kyuu" })));
       (validEmitter as EventEmitter).emit("end");
 
       const validParsed = await validParsePromise;
-      expect(validParsed).toEqual({ name: "Forge" });
+      expect(validParsed).toEqual({ name: "Kyuu" });
 
       // Invalid JSON
       const invalidEmitter = new EventEmitter() as never;

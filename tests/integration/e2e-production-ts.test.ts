@@ -34,7 +34,7 @@ describe("Action 70.11 — End-to-End TypeScript Production Integration Suite", 
   const customStderr = (msg: string) => stderrLogs.push(msg);
 
   beforeEach(() => {
-    tempDir = join(tmpdir(), `forge-e2e-ts-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+    tempDir = join(tmpdir(), `kyuu-e2e-ts-${Date.now()}-${Math.random().toString(36).slice(2)}`);
     mkdirSync(tempDir, { recursive: true });
     stdoutLogs = [];
     stderrLogs = [];
@@ -59,7 +59,7 @@ describe("Action 70.11 — End-to-End TypeScript Production Integration Suite", 
         join(tempDir, "package.json"),
         JSON.stringify({ name: "e2e-ts-app", type: "module" }),
       );
-      writeFileSync(join(tempDir, "forge.config.ts"), `export default { server: { port: 5301 } };`);
+      writeFileSync(join(tempDir, "kyuu.config.ts"), `export default { server: { port: 5301 } };`);
 
       // 2. Setup Route Tree
       // Root route: GET /
@@ -204,7 +204,7 @@ describe("Action 70.11 — End-to-End TypeScript Production Integration Suite", 
       join(tempDir, "tsconfig.json"),
       JSON.stringify({ compilerOptions: { target: "ES2022", module: "NodeNext" } }),
     );
-    writeFileSync(join(tempDir, "forge.config.ts"), `export default { server: { port: 5302 } };`);
+    writeFileSync(join(tempDir, "kyuu.config.ts"), `export default { server: { port: 5302 } };`);
     mkdirSync(join(tempDir, "src", "app", "v1"), { recursive: true });
     writeFileSync(
       join(tempDir, "src", "app", "v1", "route.ts"),

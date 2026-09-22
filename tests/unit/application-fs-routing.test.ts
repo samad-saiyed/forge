@@ -72,7 +72,7 @@ describe("Application Filesystem Routing Integration", () => {
   let tmpDir: string;
 
   beforeEach(async () => {
-    tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "forge-app-fs-test-"));
+    tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "kyuu-app-fs-test-"));
   });
 
   afterEach(async () => {

@@ -7,7 +7,7 @@ import {
   createApp,
   defineRoute,
   createSchema,
-  ForgeValidationError,
+  KyuuValidationError,
   type Application,
 } from "../../packages/core/src/index.js";
 
@@ -61,7 +61,7 @@ async function makeRequest(
   });
 }
 
-describe("Action 72.5 — Standard Forge Validation Error Contract", () => {
+describe("Action 72.5 — Standard Kyuu Validation Error Contract", () => {
   let app: Application;
   let server: http.Server;
   let tempAppDir: string | undefined;
@@ -327,7 +327,7 @@ describe("Action 72.5 — Standard Forge Validation Error Contract", () => {
     ]);
   });
 
-  it("allows custom error middleware to intercept ForgeValidationError and customize response", async () => {
+  it("allows custom error middleware to intercept KyuuValidationError and customize response", async () => {
     const bodySchema = createSchema(() => ({
       success: false,
       error: { issues: [{ path: ["field"], message: "Bad field" }] },
@@ -347,7 +347,7 @@ describe("Action 72.5 — Standard Forge Validation Error Contract", () => {
       const response = res as { status: (code: number) => { json: (data: unknown) => void } };
       const nextFn = next as (err?: unknown) => Promise<void>;
 
-      if (err instanceof ForgeValidationError) {
+      if (err instanceof KyuuValidationError) {
         response.status(422).json({
           customError: true,
           firstIssue: err.details[0]?.message,
@@ -370,7 +370,7 @@ describe("Action 72.5 — Standard Forge Validation Error Contract", () => {
   });
 
   it("produces identical validation error response for filesystem routes", async () => {
-    tempAppDir = fs.mkdtempSync(path.join(os.tmpdir(), "forge-val-err-test-"));
+    tempAppDir = fs.mkdtempSync(path.join(os.tmpdir(), "kyuu-val-err-test-"));
     const signupDir = path.join(tempAppDir, "signup");
     fs.mkdirSync(signupDir, { recursive: true });
 

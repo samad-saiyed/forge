@@ -12,7 +12,7 @@ describe("Action 70.6 — Production Filesystem Route Discovery", { timeout: 150
   let tempDir: string;
 
   beforeEach(() => {
-    tempDir = join(tmpdir(), `forge-build-routes-test-${Date.now()}-${Math.random()}`);
+    tempDir = join(tmpdir(), `kyuu-build-routes-test-${Date.now()}-${Math.random()}`);
     mkdirSync(tempDir, { recursive: true });
     writeFileSync(join(tempDir, "package.json"), JSON.stringify({ type: "module" }), "utf8");
   });
@@ -80,7 +80,7 @@ describe("Action 70.6 — Production Filesystem Route Discovery", { timeout: 150
     expect(routes[0].pattern).toBe("/users/:userId/posts/:postId");
   });
 
-  it("discovers wildcard routes using Forge semantics", async () => {
+  it("discovers wildcard routes using Kyuu semantics", async () => {
     mkdirSync(join(tempDir, "src", "app", "files", "[...filepath]"), { recursive: true });
     writeFileSync(
       join(tempDir, "src", "app", "files", "[...filepath]", "route.js"),

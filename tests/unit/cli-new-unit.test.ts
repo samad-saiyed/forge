@@ -5,11 +5,11 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { validateProjectName } from "../../packages/cli/src/project/validation.js";
 import { scaffoldProject } from "../../packages/cli/src/project/scaffolder.js";
 
-describe("Forge CLI New Command Unit Tests", () => {
+describe("Kyuu CLI New Command Unit Tests", () => {
   let tempDir: string;
 
   beforeEach(() => {
-    tempDir = join(tmpdir(), `forge-unit-new-test-${Date.now()}-${Math.random()}`);
+    tempDir = join(tmpdir(), `kyuu-unit-new-test-${Date.now()}-${Math.random()}`);
     mkdirSync(tempDir, { recursive: true });
   });
 
@@ -66,7 +66,7 @@ describe("Forge CLI New Command Unit Tests", () => {
       skipInstall: true,
     });
 
-    expect(existsSync(join(targetDir, "forge.config.ts"))).toBe(true);
+    expect(existsSync(join(targetDir, "kyuu.config.ts"))).toBe(true);
     expect(existsSync(join(targetDir, "package.json"))).toBe(true);
     expect(existsSync(join(targetDir, "tsconfig.json"))).toBe(true);
     expect(existsSync(join(targetDir, "src", "app", "route.ts"))).toBe(true);
@@ -84,7 +84,7 @@ describe("Forge CLI New Command Unit Tests", () => {
       skipInstall: true,
     });
 
-    expect(existsSync(join(targetDir, "forge.config.js"))).toBe(true);
+    expect(existsSync(join(targetDir, "kyuu.config.js"))).toBe(true);
     expect(existsSync(join(targetDir, "package.json"))).toBe(true);
     expect(existsSync(join(targetDir, "tsconfig.json"))).toBe(false);
     expect(existsSync(join(targetDir, "src", "app", "route.js"))).toBe(true);

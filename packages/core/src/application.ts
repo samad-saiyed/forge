@@ -6,7 +6,7 @@ import { Response } from "./response.js";
 
 import * as fs from "node:fs";
 import { Router } from "./router.js";
-import { resolveConfig, type ForgeConfigInput, type ResolvedForgeConfig } from "./config.js";
+import { resolveConfig, type KyuuConfigInput, type ResolvedKyuuConfig } from "./config.js";
 import type { RouteContext } from "./context.js";
 import { scanRouteFiles } from "./route-scanner.js";
 import { loadRouteModules } from "./route-loader.js";
@@ -16,11 +16,12 @@ import {
   isRouteDefinition,
   type RouteDefinition,
 } from "./route-definition.js";
-import { ForgeValidationError } from "./schema.js";
+import { KyuuValidationError } from "./schema.js";
+import { createLogger, type Logger } from "./logger.js";
 
 export interface ApplicationOptions {
   appDir?: string;
-  config?: ResolvedForgeConfig | ForgeConfigInput;
+  config?: ResolvedKyuuConfig | KyuuConfigInput;
   skipFsRouting?: boolean;
 }
 
@@ -198,7 +199,8 @@ function extractPrefixParams(
 }
 
 export class Application {
-  private readonly configState: ResolvedForgeConfig;
+  private readonly configState: ResolvedKyuuConfig;
+  private readonly loggerInstance: Logger;
   private readonly server: Server;
   private readonly settings = new Map<string, unknown>();
   private readonly router = new Router();
@@ -210,8 +212,8 @@ export class Application {
   private stopPromise?: Promise<void>;
   private fsRoutesLoaded = false;
 
-  constructor(options?: ApplicationOptions | ResolvedForgeConfig | ForgeConfigInput) {
-    let rawConfig: ResolvedForgeConfig | ForgeConfigInput | undefined = undefined;
+  constructor(options?: ApplicationOptions | ResolvedKyuuConfig | KyuuConfigInput) {
+    let rawConfig: ResolvedKyuuConfig | KyuuConfigInput | undefined = undefined;
     let rawAppDir: string | undefined = undefined;
 
     if (options !== null && typeof options === "object") {
@@ -223,12 +225,13 @@ export class Application {
           this.fsRoutesLoaded = true;
         }
       } else {
-        rawConfig = options as ResolvedForgeConfig | ForgeConfigInput;
+        rawConfig = options as ResolvedKyuuConfig | KyuuConfigInput;
       }
     }
 
     this.appDir = rawAppDir ? path.resolve(rawAppDir) : path.resolve(process.cwd(), "src/app");
     this.configState = resolveConfig(rawConfig);
+    this.loggerInstance = createLogger(this.configState.logging);
     this.server = createServer((request: IncomingMessage, response: ServerResponse) => {
       const req = new Request(request);
       const res = new Response(response);
@@ -237,8 +240,12 @@ export class Application {
     });
   }
 
-  public get config(): ResolvedForgeConfig {
+  public get config(): ResolvedKyuuConfig {
     return this.configState;
+  }
+
+  public get logger(): Logger {
+    return this.loggerInstance;
   }
 
   use(...handlers: Middleware[]): this;
@@ -798,7 +805,7 @@ export class Application {
       return;
     }
 
-    if (error instanceof ForgeValidationError) {
+    if (error instanceof KyuuValidationError || error instanceof KyuuValidationError) {
       response.status(400).json({
         error: {
           code: error.code,
@@ -901,7 +908,7 @@ export class Application {
 }
 
 export function createApp(
-  options?: ApplicationOptions | ResolvedForgeConfig | ForgeConfigInput,
+  options?: ApplicationOptions | ResolvedKyuuConfig | KyuuConfigInput,
 ): Application {
   return new Application(options);
 }

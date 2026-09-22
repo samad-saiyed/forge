@@ -45,7 +45,7 @@ function scanTsFiles(dirPath: string): string[] {
           lower !== "dist" &&
           lower !== ".git" &&
           lower !== "coverage" &&
-          lower !== ".forge"
+          lower !== ".kyuu"
         ) {
           walk(fullPath);
         }
@@ -68,7 +68,7 @@ function scanTsFiles(dirPath: string): string[] {
 }
 
 /**
- * Compiles a TypeScript Forge project into the staging directory for production builds.
+ * Compiles a TypeScript Kyuu project into the staging directory for production builds.
  */
 export function compileTypeScriptProject(options: CompileOptions): CompileResult {
   const projectRoot = resolve(options.projectRoot);
@@ -85,9 +85,9 @@ export function compileTypeScriptProject(options: CompileOptions): CompileResult
     }
   }
 
-  // Collect source files: forge.config.ts and src/ app files
+  // Collect source files: kyuu.config.ts and src/ app files
   const rootFiles: string[] = [];
-  const configTs = join(projectRoot, "forge.config.ts");
+  const configTs = join(projectRoot, "kyuu.config.ts");
   if (existsSync(configTs)) {
     rootFiles.push(configTs);
   }

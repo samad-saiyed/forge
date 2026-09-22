@@ -1,6 +1,6 @@
-# Forge — Master Development Roadmap
+# Kyuu — Master Development Roadmap
 
-> Temporary project codename: **Forge**
+> Temporary project codename: **Kyuu**
 > Goal: Build an opinionated, TypeScript-first Node.js backend framework with an Express-like developer experience, strong project conventions, production-oriented tooling, and performance at least comparable to Express.
 
 ---
@@ -30,7 +30,7 @@ These principles guide the implementation throughout the project.
 
 ## 0.1 Repository Initialization
 
-- [x] Create Forge repository
+- [x] Create Kyuu repository
 - [x] Initialize Git
 - [x] Create `.gitignore`
 - [x] Create `README.md`
@@ -47,7 +47,7 @@ These principles guide the implementation throughout the project.
 Establish the initial package architecture.
 
 ```text
-forge/
+kyuu/
 ├── packages/
 │   ├── core/
 │   ├── cli/
@@ -63,9 +63,9 @@ forge/
 Tasks:
 
 - [x] Configure workspace/monorepo
-- [x] Create `@forge/core`
-- [x] Create `@forge/cli`
-- [x] Create `@forge/benchmark`
+- [x] Create `@kyuujs/core`
+- [x] Create `@kyuujs/cli`
+- [x] Create `@kyuujs/benchmark`
 - [x] Configure package builds
 - [x] Configure package exports
 - [x] Configure internal package dependencies
@@ -259,7 +259,7 @@ Create the first baseline.
 Compare:
 
 ```text
-Forge
+Kyuu
 Express
 ```
 
@@ -273,7 +273,7 @@ Measure:
 - [x] Errors
 - [x] Memory usage
 
-This becomes the first Forge performance baseline.
+This becomes the first Kyuu performance baseline.
 
 ---
 
@@ -536,13 +536,13 @@ Goal: Establish the central framework configuration mechanism early enough that 
 Introduce:
 
 ```text
-forge.config.ts
+kyuu.config.ts
 ```
 
 Potential structure:
 
 ```ts
-import { defineConfig } from "forge";
+import { defineConfig } from "kyuu";
 
 export default defineConfig({
   logging: true,
@@ -599,7 +599,7 @@ without implementing those features yet.
 
 # Phase 6 — File-System Based Architecture
 
-Goal: Introduce the opinionated architecture that differentiates Forge from Express.
+Goal: Introduce the opinionated architecture that differentiates Kyuu from Express.
 
 ## 6.1 Convention Design
 
@@ -616,7 +616,7 @@ src/
 ├── jobs/
 └── lib/
 
-forge.config.ts
+kyuu.config.ts
 ```
 
 ## 6.2 File-System Routing
@@ -709,16 +709,16 @@ This should remain a core design principle.
 
 # Phase 7 — CLI
 
-Goal: Make Forge projects easy to create and maintain.
+Goal: Make Kyuu projects easy to create and maintain.
 
 ## 7.1 CLI Foundation
 
 Commands:
 
 ```bash
-forge
-forge --help
-forge --version
+kyuu
+kyuu --help
+kyuu --version
 ```
 
 - [ ] CLI package
@@ -733,7 +733,7 @@ forge --version
 Implement eventually:
 
 ```bash
-forge new my-api
+kyuu new my-api
 ```
 
 Generate:
@@ -749,7 +749,7 @@ my-api/
 │   └── lib/
 │
 ├── tests/
-├── forge.config.ts
+├── kyuu.config.ts
 ├── tsconfig.json
 ├── package.json
 └── .env.example
@@ -770,9 +770,9 @@ Tasks:
 Implement:
 
 ```bash
-forge dev
-forge build
-forge start
+kyuu dev
+kyuu build
+kyuu start
 ```
 
 - [ ] Development server
@@ -786,11 +786,11 @@ forge start
 Eventually:
 
 ```bash
-forge generate route users
-forge generate resource users
-forge generate controller users
-forge generate service users
-forge generate job email
+kyuu generate route users
+kyuu generate resource users
+kyuu generate controller users
+kyuu generate service users
+kyuu generate job email
 ```
 
 - [ ] Generator architecture
@@ -807,7 +807,7 @@ forge generate job email
 Eventually:
 
 ```bash
-forge doctor
+kyuu doctor
 ```
 
 Check:
@@ -827,7 +827,7 @@ Goal: Establish a standard approach to request validation and response contracts
 
 ## 8.1 Validation Architecture
 
-Determine whether Forge:
+Determine whether Kyuu:
 
 - provides its own validation layer,
 - integrates with an existing schema library,
@@ -926,7 +926,7 @@ logging: {
 
 # Phase 10 — Database Integration
 
-Goal: Make database setup conventional and easy without making the database part of Forge core.
+Goal: Make database setup conventional and easy without making the database part of Kyuu core.
 
 ## 10.1 Database Architecture
 
@@ -957,15 +957,15 @@ MySQL
 MongoDB
 ```
 
-Potentially through separate Forge packages.
+Potentially through separate Kyuu packages.
 
 ## 10.4 CLI Integration
 
 Eventually:
 
 ```bash
-forge add postgres
-forge add mongodb
+kyuu add postgres
+kyuu add mongodb
 ```
 
 Generate:
@@ -987,7 +987,7 @@ Goal: Make Redis integration similarly simple.
 Potential package:
 
 ```text
-@forge/redis
+@kyuujs/redis
 ```
 
 - [ ] Connection API
@@ -1011,7 +1011,7 @@ redis({
 Potential:
 
 ```bash
-forge add redis
+kyuu add redis
 ```
 
 Generate:
@@ -1074,19 +1074,19 @@ BullMQ
 ## 12.5 CLI
 
 ```bash
-forge generate job email
+kyuu generate job email
 ```
 
 ---
 
 # Phase 13 — Benchmark Package
 
-Goal: Build Forge's dedicated benchmarking ecosystem.
+Goal: Build Kyuu's dedicated benchmarking ecosystem.
 
 Package:
 
 ```text
-@forge/benchmark
+@kyuujs/benchmark
 ```
 
 ## 13.1 Benchmark Runner
@@ -1120,12 +1120,12 @@ CPU
 Potential:
 
 ```bash
-forge benchmark
+kyuu benchmark
 ```
 
 Automatically understand:
 
-- [ ] Running Forge application
+- [ ] Running Kyuu application
 - [ ] Routes
 - [ ] Configuration
 - [ ] Benchmark settings
@@ -1135,8 +1135,8 @@ Automatically understand:
 Eventually:
 
 ```bash
-forge benchmark --compare express
-forge benchmark --compare fastify
+kyuu benchmark --compare express
+kyuu benchmark --compare fastify
 ```
 
 ## 13.5 Regression Detection
@@ -1144,8 +1144,8 @@ forge benchmark --compare fastify
 Potential:
 
 ```bash
-forge benchmark --baseline
-forge benchmark --compare-baseline
+kyuu benchmark --baseline
+kyuu benchmark --compare-baseline
 ```
 
 Detect:
@@ -1196,8 +1196,8 @@ docker-compose.yml
 Potential:
 
 ```bash
-forge docker
-forge docker:init
+kyuu docker
+kyuu docker:init
 ```
 
 ## 14.3 Database + Redis Containers
@@ -1205,8 +1205,8 @@ forge docker:init
 Potential:
 
 ```bash
-forge add postgres
-forge add redis
+kyuu add postgres
+kyuu add redis
 ```
 
 and generate appropriate Compose configuration.
@@ -1250,7 +1250,7 @@ workers
 Explore:
 
 ```text
-                    Forge
+                    Kyuu
                       │
                 Master Process
                       │
@@ -1289,7 +1289,7 @@ Clarify when each approach should be used.
 
 # Phase 16 — Production Hardening
 
-Goal: Make Forge reliable enough for serious applications.
+Goal: Make Kyuu reliable enough for serious applications.
 
 ## 16.1 Graceful Shutdown
 
@@ -1339,7 +1339,7 @@ Evaluate:
 
 # Phase 17 — Developer Experience
 
-Goal: Make Forge pleasant to use daily.
+Goal: Make Kyuu pleasant to use daily.
 
 ## 17.1 Error Messages
 
@@ -1357,7 +1357,7 @@ How to fix it
 Potential development output:
 
 ```text
-Forge
+Kyuu
 
 ✓ Server started
 ✓ Routes loaded
@@ -1385,7 +1385,7 @@ GET    /users/:id
 Potential:
 
 ```bash
-forge routes
+kyuu routes
 ```
 
 Output:
@@ -1403,7 +1403,7 @@ DELETE   /users/:id
 Potential:
 
 ```bash
-forge doctor
+kyuu doctor
 ```
 
 ---
@@ -1516,14 +1516,14 @@ Goal: Move from "works" to "reliable."
 
 # Phase 20 — Performance Engineering
 
-Goal: Ensure Forge remains competitive with Express.
+Goal: Ensure Kyuu remains competitive with Express.
 
 ## 20.1 Performance Baseline
 
 Maintain benchmark results for:
 
 ```text
-Forge
+Kyuu
 Express
 Fastify
 ```
@@ -1580,13 +1580,13 @@ Goal: Separate framework functionality into maintainable packages.
 Potential package ecosystem:
 
 ```text
-@forge/core
-@forge/cli
-@forge/benchmark
-@forge/redis
-@forge/postgres
-@forge/jobs
-@forge/docker
+@kyuujs/core
+@kyuujs/cli
+@kyuujs/benchmark
+@kyuujs/redis
+@kyuujs/postgres
+@kyuujs/jobs
+@kyuujs/docker
 ```
 
 ## Tasks
@@ -1602,7 +1602,7 @@ Potential package ecosystem:
 
 # Phase 22 — Plugin / Extension System
 
-Goal: Allow the ecosystem to extend Forge without modifying the core.
+Goal: Allow the ecosystem to extend Kyuu without modifying the core.
 
 Potential:
 
@@ -1633,7 +1633,7 @@ definePlugin({
 
 # Phase 23 — Release Engineering
 
-Goal: Make Forge distributable as a real open-source framework.
+Goal: Make Kyuu distributable as a real open-source framework.
 
 ## 23.1 Versioning
 
@@ -1672,9 +1672,9 @@ Goal: Make Forge distributable as a real open-source framework.
 
 # Phase 24 — Real-World Validation
 
-Goal: Prove Forge works outside isolated examples.
+Goal: Prove Kyuu works outside isolated examples.
 
-Build several applications using Forge.
+Build several applications using Kyuu.
 
 ## 24.1 Small API
 
@@ -1744,7 +1744,7 @@ After building real applications:
 
 # Phase 25 — First Stable Release
 
-Goal: Decide whether Forge is ready to be considered a real framework.
+Goal: Decide whether Kyuu is ready to be considered a real framework.
 
 ## Stability Checklist
 
@@ -1825,10 +1825,10 @@ These are intentionally not committed to a specific phase yet.
 
 # Initial Definition of Done
 
-Forge should eventually be able to take a developer from:
+Kyuu should eventually be able to take a developer from:
 
 ```bash
-forge new my-api
+kyuu new my-api
 ```
 
 to:
@@ -1855,7 +1855,7 @@ my-api/
 │   └── lib/
 │
 ├── tests/
-├── forge.config.ts
+├── kyuu.config.ts
 ├── Dockerfile
 ├── package.json
 └── tsconfig.json
@@ -1864,7 +1864,7 @@ my-api/
 and then:
 
 ```bash
-forge dev
+kyuu dev
 ```
 
 with an API that feels familiar to an Express developer:

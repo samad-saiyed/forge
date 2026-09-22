@@ -3,8 +3,10 @@ import { resolve } from "node:path";
 import {
   loadApplicationContext,
   type ApplicationContext,
-  type ResolvedForgeConfig,
-} from "@forge/core";
+  type ResolvedKyuuConfig,
+} from "@kyuujs/core";
+
+export type { ResolvedKyuuConfig };
 
 export {
   handleBuildCommand,
@@ -45,11 +47,11 @@ export interface CliOptions {
 export interface CliStartResult {
   context: ApplicationContext;
   server: Server;
-  config: ResolvedForgeConfig;
+  config: ResolvedKyuuConfig;
 }
 
 /**
- * Common startup pipeline for Forge CLI commands.
+ * Common startup pipeline for Kyuu CLI commands.
  * Establishes project root, delegates to loadApplicationContext for automatic config discovery,
  * and starts the HTTP server on the resolved host and port.
  */

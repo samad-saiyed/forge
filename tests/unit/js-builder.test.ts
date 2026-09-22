@@ -20,17 +20,17 @@ describe("Action 70.4 — JavaScript Build Support", { timeout: 15000 }, () => {
   const validManifest: BuildManifest = {
     metadata: {
       formatVersion: BUILD_FORMAT_VERSION,
-      forgeVersion: "0.1.0",
+      kyuuVersion: "0.1.0",
       builtAt: new Date().toISOString(),
       language: "javascript",
-      configPath: "forge.config.js",
+      configPath: "kyuu.config.js",
       appDir: "src/app",
     },
     routes: [],
   };
 
   beforeEach(() => {
-    tempDir = join(tmpdir(), `forge-js-builder-test-${Date.now()}-${Math.random()}`);
+    tempDir = join(tmpdir(), `kyuu-js-builder-test-${Date.now()}-${Math.random()}`);
     mkdirSync(tempDir, { recursive: true });
     writeFileSync(join(tempDir, "package.json"), JSON.stringify({ type: "module" }), "utf8");
     manager = new BuildOutputManager(tempDir);
@@ -42,7 +42,7 @@ describe("Action 70.4 — JavaScript Build Support", { timeout: 15000 }, () => {
 
   it("builds a basic JavaScript project into the staging directory", () => {
     writeFileSync(
-      join(tempDir, "forge.config.js"),
+      join(tempDir, "kyuu.config.js"),
       `export default { server: { port: 4000 } };`,
       "utf8",
     );
@@ -57,7 +57,7 @@ describe("Action 70.4 — JavaScript Build Support", { timeout: 15000 }, () => {
     const result = processJavaScriptProject({ projectRoot: tempDir, stagingDir });
 
     expect(result.success).toBe(true);
-    expect(existsSync(join(stagingDir, "forge.config.js"))).toBe(true);
+    expect(existsSync(join(stagingDir, "kyuu.config.js"))).toBe(true);
     expect(existsSync(join(stagingDir, "src", "app", "hello", "route.js"))).toBe(true);
   });
 
@@ -90,9 +90,9 @@ describe("Action 70.4 — JavaScript Build Support", { timeout: 15000 }, () => {
     expect(emitted).toContain(`export const GET`);
   });
 
-  it("handles JavaScript projects with forge.config.mjs configuration", () => {
+  it("handles JavaScript projects with kyuu.config.mjs configuration", () => {
     writeFileSync(
-      join(tempDir, "forge.config.mjs"),
+      join(tempDir, "kyuu.config.mjs"),
       `export default { server: { port: 5000 } };`,
       "utf8",
     );
@@ -107,7 +107,7 @@ describe("Action 70.4 — JavaScript Build Support", { timeout: 15000 }, () => {
     const result = processJavaScriptProject({ projectRoot: tempDir, stagingDir });
 
     expect(result.success).toBe(true);
-    expect(existsSync(join(stagingDir, "forge.config.mjs"))).toBe(true);
+    expect(existsSync(join(stagingDir, "kyuu.config.mjs"))).toBe(true);
     expect(existsSync(join(stagingDir, "src", "app", "route.js"))).toBe(true);
   });
 
@@ -137,7 +137,7 @@ describe("Action 70.4 — JavaScript Build Support", { timeout: 15000 }, () => {
     // 1. Initial valid JS build promoted to final
     const stagingDir1 = manager.prepareStaging();
     writeFileSync(
-      join(tempDir, "forge.config.js"),
+      join(tempDir, "kyuu.config.js"),
       `export default { server: { port: 3000 } };`,
       "utf8",
     );
@@ -154,7 +154,7 @@ describe("Action 70.4 — JavaScript Build Support", { timeout: 15000 }, () => {
 
     // 2. Simulate failure (no JS source files present)
     rmSync(routeFile);
-    rmSync(join(tempDir, "forge.config.js"));
+    rmSync(join(tempDir, "kyuu.config.js"));
 
     const stagingDir2 = manager.prepareStaging();
     let buildFailed = false;

@@ -127,7 +127,10 @@ export class Response<ResBody = unknown> {
       return;
     }
 
-    if (schema.kind === "forge-schema" && typeof schema.validate === "function") {
+    if (
+      (schema.kind === "kyuu-schema" || schema.kind === "kyuu-schema") &&
+      typeof schema.validate === "function"
+    ) {
       const res = (
         schema as {
           validate: (b: unknown) =>
@@ -266,3 +269,5 @@ export class Response<ResBody = unknown> {
     return this;
   }
 }
+
+export type KyuuResponse<ResBody = unknown> = Response<ResBody>;

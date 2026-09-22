@@ -5,20 +5,20 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { runDev, runStart, runCliCommand } from "../../packages/cli/src/index.js";
 import { createApp } from "../../packages/core/src/index.js";
 
-describe("Forge CLI Startup Pipeline Integration", () => {
+describe("Kyuu CLI Startup Pipeline Integration", () => {
   let tempDir: string;
 
   beforeEach(() => {
-    tempDir = mkdtempSync(join(tmpdir(), "forge-cli-test-"));
+    tempDir = mkdtempSync(join(tmpdir(), "kyuu-cli-test-"));
   });
 
   afterEach(() => {
     rmSync(tempDir, { recursive: true, force: true });
   });
 
-  it("forge dev (runDev) discovers forge.config.ts automatically", async () => {
+  it("kyuu dev (runDev) discovers kyuu.config.ts automatically", async () => {
     writeFileSync(
-      join(tempDir, "forge.config.ts"),
+      join(tempDir, "kyuu.config.ts"),
       `export default { server: { port: 4600, host: "127.0.0.1" } };`,
       "utf8",
     );
@@ -32,9 +32,9 @@ describe("Forge CLI Startup Pipeline Integration", () => {
     await result.context.app.close();
   });
 
-  it("forge start (runStart) discovers forge.config.ts automatically", async () => {
+  it("kyuu start (runStart) discovers kyuu.config.ts automatically", async () => {
     writeFileSync(
-      join(tempDir, "forge.config.ts"),
+      join(tempDir, "kyuu.config.ts"),
       `export default { server: { port: 4700, host: "127.0.0.1" } };`,
       "utf8",
     );
@@ -46,7 +46,7 @@ describe("Forge CLI Startup Pipeline Integration", () => {
     await result.context.app.close();
   });
 
-  it("forge dev and forge start work without a forge.config.ts file using defaults", async () => {
+  it("kyuu dev and kyuu start work without a kyuu.config.ts file using defaults", async () => {
     const resultDev = await runDev({ projectRoot: tempDir });
     expect(resultDev.config.server.port).toBe(3000);
     expect(resultDev.config.server.host).toBe("127.0.0.1");
@@ -60,9 +60,9 @@ describe("Forge CLI Startup Pipeline Integration", () => {
     await resultStart.context.app.close();
   });
 
-  it("prevents startup and server creation when forge.config.ts is invalid", async () => {
+  it("prevents startup and server creation when kyuu.config.ts is invalid", async () => {
     writeFileSync(
-      join(tempDir, "forge.config.ts"),
+      join(tempDir, "kyuu.config.ts"),
       `export default { server: { port: "invalid-port" } };`,
       "utf8",
     );
@@ -73,7 +73,7 @@ describe("Forge CLI Startup Pipeline Integration", () => {
 
   it("propagates custom host and port to the HTTP server", async () => {
     writeFileSync(
-      join(tempDir, "forge.config.ts"),
+      join(tempDir, "kyuu.config.ts"),
       `export default { server: { host: "127.0.0.1", port: 0 } };`,
       "utf8",
     );
@@ -96,7 +96,7 @@ describe("Forge CLI Startup Pipeline Integration", () => {
 
   it("preserves direct programmatic createApp() without reading filesystem config", () => {
     writeFileSync(
-      join(tempDir, "forge.config.ts"),
+      join(tempDir, "kyuu.config.ts"),
       `export default { server: { port: 9999 } };`,
       "utf8",
     );

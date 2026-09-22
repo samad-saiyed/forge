@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   createSchema,
   defineRoute,
-  isForgeSchema,
-  type ForgeSchema,
+  isKyuuSchema,
+  type KyuuSchema,
   type InferSchemaOutput,
   type SchemaResult,
 } from "../../packages/core/src/index.js";
@@ -15,7 +15,7 @@ describe("Schema Adapter Contract", () => {
       age: number;
     }
 
-    const userSchema: ForgeSchema<User> = createSchema<User>(
+    const userSchema: KyuuSchema<User> = createSchema<User>(
       (input: unknown): SchemaResult<User> => {
         type InferredUser = InferSchemaOutput<typeof userSchema>;
         const _check: InferredUser = { name: "test", age: 1 };
@@ -139,22 +139,22 @@ describe("Schema Adapter Contract", () => {
     }
   });
 
-  it("reliably detects Forge-compatible schemas using isForgeSchema", () => {
+  it("reliably detects Kyuu-compatible schemas using isKyuuSchema", () => {
     const validSchema = createSchema((input) => ({ success: true, data: input }));
-    expect(isForgeSchema(validSchema)).toBe(true);
+    expect(isKyuuSchema(validSchema)).toBe(true);
 
-    expect(isForgeSchema(null)).toBe(false);
-    expect(isForgeSchema(undefined)).toBe(false);
-    expect(isForgeSchema("string")).toBe(false);
-    expect(isForgeSchema(123)).toBe(false);
-    expect(isForgeSchema({})).toBe(false);
-    expect(isForgeSchema({ kind: "other", validate: () => {} })).toBe(false);
-    expect(isForgeSchema({ kind: "forge-schema" })).toBe(false);
-    expect(isForgeSchema({ kind: "forge-schema", validate: "not a function" })).toBe(false);
-    expect(isForgeSchema({ parse: () => {} })).toBe(false);
+    expect(isKyuuSchema(null)).toBe(false);
+    expect(isKyuuSchema(undefined)).toBe(false);
+    expect(isKyuuSchema("string")).toBe(false);
+    expect(isKyuuSchema(123)).toBe(false);
+    expect(isKyuuSchema({})).toBe(false);
+    expect(isKyuuSchema({ kind: "other", validate: () => {} })).toBe(false);
+    expect(isKyuuSchema({ kind: "kyuu-schema" })).toBe(false);
+    expect(isKyuuSchema({ kind: "kyuu-schema", validate: "not a function" })).toBe(false);
+    expect(isKyuuSchema({ parse: () => {} })).toBe(false);
   });
 
-  it("allows defineRoute options to carry ForgeSchema instances without changing route handler behavior", () => {
+  it("allows defineRoute options to carry KyuuSchema instances without changing route handler behavior", () => {
     const bodySchema = createSchema<{ title: string }>((input) => ({
       success: true,
       data: input as { title: string },
@@ -173,6 +173,6 @@ describe("Schema Adapter Contract", () => {
     );
 
     expect(route.options.validate?.body).toBe(bodySchema);
-    expect(isForgeSchema(route.options.validate?.body)).toBe(true);
+    expect(isKyuuSchema(route.options.validate?.body)).toBe(true);
   });
 });

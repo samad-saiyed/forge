@@ -13,12 +13,12 @@ import {
 import {
   loadConfig,
   resolveConfig,
-  type ForgeConfigInput,
-  type ResolvedForgeConfig,
+  type KyuuConfigInput,
+  type ResolvedKyuuConfig,
 } from "./config.js";
 
 export interface ProductionRunnerOptions {
-  /** Target project root directory containing .forge/build */
+  /** Target project root directory containing .kyuu/build */
   projectRoot: string;
   /** Port override for production HTTP server */
   port?: number;
@@ -31,14 +31,14 @@ export interface ProductionRunnerOptions {
 export interface ProductionRunnerResult {
   /** Resolved project root directory */
   projectRoot: string;
-  /** Resolved production build directory (.forge/build) */
+  /** Resolved production build directory (.kyuu/build) */
   buildDir: string;
-  /** Configured Forge Application instance */
+  /** Configured Kyuu Application instance */
   app: Application;
   /** Node.js HTTP Server instance */
   server: Server;
   /** Resolved runtime configuration */
-  config: ResolvedForgeConfig;
+  config: ResolvedKyuuConfig;
   /** Loaded build manifest */
   manifest: BuildManifest;
 }
@@ -57,7 +57,7 @@ export async function loadProductionApplication(options: ProductionRunnerOptions
   app: Application;
   manifest: BuildManifest;
   buildDir: string;
-  runtimeConfig: ResolvedForgeConfig;
+  runtimeConfig: ResolvedKyuuConfig;
 }> {
   const projectRoot = resolve(options.projectRoot);
   const buildDir = join(projectRoot, BUILD_OUTPUT_DIR);
@@ -65,7 +65,7 @@ export async function loadProductionApplication(options: ProductionRunnerOptions
 
   // 1. Verify build manifest existence
   if (!existsSync(manifestPath)) {
-    throw new ProductionArtifactError("No production build found. Run `forge build` first.");
+    throw new ProductionArtifactError("No production build found. Run `kyuu build` first.");
   }
 
   // 2. Parse and validate manifest JSON
@@ -113,17 +113,23 @@ export async function loadProductionApplication(options: ProductionRunnerOptions
   }
 
   // 4. Load runtime configuration (prefer compiled config from build directory for portability)
-  let runtimeConfig: ResolvedForgeConfig;
-  const compiledConfigPath = join(buildDir, manifest.metadata.configPath ?? "forge.config.js");
-  if (existsSync(compiledConfigPath)) {
+  let runtimeConfig: ResolvedKyuuConfig;
+  const compiledConfigPath = join(buildDir, manifest.metadata.configPath ?? "kyuu.config.js");
+  if (!existsSync(compiledConfigPath) && existsSync(join(buildDir, "kyuu.config.js"))) {
+    // fallback if kyuu.config.js exists in staging/build
+  }
+  if (existsSync(compiledConfigPath) || existsSync(join(buildDir, "kyuu.config.js"))) {
+    const actualConfigPath = existsSync(compiledConfigPath)
+      ? compiledConfigPath
+      : join(buildDir, "kyuu.config.js");
     try {
-      const configUrl = `${pathToFileURL(compiledConfigPath).href}?t=${Date.now()}_${Math.random()}`;
+      const configUrl = `${pathToFileURL(actualConfigPath).href}?t=${Date.now()}_${Math.random()}`;
       const mod = (await import(configUrl)) as Record<string, unknown>;
       const rawConfig = (
         mod.default && typeof mod.default === "object" && "default" in mod.default
           ? (mod.default as Record<string, unknown>).default
           : (mod.default ?? mod)
-      ) as ForgeConfigInput;
+      ) as KyuuConfigInput;
       runtimeConfig = resolveConfig(rawConfig);
     } catch {
       runtimeConfig = await loadConfig(projectRoot);
@@ -211,7 +217,7 @@ export async function loadProductionApplication(options: ProductionRunnerOptions
 }
 
 /**
- * Starts a production server using the compiled build artifact in .forge/build.
+ * Starts a production server using the compiled build artifact in .kyuu/build.
  */
 export async function startProductionServer(
   options: ProductionRunnerOptions,
@@ -222,7 +228,7 @@ export async function startProductionServer(
   const targetPort = options.port ?? runtimeConfig.server.port;
   const targetHost = options.host ?? runtimeConfig.server.host;
 
-  const effectiveConfig: ResolvedForgeConfig = {
+  const effectiveConfig: ResolvedKyuuConfig = {
     ...runtimeConfig,
     server: {
       ...runtimeConfig.server,

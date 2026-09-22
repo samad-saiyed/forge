@@ -4,15 +4,15 @@ import { isAbsolute, join, relative, resolve } from "node:path";
 /**
  * Default relative directory path for production build artifacts.
  */
-export const BUILD_OUTPUT_DIR = ".forge/build";
+export const BUILD_OUTPUT_DIR = ".kyuu/build";
 
 /**
  * Default relative directory path for staging atomic builds.
  */
-export const BUILD_STAGING_DIR = ".forge/build-staging";
+export const BUILD_STAGING_DIR = ".kyuu/build-staging";
 
 /**
- * Current version of the Forge build artifact format.
+ * Current version of the Kyuu build artifact format.
  */
 export const BUILD_FORMAT_VERSION = "1.0";
 
@@ -23,12 +23,12 @@ export interface BuildMetadata {
   /** Build format version for compatibility checking (e.g. "1.0") */
   formatVersion: string;
   /** Framework version used to create the build */
-  forgeVersion: string;
+  kyuuVersion: string;
   /** ISO 8601 timestamp of build completion */
   builtAt: string;
   /** Target project language */
   language: "typescript" | "javascript";
-  /** Project-relative path to compiled config file (e.g. "forge.config.js") */
+  /** Project-relative path to compiled config file (e.g. "kyuu.config.js") */
   configPath: string;
   /** Project-relative path to compiled application directory (e.g. "app") */
   appDir: string;
@@ -49,7 +49,7 @@ export interface BuildRouteEntry {
 }
 
 /**
- * Complete production build manifest (.forge/build/manifest.json).
+ * Complete production build manifest (.kyuu/build/manifest.json).
  */
 export interface BuildManifest {
   metadata: BuildMetadata;
@@ -128,8 +128,8 @@ export function validateBuildManifest(manifest: unknown): asserts manifest is Bu
     throw new TypeError("Build metadata 'formatVersion' must be a non-empty string.");
   }
 
-  if (typeof meta.forgeVersion !== "string" || meta.forgeVersion.trim() === "") {
-    throw new TypeError("Build metadata 'forgeVersion' must be a non-empty string.");
+  if (typeof meta.kyuuVersion !== "string" || meta.kyuuVersion.trim() === "") {
+    throw new TypeError("Build metadata 'kyuuVersion' must be a non-empty string.");
   }
 
   if (typeof meta.builtAt !== "string" || isNaN(Date.parse(meta.builtAt))) {
@@ -201,17 +201,17 @@ export function parseBuildManifest(jsonContent: string): BuildManifest {
  */
 export class BuildOutputManager {
   readonly projectRoot: string;
-  readonly forgeDir: string;
+  readonly kyuuDir: string;
   readonly finalDir: string;
   readonly stagingDir: string;
   readonly lockFilePath: string;
 
   constructor(projectRoot: string) {
     this.projectRoot = resolve(projectRoot);
-    this.forgeDir = join(this.projectRoot, ".forge");
+    this.kyuuDir = join(this.projectRoot, ".kyuu");
     this.finalDir = join(this.projectRoot, BUILD_OUTPUT_DIR);
     this.stagingDir = join(this.projectRoot, BUILD_STAGING_DIR);
-    this.lockFilePath = join(this.forgeDir, ".build.lock");
+    this.lockFilePath = join(this.kyuuDir, ".build.lock");
   }
 
   /**
@@ -219,7 +219,7 @@ export class BuildOutputManager {
    * Cleans any stale staging artifacts.
    */
   prepareStaging(): string {
-    mkdirSync(this.forgeDir, { recursive: true });
+    mkdirSync(this.kyuuDir, { recursive: true });
     if (existsSync(this.stagingDir)) {
       rmSync(this.stagingDir, { recursive: true, force: true });
     }
@@ -253,7 +253,7 @@ export class BuildOutputManager {
     parseBuildManifest(manifestContent);
 
     const backupDir = join(
-      this.forgeDir,
+      this.kyuuDir,
       `build-backup-${Date.now()}-${Math.random().toString(36).slice(2)}`,
     );
 
@@ -318,7 +318,7 @@ export class BuildOutputManager {
    * Acquires the build lock file to prevent concurrent build operations.
    */
   acquireLock(): void {
-    mkdirSync(this.forgeDir, { recursive: true });
+    mkdirSync(this.kyuuDir, { recursive: true });
     if (existsSync(this.lockFilePath)) {
       try {
         const lockContent = readFileSync(this.lockFilePath, "utf8");

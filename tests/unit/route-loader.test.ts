@@ -9,7 +9,7 @@ describe("Route Loader (loadRouteModule / loadRouteModules)", () => {
   let tempDir: string;
 
   beforeEach(() => {
-    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "forge-loader-test-"));
+    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "kyuu-loader-test-"));
   });
 
   afterEach(() => {

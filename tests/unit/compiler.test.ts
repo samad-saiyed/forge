@@ -18,17 +18,17 @@ describe("Action 70.3 — Production TypeScript Compilation", { timeout: 15000 }
   const validManifest: BuildManifest = {
     metadata: {
       formatVersion: BUILD_FORMAT_VERSION,
-      forgeVersion: "0.1.0",
+      kyuuVersion: "0.1.0",
       builtAt: new Date().toISOString(),
       language: "typescript",
-      configPath: "forge.config.js",
+      configPath: "kyuu.config.js",
       appDir: "src/app",
     },
     routes: [],
   };
 
   beforeEach(() => {
-    tempDir = join(tmpdir(), `forge-compiler-test-${Date.now()}-${Math.random()}`);
+    tempDir = join(tmpdir(), `kyuu-compiler-test-${Date.now()}-${Math.random()}`);
     mkdirSync(tempDir, { recursive: true });
     writeFileSync(join(tempDir, "package.json"), JSON.stringify({ type: "module" }), "utf8");
     manager = new BuildOutputManager(tempDir);
@@ -46,7 +46,7 @@ describe("Action 70.3 — Production TypeScript Compilation", { timeout: 15000 }
       "utf8",
     );
     writeFileSync(
-      join(tempDir, "forge.config.ts"),
+      join(tempDir, "kyuu.config.ts"),
       `export default { server: { port: 3000 } };`,
       "utf8",
     );
@@ -61,8 +61,8 @@ describe("Action 70.3 — Production TypeScript Compilation", { timeout: 15000 }
     const result = compileTypeScriptProject({ projectRoot: tempDir, stagingDir });
 
     expect(result.success).toBe(true);
-    expect(existsSync(join(stagingDir, "forge.config.js"))).toBe(true);
-    expect(existsSync(join(stagingDir, "forge.config.js.map"))).toBe(true);
+    expect(existsSync(join(stagingDir, "kyuu.config.js"))).toBe(true);
+    expect(existsSync(join(stagingDir, "kyuu.config.js.map"))).toBe(true);
     expect(existsSync(join(stagingDir, "src", "app", "hello", "route.js"))).toBe(true);
     expect(existsSync(join(stagingDir, "src", "app", "hello", "route.js.map"))).toBe(true);
 
@@ -106,7 +106,7 @@ describe("Action 70.3 — Production TypeScript Compilation", { timeout: 15000 }
     // 1. Initial valid build promoted to final
     const stagingDir1 = manager.prepareStaging();
     writeFileSync(
-      join(tempDir, "forge.config.ts"),
+      join(tempDir, "kyuu.config.ts"),
       `export default { server: { port: 3000 } };`,
       "utf8",
     );

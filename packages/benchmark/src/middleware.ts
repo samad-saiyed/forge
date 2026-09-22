@@ -1,9 +1,9 @@
 import express from "express";
-import { createApp } from "@forge/core";
+import { createApp } from "@kyuujs/core";
 import { runBenchmarkForUrl, type BenchmarkResult } from "./index.js";
 
 export interface MiddlewareBenchmarkResult extends BenchmarkResult {
-  framework: "Forge" | "Express";
+  framework: "Kyuu" | "Express";
   middlewareCount: number;
 }
 
@@ -13,10 +13,10 @@ export interface MedianBenchmarkResult extends MiddlewareBenchmarkResult {
 }
 
 async function runSingleBenchmark(
-  framework: "Forge" | "Express",
+  framework: "Kyuu" | "Express",
   middlewareCount: number,
 ): Promise<MiddlewareBenchmarkResult> {
-  if (framework === "Forge") {
+  if (framework === "Kyuu") {
     const app = createApp();
     for (let i = 0; i < middlewareCount; i++) {
       app.use(async (_req, _res, next) => {
@@ -31,17 +31,17 @@ async function runSingleBenchmark(
     await new Promise<void>((resolve) => server.once("listening", resolve));
     const address = server.address();
     if (!address || typeof address === "string") {
-      throw new Error("Failed to get Forge server port");
+      throw new Error("Failed to get Kyuu server port");
     }
 
     const url = `http://127.0.0.1:${address.port}/test`;
-    const label = `Forge (${middlewareCount} mw)`;
+    const label = `Kyuu (${middlewareCount} mw)`;
     const benchRes = await runBenchmarkForUrl(label, url);
     await app.close();
 
     return {
       ...benchRes,
-      framework: "Forge",
+      framework: "Kyuu",
       middlewareCount,
     };
   } else {
@@ -77,18 +77,18 @@ async function runSingleBenchmark(
 
 export async function runMiddlewareBenchmark(runs = 3): Promise<MedianBenchmarkResult[]> {
   console.log("\n==================================================");
-  console.log(` Forge vs Express Middleware Benchmark (${runs} Runs Median) `);
+  console.log(` Kyuu vs Express Middleware Benchmark (${runs} Runs Median) `);
   console.log("==================================================\n");
 
-  const schedule: Array<{ framework: "Forge" | "Express"; middlewareCount: number }> = [
-    { framework: "Forge", middlewareCount: 0 },
+  const schedule: Array<{ framework: "Kyuu" | "Express"; middlewareCount: number }> = [
+    { framework: "Kyuu", middlewareCount: 0 },
     { framework: "Express", middlewareCount: 0 },
     { framework: "Express", middlewareCount: 1 },
-    { framework: "Forge", middlewareCount: 1 },
-    { framework: "Forge", middlewareCount: 5 },
+    { framework: "Kyuu", middlewareCount: 1 },
+    { framework: "Kyuu", middlewareCount: 5 },
     { framework: "Express", middlewareCount: 5 },
     { framework: "Express", middlewareCount: 10 },
-    { framework: "Forge", middlewareCount: 10 },
+    { framework: "Kyuu", middlewareCount: 10 },
   ];
 
   const resultsMap = new Map<string, MiddlewareBenchmarkResult[]>();
@@ -105,11 +105,11 @@ export async function runMiddlewareBenchmark(runs = 3): Promise<MedianBenchmarkR
     }
   }
 
-  const configOrder: Array<{ framework: "Forge" | "Express"; middlewareCount: number }> = [
-    { framework: "Forge", middlewareCount: 0 },
-    { framework: "Forge", middlewareCount: 1 },
-    { framework: "Forge", middlewareCount: 5 },
-    { framework: "Forge", middlewareCount: 10 },
+  const configOrder: Array<{ framework: "Kyuu" | "Express"; middlewareCount: number }> = [
+    { framework: "Kyuu", middlewareCount: 0 },
+    { framework: "Kyuu", middlewareCount: 1 },
+    { framework: "Kyuu", middlewareCount: 5 },
+    { framework: "Kyuu", middlewareCount: 10 },
     { framework: "Express", middlewareCount: 0 },
     { framework: "Express", middlewareCount: 1 },
     { framework: "Express", middlewareCount: 5 },
@@ -126,7 +126,7 @@ export async function runMiddlewareBenchmark(runs = 3): Promise<MedianBenchmarkR
     mediansMap.set(key, runsList[medianIndex]);
   }
 
-  const forgeBaseline = mediansMap.get("Forge-0")!.requestsPerSec;
+  const kyuuBaseline = mediansMap.get("Kyuu-0")!.requestsPerSec;
   const expressBaseline = mediansMap.get("Express-0")!.requestsPerSec;
 
   const medianResults: MedianBenchmarkResult[] = [];
@@ -135,7 +135,7 @@ export async function runMiddlewareBenchmark(runs = 3): Promise<MedianBenchmarkR
     const key = `${step.framework}-${step.middlewareCount}`;
     const medianRes = mediansMap.get(key)!;
     const runsList = resultsMap.get(key) ?? [];
-    const baseline = step.framework === "Forge" ? forgeBaseline : expressBaseline;
+    const baseline = step.framework === "Kyuu" ? kyuuBaseline : expressBaseline;
     const overheadPercent = ((baseline - medianRes.requestsPerSec) / baseline) * 100;
 
     medianResults.push({

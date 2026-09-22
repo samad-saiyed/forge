@@ -73,7 +73,7 @@ describe("Application Context Integration", () => {
   let tmpDir: string;
 
   beforeEach(async () => {
-    tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "forge-app-context-test-"));
+    tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "kyuu-app-context-test-"));
   });
 
   afterEach(async () => {
@@ -186,7 +186,7 @@ describe("Application Context Integration", () => {
     expect(getData()).toEqual({ id: "42" });
   });
 
-  test("ApplicationContext accepts resolved Forge configuration and shares identity with app", () => {
+  test("ApplicationContext accepts resolved Kyuu configuration and shares identity with app", () => {
     const rawInput = {
       server: {
         host: "127.0.0.1",

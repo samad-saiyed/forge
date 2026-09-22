@@ -1,6 +1,6 @@
 # Routing System
 
-Forge includes a built-in router designed for high performance, predictable route matching, and support for parameters and wildcards.
+Kyuu includes a built-in router designed for high performance, predictable route matching, and support for parameters and wildcards.
 
 ---
 
@@ -58,7 +58,7 @@ app.get("/files/*", (req, res) => {
 
 ## Route Precedence Rules
 
-When multiple routes overlap, Forge evaluates route precedence based on segment specificity scores:
+When multiple routes overlap, Kyuu evaluates route precedence based on segment specificity scores:
 
 1. **Static Segments** (highest priority) — e.g. `/users/me`
 2. **Dynamic Parameter Segments** — e.g. `/users/:id`

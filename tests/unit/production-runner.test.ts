@@ -17,7 +17,7 @@ describe("ProductionRunner Unit & Artifact Validation Tests", () => {
   beforeEach(() => {
     tempDir = join(
       tmpdir(),
-      `forge-prod-runner-test-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+      `kyuu-prod-runner-test-${Date.now()}-${Math.random().toString(36).slice(2)}`,
     );
     mkdirSync(tempDir, { recursive: true });
   });
@@ -28,7 +28,7 @@ describe("ProductionRunner Unit & Artifact Validation Tests", () => {
     }
   });
 
-  it("throws ProductionArtifactError if .forge/build/manifest.json does not exist", async () => {
+  it("throws ProductionArtifactError if .kyuu/build/manifest.json does not exist", async () => {
     await expect(startProductionServer({ projectRoot: tempDir, skipListen: true })).rejects.toThrow(
       ProductionArtifactError,
     );
@@ -41,10 +41,10 @@ describe("ProductionRunner Unit & Artifact Validation Tests", () => {
     const invalidManifest: BuildManifest = {
       metadata: {
         formatVersion: "99.0",
-        forgeVersion: "0.1.0",
+        kyuuVersion: "0.1.0",
         builtAt: new Date().toISOString(),
         language: "typescript",
-        configPath: "forge.config.js",
+        configPath: "kyuu.config.js",
         appDir: "app",
       },
       routes: [],
@@ -64,10 +64,10 @@ describe("ProductionRunner Unit & Artifact Validation Tests", () => {
     const manifest: BuildManifest = {
       metadata: {
         formatVersion: BUILD_FORMAT_VERSION,
-        forgeVersion: "0.1.0",
+        kyuuVersion: "0.1.0",
         builtAt: new Date().toISOString(),
         language: "typescript",
-        configPath: "forge.config.js",
+        configPath: "kyuu.config.js",
         appDir: "app",
       },
       routes: [
@@ -98,10 +98,10 @@ describe("ProductionRunner Unit & Artifact Validation Tests", () => {
     const manifest: BuildManifest = {
       metadata: {
         formatVersion: BUILD_FORMAT_VERSION,
-        forgeVersion: "0.1.0",
+        kyuuVersion: "0.1.0",
         builtAt: new Date().toISOString(),
         language: "typescript",
-        configPath: "forge.config.js",
+        configPath: "kyuu.config.js",
         appDir: "app",
       },
       routes: [

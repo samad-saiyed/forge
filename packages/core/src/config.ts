@@ -27,7 +27,7 @@ export interface DevelopmentOptions {
 
 export type DevelopmentConfig = boolean | DevelopmentOptions;
 
-export interface ForgeConfigInput {
+export interface KyuuConfigInput {
   server?: ServerConfig;
   logging?: LoggingConfig;
   benchmarking?: BenchmarkingConfig;
@@ -53,14 +53,14 @@ export interface ResolvedDevelopmentConfig {
   debug: boolean;
 }
 
-export interface ResolvedForgeConfig {
+export interface ResolvedKyuuConfig {
   server: ResolvedServerConfig;
   logging: ResolvedLoggingConfig;
   benchmarking: ResolvedBenchmarkingConfig;
   development: ResolvedDevelopmentConfig;
 }
 
-export const DEFAULT_CONFIG: ResolvedForgeConfig = Object.freeze({
+export const DEFAULT_CONFIG: ResolvedKyuuConfig = Object.freeze({
   server: Object.freeze({
     port: 3000,
     host: "127.0.0.1",
@@ -84,7 +84,7 @@ const ALLOWED_LOGGING_KEYS = new Set(["enabled", "level"]);
 const ALLOWED_BENCHMARKING_KEYS = new Set(["enabled"]);
 const ALLOWED_DEVELOPMENT_KEYS = new Set(["enabled", "debug"]);
 
-export function validateConfig(config: unknown): asserts config is ForgeConfigInput {
+export function validateConfig(config: unknown): asserts config is KyuuConfigInput {
   if (config === null || typeof config !== "object") {
     throw new TypeError("Configuration must be a non-null object.");
   }
@@ -179,30 +179,28 @@ export function validateConfig(config: unknown): asserts config is ForgeConfigIn
           "Configuration option 'development' must be a boolean or a development options object.",
         );
       }
-      const dev = cfg.development as Record<string, unknown>;
-      for (const key of Object.keys(dev)) {
+      const development = cfg.development as Record<string, unknown>;
+      for (const key of Object.keys(development)) {
         if (!ALLOWED_DEVELOPMENT_KEYS.has(key)) {
           throw new TypeError(`Unknown configuration option 'development.${key}'.`);
         }
       }
-      if (dev.enabled !== undefined && typeof dev.enabled !== "boolean") {
+      if (development.enabled !== undefined && typeof development.enabled !== "boolean") {
         throw new TypeError("Configuration option 'development.enabled' must be a boolean.");
       }
-      if (dev.debug !== undefined && typeof dev.debug !== "boolean") {
+      if (development.debug !== undefined && typeof development.debug !== "boolean") {
         throw new TypeError("Configuration option 'development.debug' must be a boolean.");
       }
     }
   }
 }
 
-export function defineConfig(config: ForgeConfigInput): ForgeConfigInput {
+export function defineConfig(config: KyuuConfigInput): KyuuConfigInput {
   validateConfig(config);
   return config;
 }
 
-export function resolveConfig(
-  config?: ForgeConfigInput | ResolvedForgeConfig,
-): ResolvedForgeConfig {
+export function resolveConfig(config?: KyuuConfigInput | ResolvedKyuuConfig): ResolvedKyuuConfig {
   if (config === undefined) {
     return DEFAULT_CONFIG;
   }
@@ -216,7 +214,7 @@ export function resolveConfig(
     "benchmarking" in config &&
     "development" in config
   ) {
-    return config as ResolvedForgeConfig;
+    return config as ResolvedKyuuConfig;
   }
 
   validateConfig(config);
@@ -257,7 +255,14 @@ export function resolveConfig(
   });
 }
 
-const SUPPORTED_CONFIG_FILES = ["forge.config.ts", "forge.config.js", "forge.config.mjs"] as const;
+const SUPPORTED_CONFIG_FILES = [
+  "kyuu.config.ts",
+  "kyuu.config.js",
+  "kyuu.config.mjs",
+  "kyuu.config.ts",
+  "kyuu.config.js",
+  "kyuu.config.mjs",
+] as const;
 
 export function findConfigFile(cwd: string = process.cwd()): string | null {
   const absoluteDir = resolve(cwd);
@@ -283,9 +288,7 @@ export function findConfigFile(cwd: string = process.cwd()): string | null {
   return null;
 }
 
-export async function loadConfigFile(
-  cwd: string = process.cwd(),
-): Promise<ForgeConfigInput | null> {
+export async function loadConfigFile(cwd: string = process.cwd()): Promise<KyuuConfigInput | null> {
   const filePath = findConfigFile(cwd);
   if (!filePath) {
     return null;
@@ -307,10 +310,10 @@ export async function loadConfigFile(
     throw new Error(`Configuration file '${filePath}' does not contain a default export.`);
   }
 
-  return mod.default as ForgeConfigInput;
+  return mod.default as KyuuConfigInput;
 }
 
-export async function loadConfig(cwd: string = process.cwd()): Promise<ResolvedForgeConfig> {
+export async function loadConfig(cwd: string = process.cwd()): Promise<ResolvedKyuuConfig> {
   const rawConfig = await loadConfigFile(cwd);
   if (rawConfig === null) {
     return resolveConfig();

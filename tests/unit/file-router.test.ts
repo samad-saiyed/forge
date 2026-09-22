@@ -8,7 +8,7 @@ describe("discoverRoutes", () => {
   let tmpDir: string;
 
   beforeEach(async () => {
-    tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "forge-file-router-test-"));
+    tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "kyuu-file-router-test-"));
   });
 
   afterEach(async () => {

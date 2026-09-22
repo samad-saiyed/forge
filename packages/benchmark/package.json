@@ -1,8 +1,8 @@
 {
-  "name": "@forge/benchmark",
+  "name": "@kyuujs/benchmark",
   "version": "0.0.0",
   "private": true,
-  "description": "Performance benchmarking suite for Forge",
+  "description": "Performance benchmarking suite for Kyuu",
   "type": "module",
   "license": "MIT",
   "main": "./dist/index.js",
@@ -17,7 +17,7 @@
     "benchmark": "node ./dist/index.js"
   },
   "dependencies": {
-    "@forge/core": "workspace:*"
+    "@kyuujs/core": "workspace:*"
   },
   "devDependencies": {
     "@fastify/busboy": "^3.2.2",

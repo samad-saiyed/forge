@@ -38,7 +38,7 @@ importers:
 
   packages/benchmark:
     dependencies:
-      '@forge/core':
+      '@kyuujs/core':
         specifier: workspace:*
         version: link:../core
     devDependencies:
@@ -54,7 +54,7 @@ importers:
 
   packages/cli:
     dependencies:
-      '@forge/core':
+      '@kyuujs/core':
         specifier: workspace:*
         version: link:../core
 
@@ -76,7 +76,7 @@ importers:
         specifier: ^3.24.2
         version: 3.25.76
     devDependencies:
-      '@forge/core':
+      '@kyuujs/core':
         specifier: workspace:*
         version: link:../core
       '@types/node':

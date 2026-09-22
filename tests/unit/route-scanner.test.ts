@@ -8,7 +8,7 @@ describe("Route Scanner (scanRouteFiles)", () => {
   let tempDir: string;
 
   beforeEach(() => {
-    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "forge-scanner-test-"));
+    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "kyuu-scanner-test-"));
   });
 
   afterEach(() => {

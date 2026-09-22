@@ -24,7 +24,7 @@ export interface CliResult {
 }
 
 /**
- * Main command dispatcher for Forge CLI.
+ * Main command dispatcher for Kyuu CLI.
  * Inspects args for flags and commands, delegating to appropriate handlers.
  */
 export async function runCli(args: string[] = [], options: RunCliOptions = {}): Promise<CliResult> {
@@ -68,12 +68,12 @@ export async function runCli(args: string[] = [], options: RunCliOptions = {}): 
   }
 
   if (firstArg.startsWith("-")) {
-    const errText = `Unknown option: ${firstArg}\n\nRun "forge --help" for available options.`;
+    const errText = `Unknown option: ${firstArg}\n\nRun "kyuu --help" for available options.`;
     writeErr(errText);
     return { exitCode: 1, output: errText };
   }
 
-  const errText = `Unknown command: ${firstArg}\n\nRun "forge --help" for available commands.`;
+  const errText = `Unknown command: ${firstArg}\n\nRun "kyuu --help" for available commands.`;
   writeErr(errText);
   return { exitCode: 1, output: errText };
 }

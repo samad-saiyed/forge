@@ -4,11 +4,11 @@ import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { runCli } from "../../packages/cli/src/index.js";
 
-describe("Forge CLI Scaffolding Integration Tests", () => {
+describe("Kyuu CLI Scaffolding Integration Tests", () => {
   let tempDir: string;
 
   beforeEach(() => {
-    tempDir = join(tmpdir(), `forge-cli-scaffold-test-${Date.now()}-${Math.random()}`);
+    tempDir = join(tmpdir(), `kyuu-cli-scaffold-test-${Date.now()}-${Math.random()}`);
     mkdirSync(tempDir, { recursive: true });
   });
 
@@ -16,7 +16,7 @@ describe("Forge CLI Scaffolding Integration Tests", () => {
     rmSync(tempDir, { recursive: true, force: true });
   });
 
-  it("forge new creates a runnable TypeScript project structure", async () => {
+  it("kyuu new creates a runnable TypeScript project structure", async () => {
     let output = "";
     const result = await runCli(["new", "my-api"], {
       cwd: tempDir,
@@ -33,20 +33,20 @@ describe("Forge CLI Scaffolding Integration Tests", () => {
     });
 
     expect(result.exitCode).toBe(0);
-    expect(output).toContain('✔ Forge project "my-api" created successfully.');
+    expect(output).toContain('✔ Kyuu project "my-api" created successfully.');
 
     const projectDir = join(tempDir, "my-api");
-    expect(existsSync(join(projectDir, "forge.config.ts"))).toBe(true);
+    expect(existsSync(join(projectDir, "kyuu.config.ts"))).toBe(true);
     expect(existsSync(join(projectDir, "package.json"))).toBe(true);
     expect(existsSync(join(projectDir, "tsconfig.json"))).toBe(true);
     expect(existsSync(join(projectDir, "src", "app", "route.ts"))).toBe(true);
 
     const pkgJson = JSON.parse(readFileSync(join(projectDir, "package.json"), "utf8"));
     expect(pkgJson.name).toBe("my-api");
-    expect(pkgJson.scripts.dev).toBe("forge dev");
+    expect(pkgJson.scripts.dev).toBe("kyuu dev");
   });
 
-  it("forge new creates a valid JavaScript project structure", async () => {
+  it("kyuu new creates a valid JavaScript project structure", async () => {
     let output = "";
     const result = await runCli(["new", "my-js-api"], {
       cwd: tempDir,
@@ -63,16 +63,16 @@ describe("Forge CLI Scaffolding Integration Tests", () => {
     });
 
     expect(result.exitCode).toBe(0);
-    expect(output).toContain('✔ Forge project "my-js-api" created successfully.');
+    expect(output).toContain('✔ Kyuu project "my-js-api" created successfully.');
 
     const projectDir = join(tempDir, "my-js-api");
-    expect(existsSync(join(projectDir, "forge.config.js"))).toBe(true);
+    expect(existsSync(join(projectDir, "kyuu.config.js"))).toBe(true);
     expect(existsSync(join(projectDir, "package.json"))).toBe(true);
     expect(existsSync(join(projectDir, "src", "app", "route.js"))).toBe(true);
 
     const pkgJson = JSON.parse(readFileSync(join(projectDir, "package.json"), "utf8"));
     expect(pkgJson.name).toBe("my-js-api");
-    expect(pkgJson.scripts.dev).toBe("forge dev");
+    expect(pkgJson.scripts.dev).toBe("kyuu dev");
   });
 
   it("fails cleanly when project name argument is missing", async () => {

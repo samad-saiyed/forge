@@ -19,7 +19,7 @@ describe("BuildOrchestrator Unit & Artifact Validation Tests", () => {
   beforeEach(() => {
     tempDir = join(
       tmpdir(),
-      `forge-orchestrator-test-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+      `kyuu-orchestrator-test-${Date.now()}-${Math.random().toString(36).slice(2)}`,
     );
     mkdirSync(tempDir, { recursive: true });
   });
@@ -40,10 +40,10 @@ describe("BuildOrchestrator Unit & Artifact Validation Tests", () => {
       const manifest: BuildManifest = {
         metadata: {
           formatVersion: BUILD_FORMAT_VERSION,
-          forgeVersion: "0.1.0",
+          kyuuVersion: "0.1.0",
           builtAt: new Date().toISOString(),
           language: "typescript",
-          configPath: "forge.config.js",
+          configPath: "kyuu.config.js",
           appDir: "app",
         },
         routes: [
@@ -63,10 +63,10 @@ describe("BuildOrchestrator Unit & Artifact Validation Tests", () => {
       const manifest: BuildManifest = {
         metadata: {
           formatVersion: "99.0",
-          forgeVersion: "0.1.0",
+          kyuuVersion: "0.1.0",
           builtAt: new Date().toISOString(),
           language: "typescript",
-          configPath: "forge.config.js",
+          configPath: "kyuu.config.js",
           appDir: "app",
         },
         routes: [],
@@ -79,10 +79,10 @@ describe("BuildOrchestrator Unit & Artifact Validation Tests", () => {
       const manifest: BuildManifest = {
         metadata: {
           formatVersion: BUILD_FORMAT_VERSION,
-          forgeVersion: "0.1.0",
+          kyuuVersion: "0.1.0",
           builtAt: new Date().toISOString(),
           language: "typescript",
-          configPath: "forge.config.js",
+          configPath: "kyuu.config.js",
           appDir: "app",
         },
         routes: [
@@ -102,10 +102,10 @@ describe("BuildOrchestrator Unit & Artifact Validation Tests", () => {
       const manifest: BuildManifest = {
         metadata: {
           formatVersion: BUILD_FORMAT_VERSION,
-          forgeVersion: "0.1.0",
+          kyuuVersion: "0.1.0",
           builtAt: new Date().toISOString(),
           language: "typescript",
-          configPath: "forge.config.js",
+          configPath: "kyuu.config.js",
           appDir: "app",
         },
         routes: [
@@ -128,7 +128,7 @@ describe("BuildOrchestrator Unit & Artifact Validation Tests", () => {
         join(tempDir, "tsconfig.json"),
         JSON.stringify({ compilerOptions: { target: "ES2022", module: "NodeNext" } }),
       );
-      writeFileSync(join(tempDir, "forge.config.ts"), `export default {};`);
+      writeFileSync(join(tempDir, "kyuu.config.ts"), `export default {};`);
       mkdirSync(join(tempDir, "src", "app", "api"), { recursive: true });
       writeFileSync(
         join(tempDir, "src", "app", "api", "route.ts"),
@@ -155,7 +155,7 @@ describe("BuildOrchestrator Unit & Artifact Validation Tests", () => {
     });
 
     it("buildProject helper builds successfully", async () => {
-      writeFileSync(join(tempDir, "forge.config.js"), `export default {};`);
+      writeFileSync(join(tempDir, "kyuu.config.js"), `export default {};`);
       mkdirSync(join(tempDir, "src", "app"), { recursive: true });
       writeFileSync(join(tempDir, "src", "app", "route.js"), `export const GET = () => "ok";`);
 

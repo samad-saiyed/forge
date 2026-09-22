@@ -14,7 +14,7 @@ describe("Action 70.11 — Build/Start Failure & Package Manager Scaffolding Mat
   const customStderr = (msg: string) => stderrLogs.push(msg);
 
   beforeEach(() => {
-    tempDir = join(tmpdir(), `forge-e2e-fail-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+    tempDir = join(tmpdir(), `kyuu-e2e-fail-${Date.now()}-${Math.random().toString(36).slice(2)}`);
     mkdirSync(tempDir, { recursive: true });
     stdoutLogs = [];
     stderrLogs = [];
@@ -41,18 +41,19 @@ describe("Action 70.11 — Build/Start Failure & Package Manager Scaffolding Mat
         const res = await handleBuildCommand([], { projectRoot: tempDir });
 
         expect(res.exitCode).toBe(1);
-        expect(existsSync(join(tempDir, ".forge", "build-staging"))).toBe(false);
+        expect(existsSync(join(tempDir, ".kyuu", "build-staging"))).toBe(false);
         expect(existsSync(join(tempDir, BUILD_OUTPUT_DIR))).toBe(false);
       },
     );
 
-    it("fails cleanly when forge.config file has invalid configuration", async () => {
-      writeFileSync(join(tempDir, "forge.config.js"), "export default { server: { port: -99 } };");
+    it("fails cleanly when kyuu.config file has invalid configuration", async () => {
+      writeFileSync(join(tempDir, "package.json"), JSON.stringify({ type: "module" }));
+      writeFileSync(join(tempDir, "kyuu.config.js"), "export default { server: { port: -99 } };");
 
       const res = await handleBuildCommand([], { projectRoot: tempDir });
 
       expect(res.exitCode).toBe(1);
-      expect(existsSync(join(tempDir, ".forge", "build-staging"))).toBe(false);
+      expect(existsSync(join(tempDir, ".kyuu", "build-staging"))).toBe(false);
     });
 
     it("fails cleanly when filesystem route file has import errors", async () => {
@@ -66,7 +67,7 @@ describe("Action 70.11 — Build/Start Failure & Package Manager Scaffolding Mat
       const res = await handleBuildCommand([], { projectRoot: tempDir });
 
       expect(res.exitCode).toBe(1);
-      expect(existsSync(join(tempDir, ".forge", "build-staging"))).toBe(false);
+      expect(existsSync(join(tempDir, ".kyuu", "build-staging"))).toBe(false);
     });
   });
 
@@ -103,10 +104,10 @@ describe("Action 70.11 — Build/Start Failure & Package Manager Scaffolding Mat
       const manifest = {
         metadata: {
           formatVersion: "999.0",
-          forgeVersion: "0.1.0",
+          kyuuVersion: "0.1.0",
           builtAt: new Date().toISOString(),
           language: "typescript",
-          configPath: "forge.config.js",
+          configPath: "kyuu.config.js",
           appDir: "app",
         },
         routes: [],
@@ -138,13 +139,13 @@ describe("Action 70.11 — Build/Start Failure & Package Manager Scaffolding Mat
             name: `app-${pm}`,
             type: "module",
             scripts: {
-              build: "forge build",
-              start: "forge start",
+              build: "kyuu build",
+              start: "kyuu start",
             },
             packageManager: `${pm}@1.0.0`,
           }),
         );
-        writeFileSync(join(pmDir, "forge.config.js"), `export default { server: { port: 5400 } };`);
+        writeFileSync(join(pmDir, "kyuu.config.js"), `export default { server: { port: 5400 } };`);
         mkdirSync(join(pmDir, "src", "app"), { recursive: true });
         writeFileSync(
           join(pmDir, "src", "app", "route.js"),

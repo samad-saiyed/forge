@@ -26,7 +26,7 @@ describe("Action 70.11 — End-to-End JavaScript Production Integration Suite", 
   const customStderr = (msg: string) => stderrLogs.push(msg);
 
   beforeEach(() => {
-    tempDir = join(tmpdir(), `forge-e2e-js-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+    tempDir = join(tmpdir(), `kyuu-e2e-js-${Date.now()}-${Math.random().toString(36).slice(2)}`);
     mkdirSync(tempDir, { recursive: true });
     stdoutLogs = [];
     stderrLogs = [];
@@ -39,7 +39,7 @@ describe("Action 70.11 — End-to-End JavaScript Production Integration Suite", 
   });
 
   it(
-    "1. Comprehensive JavaScript Production E2E: forge build -> forge start -> HTTP requests",
+    "1. Comprehensive JavaScript Production E2E: kyuu build -> kyuu start -> HTTP requests",
     { timeout: 15000 },
     async () => {
       // 1. Setup pure JavaScript ESM project
@@ -47,7 +47,7 @@ describe("Action 70.11 — End-to-End JavaScript Production Integration Suite", 
         join(tempDir, "package.json"),
         JSON.stringify({ name: "e2e-js-app", type: "module" }),
       );
-      writeFileSync(join(tempDir, "forge.config.js"), `export default { server: { port: 5350 } };`);
+      writeFileSync(join(tempDir, "kyuu.config.js"), `export default { server: { port: 5350 } };`);
 
       // 2. Setup JS filesystem routes
       mkdirSync(join(tempDir, "src", "app", "api"), { recursive: true });

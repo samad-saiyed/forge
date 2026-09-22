@@ -5,7 +5,7 @@ import {
   generateBuildManifest,
   loadProductionBuildConfig,
   startProductionServer,
-} from "@forge/core";
+} from "@kyuujs/core";
 import express from "express";
 import { existsSync, mkdirSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -27,28 +27,44 @@ function getDirSize(dirPath: string): number {
   return total;
 }
 
-export async function runProductionBaseline(): Promise<void> {
-  console.log("=========================================================================");
-  console.log("  ACTION 70.11 — PRODUCTION BUILD & RUNTIME PERFORMANCE BASELINE");
-  console.log("=========================================================================\n");
+export interface ProductionBaselineResult {
+  buildBenchmark: {
+    tsCompileMs: number;
+    routeDiscoveryMs: number;
+    manifestGenMs: number;
+    totalOrchestrationMs: number;
+    artifactSizeBytes: number;
+  };
+  serverBenchmark: {
+    productionKyuuStatic: BenchmarkResult;
+    productionKyuuDynamic: BenchmarkResult;
+    expressStatic: BenchmarkResult;
+    expressDynamic: BenchmarkResult;
+  };
+}
 
+export async function runProductionBaselineBenchmark(): Promise<ProductionBaselineResult> {
   const tempDir = join(
     tmpdir(),
-    `forge-perf-baseline-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+    `kyuu-perf-baseline-${Date.now()}-${Math.random().toString(36).slice(2)}`,
   );
-  mkdirSync(tempDir, { recursive: true });
-
   try {
-    // -------------------------------------------------------------------------
-    // 1. BUILD PIPELINE BENCHMARK
-    // -------------------------------------------------------------------------
-    console.log("1. Measuring Production Build Pipeline Performance...\n");
+    mkdirSync(tempDir, { recursive: true });
 
+    // Minimal TS project setup
     writeFileSync(
-      join(tempDir, "package.json"),
-      JSON.stringify({ name: "perf-baseline-app", type: "module" }),
+      join(tempDir, "tsconfig.json"),
+      JSON.stringify({
+        compilerOptions: {
+          target: "ES2022",
+          module: "NodeNext",
+          moduleResolution: "NodeNext",
+          strict: true,
+          outDir: "dist",
+        },
+      }),
     );
-    writeFileSync(join(tempDir, "forge.config.js"), "export default { server: { port: 5990 } };");
+    writeFileSync(join(tempDir, "kyuu.config.js"), "export default { server: { port: 5990 } };");
 
     mkdirSync(join(tempDir, "src", "app", "users", "[id]"), { recursive: true });
     writeFileSync(
@@ -61,7 +77,7 @@ export async function runProductionBaseline(): Promise<void> {
     );
 
     // Individual stage timings
-    const stagingDir = join(tempDir, ".forge", "build-staging");
+    const stagingDir = join(tempDir, ".kyuu", "build-staging");
     mkdirSync(stagingDir, { recursive: true });
 
     const buildConfig = await loadProductionBuildConfig(tempDir);
@@ -110,11 +126,11 @@ export async function runProductionBaseline(): Promise<void> {
         "Duration (ms)": manifestTime.toFixed(2),
       },
       {
-        Stage: "Total Build Orchestration (forge build)",
+        Stage: "Total Build Orchestration (kyuu build)",
         "Duration (ms)": fullBuildTime.toFixed(2),
       },
       {
-        Stage: "Final Artifact Size (.forge/build)",
+        Stage: "Final Artifact Size (.kyuu/build)",
         "Duration (ms)": `${(artifactSizeBytes / 1024).toFixed(2)} KB`,
       },
     ]);
@@ -145,11 +161,11 @@ export async function runProductionBaseline(): Promise<void> {
     try {
       // Run HTTP benchmarks
       const prodStaticRes = await runBenchmarkForUrl(
-        "Production Forge (Static)",
+        "Production Kyuu (Static)",
         `http://127.0.0.1:${prodPort}/users`,
       );
       const prodDynamicRes = await runBenchmarkForUrl(
-        "Production Forge (Dynamic :id)",
+        "Production Kyuu (Dynamic :id)",
         `http://127.0.0.1:${prodPort}/users/42`,
       );
       const expressStaticRes = await runBenchmarkForUrl(
@@ -179,6 +195,22 @@ export async function runProductionBaseline(): Promise<void> {
           Errors: r.errorCount,
         })),
       );
+
+      return {
+        buildBenchmark: {
+          tsCompileMs: tsTime,
+          routeDiscoveryMs: routesTime,
+          manifestGenMs: manifestTime,
+          totalOrchestrationMs: fullBuildTime,
+          artifactSizeBytes: artifactSizeBytes,
+        },
+        serverBenchmark: {
+          productionKyuuStatic: prodStaticRes,
+          productionKyuuDynamic: prodDynamicRes,
+          expressStatic: expressStaticRes,
+          expressDynamic: expressDynamicRes,
+        },
+      };
     } finally {
       await runnerResult.app.close();
       await new Promise<void>((res) => expressServer.close(() => res()));
@@ -188,10 +220,10 @@ export async function runProductionBaseline(): Promise<void> {
       rmSync(tempDir, { recursive: true, force: true });
     }
   }
-
-  console.log("\nBaseline measurement complete.\n");
 }
 
+export const runProductionBaseline = runProductionBaselineBenchmark;
+
 if (process.argv[1] && process.argv[1].endsWith("production-baseline.js")) {
-  void runProductionBaseline();
+  void runProductionBaselineBenchmark();
 }

@@ -8,15 +8,15 @@ import { getVersion } from "../version.js";
  */
 export async function scaffoldProject(options: ProjectCreationOptions): Promise<void> {
   const version = getVersion();
-  const forgeDepVersion = `^${version}`;
+  const kyuuDepVersion = `^${version}`;
 
   mkdirSync(options.directory, { recursive: true });
 
   if (options.language === "typescript") {
-    // 1. forge.config.ts
+    // 1. kyuu.config.ts
     writeFile(
-      join(options.directory, "forge.config.ts"),
-      `import { defineConfig } from "@forge/core";
+      join(options.directory, "kyuu.config.ts"),
+      `import { defineConfig } from "@kyuujs/core";
 
 export default defineConfig({
   server: {
@@ -34,15 +34,15 @@ export default defineConfig({
       private: true,
       type: "module",
       scripts: {
-        dev: "forge dev",
-        build: "forge build",
-        start: "forge start",
+        dev: "kyuu dev",
+        build: "kyuu build",
+        start: "kyuu start",
       },
       dependencies: {
-        "@forge/core": forgeDepVersion,
+        "@kyuujs/core": kyuuDepVersion,
       },
       devDependencies: {
-        "@forge/cli": forgeDepVersion,
+        "@kyuujs/cli": kyuuDepVersion,
         typescript: "^5.0.0",
       },
     };
@@ -59,7 +59,7 @@ export default defineConfig({
         skipLibCheck: true,
         outDir: "dist",
       },
-      include: ["src/**/*", "forge.config.ts"],
+      include: ["src/**/*", "kyuu.config.ts"],
     };
     writeFile(
       join(options.directory, "tsconfig.json"),
@@ -69,19 +69,19 @@ export default defineConfig({
     // 4. src/app/route.ts
     writeFile(
       join(options.directory, "src", "app", "route.ts"),
-      `import type { ForgeRequest, ForgeResponse } from "@forge/core";
+      `import type { Request, Response } from "@kyuujs/core";
 
-export const GET = async (_req: ForgeRequest, res: ForgeResponse) => {
-  return res.json({ message: "Hello from Forge!" });
+export const GET = async (_req: Request, res: Response) => {
+  return res.json({ message: "Hello from Kyuu!" });
 };
 `,
     );
   } else {
     // JavaScript project scaffolding
-    // 1. forge.config.js
+    // 1. kyuu.config.js
     writeFile(
-      join(options.directory, "forge.config.js"),
-      `import { defineConfig } from "@forge/core";
+      join(options.directory, "kyuu.config.js"),
+      `import { defineConfig } from "@kyuujs/core";
 
 export default defineConfig({
   server: {
@@ -99,14 +99,14 @@ export default defineConfig({
       private: true,
       type: "module",
       scripts: {
-        dev: "forge dev",
-        start: "forge start",
+        dev: "kyuu dev",
+        start: "kyuu start",
       },
       dependencies: {
-        "@forge/core": forgeDepVersion,
+        "@kyuujs/core": kyuuDepVersion,
       },
       devDependencies: {
-        "@forge/cli": forgeDepVersion,
+        "@kyuujs/cli": kyuuDepVersion,
       },
     };
     writeFile(join(options.directory, "package.json"), JSON.stringify(pkgContent, null, 2) + "\n");
@@ -115,7 +115,7 @@ export default defineConfig({
     writeFile(
       join(options.directory, "src", "app", "route.js"),
       `export const GET = async (_req, res) => {
-  return res.json({ message: "Hello from Forge!" });
+  return res.json({ message: "Hello from Kyuu!" });
 };
 `,
     );
@@ -127,6 +127,7 @@ export default defineConfig({
     join(options.directory, ".gitignore"),
     `node_modules/
 dist/
+.kyuu/
 .env
 *.log
 `,

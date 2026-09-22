@@ -14,7 +14,7 @@ describe("Application Configuration Integration", () => {
   let tempDir: string;
 
   beforeEach(() => {
-    tempDir = mkdtempSync(join(tmpdir(), "forge-app-config-test-"));
+    tempDir = mkdtempSync(join(tmpdir(), "kyuu-app-config-test-"));
   });
 
   afterEach(() => {
@@ -75,7 +75,7 @@ describe("Application Configuration Integration", () => {
 
   it("integrates loadConfig() result directly into createApp()", async () => {
     writeFileSync(
-      join(tempDir, "forge.config.ts"),
+      join(tempDir, "kyuu.config.ts"),
       `export default { server: { port: 7070 }, benchmarking: true };`,
       "utf8",
     );
@@ -88,10 +88,10 @@ describe("Application Configuration Integration", () => {
     expect(app.config.benchmarking.enabled).toBe(true);
   });
 
-  describe("Automatic Configuration Discovery During Forge Startup", () => {
-    it("automatically discovers forge.config.ts during loadApplicationContext startup", async () => {
+  describe("Automatic Configuration Discovery During Kyuu Startup", () => {
+    it("automatically discovers kyuu.config.ts during loadApplicationContext startup", async () => {
       writeFileSync(
-        join(tempDir, "forge.config.ts"),
+        join(tempDir, "kyuu.config.ts"),
         `export default { server: { port: 4321, host: "127.0.0.1" } };`,
         "utf8",
       );
@@ -110,16 +110,16 @@ describe("Application Configuration Integration", () => {
       await context.app.close();
     });
 
-    it("uses default configuration during startup when no forge.config.ts exists", async () => {
+    it("uses default configuration during startup when no kyuu.config.ts exists", async () => {
       const context = await loadApplicationContext({ projectRoot: tempDir });
       expect(context.config.server.port).toBe(3000);
       expect(context.config.server.host).toBe("127.0.0.1");
       expect(context.app.config.server.port).toBe(3000);
     });
 
-    it("verifies custom host from forge.config.ts reaches the HTTP server", async () => {
+    it("verifies custom host from kyuu.config.ts reaches the HTTP server", async () => {
       writeFileSync(
-        join(tempDir, "forge.config.ts"),
+        join(tempDir, "kyuu.config.ts"),
         `export default { server: { host: "127.0.0.1", port: 0 } };`,
         "utf8",
       );
@@ -137,9 +137,9 @@ describe("Application Configuration Integration", () => {
       await context.app.close();
     });
 
-    it("prevents startup and server creation when forge.config.ts is invalid", async () => {
+    it("prevents startup and server creation when kyuu.config.ts is invalid", async () => {
       writeFileSync(
-        join(tempDir, "forge.config.js"),
+        join(tempDir, "kyuu.config.js"),
         `export default { server: { port: "invalid-port" } };`,
         "utf8",
       );
@@ -149,19 +149,19 @@ describe("Application Configuration Integration", () => {
 
     it("guarantees direct createApp() remains filesystem-independent", () => {
       writeFileSync(
-        join(tempDir, "forge.config.ts"),
+        join(tempDir, "kyuu.config.ts"),
         `export default { server: { port: 9999 } };`,
         "utf8",
       );
 
-      // Direct createApp does not read forge.config.ts in tempDir
+      // Direct createApp does not read kyuu.config.ts in tempDir
       const app = createApp({ server: { port: 4000 } });
       expect(app.config.server.port).toBe(4000);
     });
 
     it("avoids redundant loading by sharing single resolved config reference", async () => {
       writeFileSync(
-        join(tempDir, "forge.config.ts"),
+        join(tempDir, "kyuu.config.ts"),
         `export default { server: { port: 5432 } };`,
         "utf8",
       );

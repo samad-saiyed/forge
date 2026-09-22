@@ -1,14 +1,13 @@
 {
-  "name": "@forge/cli",
-  "version": "0.0.0",
-  "private": true,
-  "description": "CLI tooling for Forge applications",
+  "name": "@kyuujs/cli",
+  "version": "0.1.0-alpha.0",
+  "description": "CLI tooling for Kyuu applications",
   "type": "module",
   "license": "MIT",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "bin": {
-    "forge": "./dist/bin.js"
+    "kyuu": "./dist/bin.js"
   },
   "exports": {
     ".": {
@@ -17,6 +16,6 @@
     }
   },
   "dependencies": {
-    "@forge/core": "workspace:*"
+    "@kyuujs/core": "workspace:*"
   }
 }

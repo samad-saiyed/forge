@@ -1,5 +1,5 @@
 import { resolve } from "node:path";
-import { BUILD_OUTPUT_DIR, startProductionServer, type ProductionRunnerResult } from "@forge/core";
+import { BUILD_OUTPUT_DIR, startProductionServer, type ProductionRunnerResult } from "@kyuujs/core";
 import type { BaseCliOptions, CliResult } from "../dispatcher.js";
 
 export interface StartCommandOptions extends BaseCliOptions {
@@ -20,7 +20,7 @@ export interface StartCommandResult extends CliResult {
 }
 
 /**
- * Handles the "forge start" command execution pipeline.
+ * Handles the "kyuu start" command execution pipeline.
  */
 export async function handleStartCommand(
   args: string[] = [],
@@ -46,7 +46,7 @@ export async function handleStartCommand(
     const serverUrl = `http://${displayHost}:${port}`;
 
     const outputLines = [
-      `Forge production server running at ${serverUrl}`,
+      `Kyuu production server running at ${serverUrl}`,
       "",
       `  Build output: ${BUILD_OUTPUT_DIR}`,
       `  Language:     ${runnerResult.manifest.metadata.language}`,
@@ -60,7 +60,7 @@ export async function handleStartCommand(
       const shutdown = async () => {
         try {
           await runnerResult.app.close();
-          writeOut("Forge server shut down gracefully.");
+          writeOut("Kyuu server shut down gracefully.");
         } catch {
           // ignore shutdown errors on exit
         }
@@ -81,7 +81,7 @@ export async function handleStartCommand(
     };
   } catch (err: unknown) {
     const errMessage = err instanceof Error ? err.message : String(err);
-    const errText = `Forge production server failed to start.\n\n${errMessage}`;
+    const errText = `Kyuu production server failed to start.\n\n${errMessage}`;
     writeErr(errText);
     return {
       exitCode: 1,

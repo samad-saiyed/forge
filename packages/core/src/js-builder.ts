@@ -45,7 +45,13 @@ function scanForTsExtension(dirPath: string): boolean {
     const fullPath = join(dirPath, entry.name);
     if (entry.isDirectory()) {
       const lower = entry.name.toLowerCase();
-      if (lower !== "node_modules" && lower !== "dist" && lower !== ".git" && lower !== ".forge") {
+      if (
+        lower !== "node_modules" &&
+        lower !== "dist" &&
+        lower !== ".git" &&
+        lower !== ".kyuu" &&
+        lower !== ".kyuu"
+      ) {
         if (scanForTsExtension(fullPath)) return true;
       }
     } else if (entry.isFile()) {
@@ -82,7 +88,8 @@ function scanJsFiles(dirPath: string): string[] {
           lower !== "dist" &&
           lower !== ".git" &&
           lower !== "coverage" &&
-          lower !== ".forge" &&
+          lower !== ".kyuu" &&
+          lower !== ".kyuu" &&
           lower !== "tests" &&
           lower !== "test"
         ) {
@@ -113,7 +120,7 @@ function scanJsFiles(dirPath: string): string[] {
 }
 
 /**
- * Processes a JavaScript Forge project for production build into the staging directory.
+ * Processes a JavaScript Kyuu project for production build into the staging directory.
  */
 export function processJavaScriptProject(options: JavaScriptBuildOptions): JavaScriptBuildResult {
   const projectRoot = resolve(options.projectRoot);

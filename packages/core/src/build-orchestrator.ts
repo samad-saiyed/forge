@@ -8,14 +8,14 @@ import { compileTypeScriptProject } from "./compiler.js";
 import { processJavaScriptProject } from "./js-builder.js";
 
 export interface BuildOptions {
-  /** Root directory of the Forge project to build */
+  /** Root directory of the Kyuu project to build */
   projectRoot: string;
 }
 
 export interface BuildResult {
   /** Resolved project root directory */
   projectRoot: string;
-  /** Final build output directory path (.forge/build) */
+  /** Final build output directory path (.kyuu/build) */
   buildDir: string;
   /** Project language detected for the build ("typescript" | "javascript") */
   language: "typescript" | "javascript";
@@ -158,7 +158,7 @@ export class BuildOrchestrator {
         );
       }
 
-      // 7. Promote staging output atomically to final build directory (.forge/build)
+      // 7. Promote staging output atomically to final build directory (.kyuu/build)
       const finalDir = this.outputManager.finalize();
 
       return {
@@ -179,7 +179,7 @@ export class BuildOrchestrator {
 }
 
 /**
- * Convenience helper to build a Forge project for production using BuildOrchestrator.
+ * Convenience helper to build a Kyuu project for production using BuildOrchestrator.
  */
 export async function buildProject(options: BuildOptions | string): Promise<BuildResult> {
   const opts: BuildOptions = typeof options === "string" ? { projectRoot: options } : options;

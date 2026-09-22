@@ -16,10 +16,10 @@ describe("Action 70.2 — Build Output Management", () => {
   const validManifest: BuildManifest = {
     metadata: {
       formatVersion: BUILD_FORMAT_VERSION,
-      forgeVersion: "0.1.0",
+      kyuuVersion: "0.1.0",
       builtAt: new Date().toISOString(),
       language: "typescript",
-      configPath: "forge.config.js",
+      configPath: "kyuu.config.js",
       appDir: "app",
     },
     routes: [
@@ -33,7 +33,7 @@ describe("Action 70.2 — Build Output Management", () => {
   };
 
   beforeEach(() => {
-    tempDir = join(tmpdir(), `forge-build-output-test-${Date.now()}-${Math.random()}`);
+    tempDir = join(tmpdir(), `kyuu-build-output-test-${Date.now()}-${Math.random()}`);
     mkdirSync(tempDir, { recursive: true });
     manager = new BuildOutputManager(tempDir);
   });

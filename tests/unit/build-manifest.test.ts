@@ -18,7 +18,7 @@ describe("Action 70.7 — Production Route Manifest", { timeout: 15000 }, () => 
   let manager: BuildOutputManager;
 
   beforeEach(() => {
-    tempDir = join(tmpdir(), `forge-build-manifest-test-${Date.now()}-${Math.random()}`);
+    tempDir = join(tmpdir(), `kyuu-build-manifest-test-${Date.now()}-${Math.random()}`);
     mkdirSync(tempDir, { recursive: true });
     writeFileSync(join(tempDir, "package.json"), JSON.stringify({ type: "module" }), "utf8");
     manager = new BuildOutputManager(tempDir);
@@ -43,13 +43,13 @@ describe("Action 70.7 — Production Route Manifest", { timeout: 15000 }, () => 
       projectRoot: tempDir,
       stagingDir,
       language: "typescript",
-      configPathRelative: "forge.config.js",
+      configPathRelative: "kyuu.config.js",
       routes: sampleRoutes,
     });
 
     expect(manifest.metadata.formatVersion).toBe(BUILD_FORMAT_VERSION);
     expect(manifest.metadata.language).toBe("typescript");
-    expect(manifest.metadata.configPath).toBe("forge.config.js");
+    expect(manifest.metadata.configPath).toBe("kyuu.config.js");
     expect(manifest.routes).toHaveLength(1);
     expect(manifest.routes[0]).toEqual(sampleRoutes[0]);
 
@@ -88,7 +88,7 @@ describe("Action 70.7 — Production Route Manifest", { timeout: 15000 }, () => 
       projectRoot: tempDir,
       stagingDir,
       language: "typescript",
-      configPathRelative: "forge.config.js",
+      configPathRelative: "kyuu.config.js",
       routes,
     });
 
@@ -120,7 +120,7 @@ describe("Action 70.7 — Production Route Manifest", { timeout: 15000 }, () => 
       projectRoot: tempDir,
       stagingDir,
       language: "typescript",
-      configPathRelative: "forge.config.js",
+      configPathRelative: "kyuu.config.js",
       routes,
     });
 
@@ -156,7 +156,7 @@ describe("Action 70.7 — Production Route Manifest", { timeout: 15000 }, () => 
       projectRoot: tempDir,
       stagingDir: stagingDir1,
       language: "typescript",
-      configPathRelative: "forge.config.js",
+      configPathRelative: "kyuu.config.js",
       routes: routesUnsorted,
     });
 
@@ -167,7 +167,7 @@ describe("Action 70.7 — Production Route Manifest", { timeout: 15000 }, () => 
       projectRoot: tempDir,
       stagingDir: stagingDir2,
       language: "typescript",
-      configPathRelative: "forge.config.js",
+      configPathRelative: "kyuu.config.js",
       routes: [...routesUnsorted].reverse(),
     });
 
@@ -195,7 +195,7 @@ describe("Action 70.7 — Production Route Manifest", { timeout: 15000 }, () => 
         projectRoot: tempDir,
         stagingDir,
         language: "typescript",
-        configPathRelative: "forge.config.js",
+        configPathRelative: "kyuu.config.js",
         routes: invalidAbsolute,
       }),
     ).rejects.toThrow(ManifestGenerationError);
@@ -225,7 +225,7 @@ describe("Action 70.7 — Production Route Manifest", { timeout: 15000 }, () => 
       projectRoot: tempDir,
       stagingDir,
       language: "javascript",
-      configPathRelative: "forge.config.js",
+      configPathRelative: "kyuu.config.js",
       routes,
     });
 
@@ -267,7 +267,7 @@ describe("Action 70.7 — Production Route Manifest", { timeout: 15000 }, () => 
       projectRoot: tempDir,
       stagingDir,
       language: "javascript",
-      configPathRelative: "forge.config.js",
+      configPathRelative: "kyuu.config.js",
       routes: discoveredRoutes,
     });
 

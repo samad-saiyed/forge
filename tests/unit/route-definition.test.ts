@@ -20,7 +20,7 @@ describe("defineRoute()", () => {
   let tempDir: string;
 
   beforeEach(() => {
-    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "forge-define-route-test-"));
+    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "kyuu-define-route-test-"));
   });
 
   afterEach(() => {

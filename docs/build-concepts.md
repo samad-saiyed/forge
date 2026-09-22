@@ -1,9 +1,9 @@
-# 1. What should `forge build` actually do?
+# 1. What should `kyuu build` actually do?
 
 I recommend:
 
 ```text
-forge build
+kyuu build
    │
    ├── locate project
    ├── load/validate configuration
@@ -16,7 +16,7 @@ forge build
 The output should be something like:
 
 ```text
-.forge/
+.kyuu/
 └── build/
     ├── ...
     └── manifest.json
@@ -24,13 +24,13 @@ The output should be something like:
 
 The exact directory/name can be decided based on the existing project conventions.
 
-The important part is that **`build` produces a clearly identifiable Forge-owned artifact**.
+The important part is that **`build` produces a clearly identifiable Kyuu-owned artifact**.
 
 ---
 
 # 2. I don't think we should bundle by default
 
-This is where I want Forge to remain deliberately different.
+This is where I want Kyuu to remain deliberately different.
 
 We don't need to immediately create:
 
@@ -77,7 +77,7 @@ Bundling introduces a substantial new system:
 - plugin ecosystem;
 - bundler-specific edge cases.
 
-We don't need that complexity merely to say Forge has a `build` command.
+We don't need that complexity merely to say Kyuu has a `build` command.
 
 **Bundling can be a later optimization if benchmarks justify it.**
 
@@ -104,11 +104,11 @@ But we have two reasonable choices.
 ### Option A — discover filesystem at `start`
 
 ```text
-forge build
+kyuu build
    ↓
 compile files
 
-forge start
+kyuu start
    ↓
 discover compiled filesystem routes
    ↓
@@ -120,7 +120,7 @@ serve
 ### Option B — build a route manifest
 
 ```text
-forge build
+kyuu build
    ↓
 discover routes
    ↓
@@ -130,7 +130,7 @@ generate manifest
 Then:
 
 ```text
-forge start
+kyuu start
    ↓
 read manifest
    ↓
@@ -159,7 +159,7 @@ It also fits very nicely with our existing filesystem routing work.
 Conceptually:
 
 ```text
-.forge/build/
+.kyuu/build/
 ├── server/
 │   ├── ...
 ├── routes/
@@ -189,21 +189,21 @@ The important architectural decision is:
 
 ---
 
-# 5. What happens to `forge.config.ts`?
+# 5. What happens to `kyuu.config.ts`?
 
 This deserves special treatment.
 
 We currently have:
 
 ```text
-forge.config.ts
+kyuu.config.ts
    ↓
 configuration loader
    ↓
 resolved config
 ```
 
-For `forge build`, we should load and validate it.
+For `kyuu build`, we should load and validate it.
 
 But I would **not blindly bake the entire resolved configuration into the build artifact**.
 
@@ -239,16 +239,16 @@ This becomes especially important when someone builds once and deploys the same 
 
 ---
 
-# 6. `forge start` should load runtime configuration
+# 6. `kyuu start` should load runtime configuration
 
 Therefore I recommend:
 
 ```text
-forge build
+kyuu build
    ↓
 build artifact
 
-forge start
+kyuu start
    ↓
 load runtime configuration
    ↓
@@ -260,11 +260,11 @@ start application
 Not:
 
 ```text
-forge build
+kyuu build
    ↓
 freeze everything forever
    ↓
-forge start
+kyuu start
 ```
 
 For example, the same build could theoretically run with:
@@ -285,12 +285,12 @@ That's a much healthier production model.
 
 ---
 
-# 7. What exactly does `forge start` require?
+# 7. What exactly does `kyuu start` require?
 
 I recommend:
 
 ```bash
-forge start
+kyuu start
 ```
 
 requires a successful build.
@@ -298,17 +298,17 @@ requires a successful build.
 If no artifact exists:
 
 ```text
-No Forge production build found.
+No Kyuu production build found.
 
 Run:
-  forge build
+  kyuu build
 ```
 
 This is much clearer than silently falling back to development behavior.
 
 And importantly:
 
-> `forge start` must never behave like `forge dev`.
+> `kyuu start` must never behave like `kyuu dev`.
 
 No watcher.
 
@@ -327,7 +327,7 @@ The intended architecture becomes:
 ```text
                     DEVELOPMENT
 
-forge dev
+kyuu dev
    │
    ├── config
    ├── source routes
@@ -340,7 +340,7 @@ forge dev
 
                     PRODUCTION
 
-forge build
+kyuu build
    │
    ├── config validation
    ├── source routes
@@ -351,7 +351,7 @@ forge build
        artifact
 
 
-forge start
+kyuu start
    │
    ├── runtime config
    ├── build manifest
@@ -405,12 +405,12 @@ This is another reason I don't want to prematurely create a filesystem-only prod
 
 ---
 
-# 10. `forge.config.ts` can potentially export application configuration
+# 10. `kyuu.config.ts` can potentially export application configuration
 
 We previously agreed that users mainly interact with:
 
 ```text
-forge.config.ts
+kyuu.config.ts
 ```
 
 rather than manually wiring bootstrap/listen logic.
@@ -420,11 +420,11 @@ So we should preserve that model.
 The configuration should describe the application, while the CLI owns the lifecycle:
 
 ```text
-forge.config.ts
+kyuu.config.ts
         ↓
-Forge CLI
+Kyuu CLI
         ↓
-Forge Core
+Kyuu Core
 ```
 
 No requirement for users to create:
@@ -509,7 +509,7 @@ Just preserve useful source-map information through the build.
 
 # 14. Build failures
 
-`forge build` should fail deterministically.
+`kyuu build` should fail deterministically.
 
 Examples:
 
@@ -518,7 +518,7 @@ TypeScript compilation failed
 ```
 
 ```text
-Invalid forge.config.ts
+Invalid kyuu.config.ts
 ```
 
 ```text
@@ -546,9 +546,9 @@ That gives us an atomic-ish build boundary.
 Running:
 
 ```bash
-forge build
-forge build
-forge build
+kyuu build
+kyuu build
+kyuu build
 ```
 
 should be deterministic.
@@ -556,9 +556,9 @@ should be deterministic.
 Don't accumulate:
 
 ```text
-.forge/build-1
-.forge/build-2
-.forge/build-3
+.kyuu/build-1
+.kyuu/build-2
+.kyuu/build-3
 ```
 
 unless there is a specific reason.
@@ -571,7 +571,7 @@ The current successful build should have a well-defined location.
 
 We should eventually have a way to remove stale artifacts.
 
-But **don't add `forge clean` yet** unless we discover that the build implementation genuinely requires it.
+But **don't add `kyuu clean` yet** unless we discover that the build implementation genuinely requires it.
 
 For Action 70, the build command itself should safely replace the previous build.
 
@@ -584,7 +584,7 @@ The artifact should contain enough metadata to know what generated it.
 For example:
 
 ```text
-Forge version
+Kyuu version
 build format/version
 project language
 route information
@@ -594,7 +594,7 @@ Don't over-design the manifest.
 
 But include an explicit **artifact format/version**.
 
-That becomes valuable later if Forge changes its build representation.
+That becomes valuable later if Kyuu changes its build representation.
 
 ---
 
@@ -623,7 +623,7 @@ copy artifact
   ↓
 different environment
   ↓
-forge start
+kyuu start
 ```
 
 to be conceptually possible.
@@ -632,7 +632,7 @@ to be conceptually possible.
 
 # 19. Security boundary
 
-`forge build` should not execute arbitrary application runtime behavior more than necessary.
+`kyuu build` should not execute arbitrary application runtime behavior more than necessary.
 
 Loading route modules/config may execute user code because they're JavaScript/TypeScript modules.
 
@@ -652,17 +652,17 @@ The build should validate/compile, not run the application as a server.
 
 # 20. Proposed final model
 
-If we lock this in, Forge becomes:
+If we lock this in, Kyuu becomes:
 
 ```text
              SOURCE PROJECT
 
-        forge.config.ts
+        kyuu.config.ts
                │
         src/app/**/*.ts
                │
                ▼
-         forge build
+         kyuu build
                │
        ┌───────┴────────┐
        │                │
@@ -670,15 +670,15 @@ If we lock this in, Forge becomes:
        │                │
        └───────┬────────┘
                ▼
-        .forge/build/
+        .kyuu/build/
                │
                ▼
-          forge start
+          kyuu start
                │
        runtime config
                │
                ▼
-        Forge Application
+        Kyuu Application
                │
                ▼
              HTTP
@@ -690,7 +690,7 @@ And development remains:
 src
  │
  ▼
-forge dev
+kyuu dev
  │
  ├── discover
  ├── start
@@ -721,7 +721,7 @@ I recommend we agree on these **before Action 70**:
 | HMR                                | **No**               |
 | Atomic/staged build output         | **Yes**              |
 | Build artifact version metadata    | **Yes**              |
-| `forge clean`                      | **Later**            |
+| `kyuu clean`                      | **Later**            |
 
 ### One thing I'd change from the table if we discover a constraint
 
@@ -731,4 +731,4 @@ It should be an optimization/description of the already-established route graph,
 
 That keeps us away from exactly the kind of framework duplication you were concerned about earlier.
 
-If this production model looks right to you, we can lock it and then I'll turn it into **Action 70 — `forge build`**, with implementation-level instructions and a strict Definition of Done.
+If this production model looks right to you, we can lock it and then I'll turn it into **Action 70 — `kyuu build`**, with implementation-level instructions and a strict Definition of Done.

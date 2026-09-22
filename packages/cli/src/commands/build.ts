@@ -1,5 +1,5 @@
 import { resolve } from "node:path";
-import { BUILD_OUTPUT_DIR, BuildOrchestrator, type BuildResult } from "@forge/core";
+import { BUILD_OUTPUT_DIR, BuildOrchestrator, type BuildResult } from "@kyuujs/core";
 import type { BaseCliOptions, CliResult } from "../dispatcher.js";
 
 export interface BuildCommandOptions extends BaseCliOptions {
@@ -14,7 +14,7 @@ export interface BuildCommandResult extends CliResult {
 }
 
 /**
- * Handles the "forge build" command execution pipeline.
+ * Handles the "kyuu build" command execution pipeline.
  */
 export async function handleBuildCommand(
   args: string[] = [],
@@ -32,7 +32,7 @@ export async function handleBuildCommand(
     const buildResult = await orchestrator.build();
 
     const outputLines = [
-      "Forge build complete.",
+      "Kyuu build complete.",
       "",
       `  Build output: ${BUILD_OUTPUT_DIR}`,
       `  Language:     ${buildResult.language}`,
@@ -49,7 +49,7 @@ export async function handleBuildCommand(
     };
   } catch (err: unknown) {
     const errMessage = err instanceof Error ? err.message : String(err);
-    const errText = `Forge build failed.\n\n${errMessage}`;
+    const errText = `Kyuu build failed.\n\n${errMessage}`;
     writeErr(errText);
     return {
       exitCode: 1,

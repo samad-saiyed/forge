@@ -19,7 +19,7 @@ describe("Action 70.10 — Artifact Hardening & Validation Unit Tests", () => {
   beforeEach(() => {
     tempDir = join(
       tmpdir(),
-      `forge-artifact-unit-test-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+      `kyuu-artifact-unit-test-${Date.now()}-${Math.random().toString(36).slice(2)}`,
     );
     mkdirSync(tempDir, { recursive: true });
   });
@@ -35,10 +35,10 @@ describe("Action 70.10 — Artifact Hardening & Validation Unit Tests", () => {
       const manifest: BuildManifest = {
         metadata: {
           formatVersion: "99.0",
-          forgeVersion: "0.1.0",
+          kyuuVersion: "0.1.0",
           builtAt: new Date().toISOString(),
           language: "typescript",
-          configPath: "forge.config.js",
+          configPath: "kyuu.config.js",
           appDir: "app",
         },
         routes: [],
@@ -56,7 +56,7 @@ describe("Action 70.10 — Artifact Hardening & Validation Unit Tests", () => {
       const manifest: BuildManifest = {
         metadata: {
           formatVersion: BUILD_FORMAT_VERSION,
-          forgeVersion: "0.1.0",
+          kyuuVersion: "0.1.0",
           builtAt: new Date().toISOString(),
           language: "typescript",
           configPath: "",
@@ -80,10 +80,10 @@ describe("Action 70.10 — Artifact Hardening & Validation Unit Tests", () => {
       const manifest: BuildManifest = {
         metadata: {
           formatVersion: BUILD_FORMAT_VERSION,
-          forgeVersion: "0.1.0",
+          kyuuVersion: "0.1.0",
           builtAt: new Date().toISOString(),
           language: "typescript",
-          configPath: "forge.config.js",
+          configPath: "kyuu.config.js",
           appDir: "app",
         },
         routes: [],
@@ -99,10 +99,10 @@ describe("Action 70.10 — Artifact Hardening & Validation Unit Tests", () => {
       const manifest: BuildManifest = {
         metadata: {
           formatVersion: BUILD_FORMAT_VERSION,
-          forgeVersion: "0.1.0",
+          kyuuVersion: "0.1.0",
           builtAt: new Date().toISOString(),
           language: "typescript",
-          configPath: "forge.config.js",
+          configPath: "kyuu.config.js",
           appDir: "app",
         },
         routes: [
@@ -127,10 +127,10 @@ describe("Action 70.10 — Artifact Hardening & Validation Unit Tests", () => {
       const manifest: BuildManifest = {
         metadata: {
           formatVersion: BUILD_FORMAT_VERSION,
-          forgeVersion: "0.1.0",
+          kyuuVersion: "0.1.0",
           builtAt: new Date().toISOString(),
           language: "typescript",
-          configPath: "forge.config.js",
+          configPath: "kyuu.config.js",
           appDir: "app",
         },
         routes: [
@@ -188,7 +188,7 @@ describe("Action 70.10 — Artifact Hardening & Validation Unit Tests", () => {
         projectRoot: tempDir,
         stagingDir,
         language: "typescript",
-        configPathRelative: "forge.config.js",
+        configPathRelative: "kyuu.config.js",
         routes: unorderedRoutes,
       });
 
@@ -196,7 +196,7 @@ describe("Action 70.10 — Artifact Hardening & Validation Unit Tests", () => {
         projectRoot: tempDir,
         stagingDir,
         language: "typescript",
-        configPathRelative: "forge.config.js",
+        configPathRelative: "kyuu.config.js",
         routes: [...unorderedRoutes].reverse(),
       });
 
@@ -219,7 +219,7 @@ describe("Action 70.10 — Artifact Hardening & Validation Unit Tests", () => {
           join(tempDir, "tsconfig.json"),
           JSON.stringify({ compilerOptions: { target: "ES2022", module: "NodeNext" } }),
         );
-        writeFileSync(join(tempDir, "forge.config.ts"), "export default {};");
+        writeFileSync(join(tempDir, "kyuu.config.ts"), "export default {};");
         mkdirSync(join(tempDir, "src", "app", "v1"), { recursive: true });
         writeFileSync(
           join(tempDir, "src", "app", "v1", "route.ts"),
@@ -240,7 +240,7 @@ describe("Action 70.10 — Artifact Hardening & Validation Unit Tests", () => {
         const orchestrator2 = new BuildOrchestrator({ projectRoot: tempDir });
         await expect(orchestrator2.build()).rejects.toThrow();
 
-        // 3. Confirm previous valid build in .forge/build remains valid and intact!
+        // 3. Confirm previous valid build in .kyuu/build remains valid and intact!
         const outputManager = new BuildOutputManager(tempDir);
         expect(outputManager.hasValidBuild()).toBe(true);
 

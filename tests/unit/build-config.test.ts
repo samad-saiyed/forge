@@ -20,17 +20,17 @@ describe("Action 70.5 — Production Configuration Validation", { timeout: 15000
   const validManifest: BuildManifest = {
     metadata: {
       formatVersion: BUILD_FORMAT_VERSION,
-      forgeVersion: "0.1.0",
+      kyuuVersion: "0.1.0",
       builtAt: new Date().toISOString(),
       language: "javascript",
-      configPath: "forge.config.js",
+      configPath: "kyuu.config.js",
       appDir: "src/app",
     },
     routes: [],
   };
 
   beforeEach(() => {
-    tempDir = join(tmpdir(), `forge-build-config-test-${Date.now()}-${Math.random()}`);
+    tempDir = join(tmpdir(), `kyuu-build-config-test-${Date.now()}-${Math.random()}`);
     mkdirSync(tempDir, { recursive: true });
     writeFileSync(join(tempDir, "package.json"), JSON.stringify({ type: "module" }), "utf8");
     manager = new BuildOutputManager(tempDir);
@@ -42,7 +42,7 @@ describe("Action 70.5 — Production Configuration Validation", { timeout: 15000
 
   it("loads and resolves valid JavaScript configuration for build pipeline", async () => {
     writeFileSync(
-      join(tempDir, "forge.config.js"),
+      join(tempDir, "kyuu.config.js"),
       `export default { server: { port: 8080, host: "0.0.0.0" } };`,
       "utf8",
     );
@@ -50,8 +50,8 @@ describe("Action 70.5 — Production Configuration Validation", { timeout: 15000
     const buildConfig = await loadProductionBuildConfig(tempDir);
 
     expect(buildConfig.language).toBe("javascript");
-    expect(buildConfig.configFile).toBe("forge.config.js");
-    expect(buildConfig.configPathRelative).toBe("forge.config.js");
+    expect(buildConfig.configFile).toBe("kyuu.config.js");
+    expect(buildConfig.configPathRelative).toBe("kyuu.config.js");
     expect(buildConfig.resolvedConfig.server.port).toBe(8080);
     expect(buildConfig.resolvedConfig.server.host).toBe("0.0.0.0");
   });
@@ -59,7 +59,7 @@ describe("Action 70.5 — Production Configuration Validation", { timeout: 15000
   it("loads and resolves valid TypeScript configuration mapping to compiled js path", async () => {
     writeFileSync(join(tempDir, "tsconfig.json"), "{}", "utf8");
     writeFileSync(
-      join(tempDir, "forge.config.ts"),
+      join(tempDir, "kyuu.config.ts"),
       `export default { server: { port: 9090 } };`,
       "utf8",
     );
@@ -67,8 +67,8 @@ describe("Action 70.5 — Production Configuration Validation", { timeout: 15000
     const buildConfig = await loadProductionBuildConfig(tempDir);
 
     expect(buildConfig.language).toBe("typescript");
-    expect(buildConfig.configFile).toBe("forge.config.ts");
-    expect(buildConfig.configPathRelative).toBe("forge.config.js");
+    expect(buildConfig.configFile).toBe("kyuu.config.ts");
+    expect(buildConfig.configPathRelative).toBe("kyuu.config.js");
     expect(buildConfig.resolvedConfig.server.port).toBe(9090);
   });
 
@@ -88,7 +88,7 @@ describe("Action 70.5 — Production Configuration Validation", { timeout: 15000
 
   it("throws BuildConfigError on invalid configuration shape or values", async () => {
     writeFileSync(
-      join(tempDir, "forge.config.js"),
+      join(tempDir, "kyuu.config.js"),
       `export default { server: { port: "not-a-number" } };`,
       "utf8",
     );
@@ -98,7 +98,7 @@ describe("Action 70.5 — Production Configuration Validation", { timeout: 15000
 
   it("surfaces underlying configuration module execution errors", async () => {
     writeFileSync(
-      join(tempDir, "forge.config.js"),
+      join(tempDir, "kyuu.config.js"),
       `throw new Error("Custom config evaluation failure");`,
       "utf8",
     );
@@ -109,8 +109,8 @@ describe("Action 70.5 — Production Configuration Validation", { timeout: 15000
   });
 
   it("throws BuildConfigError when multiple configuration files exist", async () => {
-    writeFileSync(join(tempDir, "forge.config.ts"), `export default {};`, "utf8");
-    writeFileSync(join(tempDir, "forge.config.js"), `export default {};`, "utf8");
+    writeFileSync(join(tempDir, "kyuu.config.ts"), `export default {};`, "utf8");
+    writeFileSync(join(tempDir, "kyuu.config.js"), `export default {};`, "utf8");
 
     await expect(loadProductionBuildConfig(tempDir)).rejects.toThrow(BuildConfigError);
   });
@@ -119,7 +119,7 @@ describe("Action 70.5 — Production Configuration Validation", { timeout: 15000
     // 1. Valid build finalized
     const stagingDir1 = manager.prepareStaging();
     writeFileSync(
-      join(tempDir, "forge.config.js"),
+      join(tempDir, "kyuu.config.js"),
       `export default { server: { port: 3000 } };`,
       "utf8",
     );
@@ -138,7 +138,7 @@ describe("Action 70.5 — Production Configuration Validation", { timeout: 15000
 
     // 2. Corrupt config for new build attempt
     writeFileSync(
-      join(tempDir, "forge.config.js"),
+      join(tempDir, "kyuu.config.js"),
       `export default { unknownOption: true };`,
       "utf8",
     );

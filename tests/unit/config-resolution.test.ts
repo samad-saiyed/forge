@@ -9,7 +9,7 @@ describe("Configuration Resolution and Validation (loadConfig)", () => {
   let tempDir: string;
 
   beforeEach(() => {
-    tempDir = mkdtempSync(join(tmpdir(), "forge-config-res-test-"));
+    tempDir = mkdtempSync(join(tmpdir(), "kyuu-config-res-test-"));
   });
 
   afterEach(() => {
@@ -26,7 +26,7 @@ describe("Configuration Resolution and Validation (loadConfig)", () => {
 
   it("fills in defaults for partial configuration", async () => {
     writeFileSync(
-      join(tempDir, "forge.config.ts"),
+      join(tempDir, "kyuu.config.ts"),
       `export default { server: { port: 4000 } };`,
       "utf8",
     );
@@ -42,7 +42,7 @@ describe("Configuration Resolution and Validation (loadConfig)", () => {
 
   it("preserves values for complete configuration", async () => {
     writeFileSync(
-      join(tempDir, "forge.config.ts"),
+      join(tempDir, "kyuu.config.ts"),
       `
       export default {
         server: { port: 8080, host: "0.0.0.0" },
@@ -66,7 +66,7 @@ describe("Configuration Resolution and Validation (loadConfig)", () => {
 
   it("rejects invalid server port string", async () => {
     writeFileSync(
-      join(tempDir, "forge.config.js"),
+      join(tempDir, "kyuu.config.js"),
       `export default { server: { port: "3000" } };`,
       "utf8",
     );
@@ -79,7 +79,7 @@ describe("Configuration Resolution and Validation (loadConfig)", () => {
 
   it("rejects invalid server port range", async () => {
     writeFileSync(
-      join(tempDir, "forge.config.js"),
+      join(tempDir, "kyuu.config.js"),
       `export default { server: { port: 99999 } };`,
       "utf8",
     );
@@ -89,7 +89,7 @@ describe("Configuration Resolution and Validation (loadConfig)", () => {
 
   it("rejects invalid option types for logging and development", async () => {
     writeFileSync(
-      join(tempDir, "forge.config.js"),
+      join(tempDir, "kyuu.config.js"),
       `export default { logging: "invalid-boolean" };`,
       "utf8",
     );
@@ -99,7 +99,7 @@ describe("Configuration Resolution and Validation (loadConfig)", () => {
 
   it("rejects invalid configuration structure and unknown options", async () => {
     writeFileSync(
-      join(tempDir, "forge.config.js"),
+      join(tempDir, "kyuu.config.js"),
       `export default { unknownOption: 123 };`,
       "utf8",
     );
@@ -110,7 +110,7 @@ describe("Configuration Resolution and Validation (loadConfig)", () => {
   it("produces expected resolved shape from valid defineConfig output", async () => {
     const indexPath = pathToFileURL(resolve("packages/core/src/index.ts")).href;
     writeFileSync(
-      join(tempDir, "forge.config.ts"),
+      join(tempDir, "kyuu.config.ts"),
       `
       import { defineConfig } from "${indexPath}";
       export default defineConfig({

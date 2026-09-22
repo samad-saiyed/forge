@@ -65,7 +65,7 @@ describe("Filesystem Routing Precedence & Conflict Resolution", () => {
   let tmpDir: string;
 
   beforeEach(async () => {
-    tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "forge-precedence-test-"));
+    tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "kyuu-precedence-test-"));
   });
 
   afterEach(async () => {

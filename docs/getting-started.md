@@ -1,6 +1,6 @@
-# Getting Started with Forge
+# Getting Started with Kyuu
 
-This guide explains how to set up, build, test, and run Forge locally.
+This guide explains how to set up, build, test, and run Kyuu locally.
 
 ---
 
@@ -16,8 +16,8 @@ This guide explains how to set up, build, test, and run Forge locally.
 1. **Clone the Repository:**
 
    ```bash
-   git clone https://github.com/samad-saiyed/forge.git
-   cd forge
+   git clone https://github.com/samad-saiyed/kyuu.git
+   cd kyuu
    ```
 
 2. **Install Dependencies:**
@@ -36,7 +36,7 @@ This guide explains how to set up, build, test, and run Forge locally.
 
 ## Development Workflow & Verification
 
-Forge provides standard quality scripts to verify the codebase:
+Kyuu provides standard quality scripts to verify the codebase:
 
 ```bash
 # Run all quality checks (linting, formatting check, tests, typecheck)
@@ -65,10 +65,10 @@ pnpm typecheck
 
 ## Quickstart Example
 
-Create a basic HTTP application with Forge:
+Create a basic HTTP application with Kyuu:
 
 ```typescript
-import { createApp } from "@forge/core";
+import { createApp } from "@kyuujs/core";
 
 const app = createApp();
 
@@ -94,11 +94,11 @@ console.log("Server listening on http://localhost:3000");
 The project is structured as a monorepo:
 
 ```text
-forge/
+kyuu/
 ├── packages/
-│   ├── core/         # Framework core (@forge/core)
-│   ├── cli/          # Command-line interface (@forge/cli)
-│   └── benchmark/    # Performance benchmarks (@forge/benchmark)
+│   ├── core/         # Framework core (@kyuujs/core)
+│   ├── cli/          # Command-line interface (@kyuujs/cli)
+│   └── benchmark/    # Performance benchmarks (@kyuujs/benchmark)
 ├── docs/             # Framework documentation
 ├── tests/            # Unit, integration, and type tests
 └── examples/         # Usage examples

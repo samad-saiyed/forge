@@ -13,7 +13,7 @@ export interface NewCommandOptions extends BaseCliOptions {
 }
 
 /**
- * Handles the "forge new <name>" command execution pipeline.
+ * Handles the "kyuu new <name>" command execution pipeline.
  */
 export async function handleNewCommand(
   args: string[] = [],
@@ -25,7 +25,7 @@ export async function handleNewCommand(
   const rawName = args[0];
 
   if (!rawName || rawName.trim().length === 0) {
-    const errText = "Error: Missing project name.\nUsage: forge new <name>";
+    const errText = "Error: Missing project name.\nUsage: kyuu new <name>";
     writeErr(errText);
     return { exitCode: 1, output: errText };
   }
@@ -88,7 +88,7 @@ export async function handleNewCommand(
 
   // 4. Report final success and next steps
   const successLines = [
-    `✔ Forge project "${creationOptions.name}" created successfully.`,
+    `✔ Kyuu project "${creationOptions.name}" created successfully.`,
     "",
     "Next steps:",
     `  cd ${creationOptions.name}`,

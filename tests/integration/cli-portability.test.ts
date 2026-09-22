@@ -28,7 +28,7 @@ describe("Action 70.10 — Production Portability & Independence Integration Tes
   beforeEach(() => {
     tempDir = join(
       tmpdir(),
-      `forge-cli-portability-test-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+      `kyuu-cli-portability-test-${Date.now()}-${Math.random().toString(36).slice(2)}`,
     );
     mkdirSync(tempDir, { recursive: true });
     stdoutLogs = [];
@@ -45,7 +45,7 @@ describe("Action 70.10 — Production Portability & Independence Integration Tes
     "1. Starts server and responds to HTTP requests when src/ directory and source config are completely removed",
     { timeout: 15000 },
     async () => {
-      // 1. Create project with TS source and forge.config.ts
+      // 1. Create project with TS source and kyuu.config.ts
       writeFileSync(
         join(tempDir, "tsconfig.json"),
         JSON.stringify({ compilerOptions: { target: "ES2022", module: "NodeNext" } }),
@@ -54,7 +54,7 @@ describe("Action 70.10 — Production Portability & Independence Integration Tes
         join(tempDir, "package.json"),
         JSON.stringify({ name: "test-app", type: "module" }),
       );
-      writeFileSync(join(tempDir, "forge.config.ts"), `export default { server: { port: 5201 } };`);
+      writeFileSync(join(tempDir, "kyuu.config.ts"), `export default { server: { port: 5201 } };`);
       mkdirSync(join(tempDir, "src", "app", "portable"), { recursive: true });
       writeFileSync(
         join(tempDir, "src", "app", "portable", "route.ts"),
@@ -65,15 +65,15 @@ describe("Action 70.10 — Production Portability & Independence Integration Tes
       const buildRes = await handleBuildCommand([], { projectRoot: tempDir });
       expect(buildRes.exitCode).toBe(0);
 
-      // 3. Remove source directory (src/) and source config file (forge.config.ts)
+      // 3. Remove source directory (src/) and source config file (kyuu.config.ts)
       rmSync(join(tempDir, "src"), { recursive: true, force: true });
-      rmSync(join(tempDir, "forge.config.ts"), { force: true });
+      rmSync(join(tempDir, "kyuu.config.ts"), { force: true });
       rmSync(join(tempDir, "tsconfig.json"), { force: true });
 
       expect(existsSync(join(tempDir, "src"))).toBe(false);
-      expect(existsSync(join(tempDir, "forge.config.ts"))).toBe(false);
+      expect(existsSync(join(tempDir, "kyuu.config.ts"))).toBe(false);
 
-      // 4. Run `forge start` from production artifact alone
+      // 4. Run `kyuu start` from production artifact alone
       const startRes = await handleStartCommand([], {
         projectRoot: tempDir,
         attachSignalHandlers: false,
@@ -101,7 +101,7 @@ describe("Action 70.10 — Production Portability & Independence Integration Tes
       join(tempDir, "package.json"),
       JSON.stringify({ name: "esm-app", type: "module" }),
     );
-    writeFileSync(join(tempDir, "forge.config.js"), `export default { server: { port: 5202 } };`);
+    writeFileSync(join(tempDir, "kyuu.config.js"), `export default { server: { port: 5202 } };`);
     mkdirSync(join(tempDir, "src", "app", "info"), { recursive: true });
     writeFileSync(
       join(tempDir, "src", "app", "info", "route.js"),

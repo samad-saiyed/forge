@@ -16,13 +16,13 @@ export interface ValidationIssue {
   message: string;
 }
 
-export class ForgeValidationError extends Error {
+export class KyuuValidationError extends Error {
   readonly code = "VALIDATION_ERROR" as const;
   readonly details: ValidationIssue[];
 
   constructor(details: ValidationIssue[], message = "Request validation failed") {
     super(message);
-    this.name = "ForgeValidationError";
+    this.name = "KyuuValidationError";
     this.details = details;
   }
 }
@@ -41,18 +41,18 @@ export class ResponseValidationError extends Error {
 export type SchemaResult<T> =
   { success: true; data: T } | { success: false; error: SchemaValidationError };
 
-export interface ForgeSchema<Output = unknown, Input = unknown> {
-  readonly kind: "forge-schema";
+export interface KyuuSchema<Output = unknown, Input = unknown> {
+  readonly kind: "kyuu-schema";
   validate(input: Input): SchemaResult<Output> | Promise<SchemaResult<Output>>;
 }
 
-export function isForgeSchema(value: unknown): value is ForgeSchema<unknown, unknown> {
+export function isKyuuSchema(value: unknown): value is KyuuSchema<unknown, unknown> {
   if (typeof value !== "object" || value === null) {
     return false;
   }
   const s = value as Record<string, unknown>;
   return (
-    (s.kind === "forge-schema" && typeof s.validate === "function") ||
+    ((s.kind === "kyuu-schema" || s.kind === "kyuu-schema") && typeof s.validate === "function") ||
     typeof s.safeParseAsync === "function" ||
     typeof s.safeParse === "function"
   );
@@ -60,9 +60,9 @@ export function isForgeSchema(value: unknown): value is ForgeSchema<unknown, unk
 
 export function createSchema<Output = unknown, Input = unknown>(
   validateFn: (input: Input) => SchemaResult<Output> | Promise<SchemaResult<Output>>,
-): ForgeSchema<Output, Input> {
+): KyuuSchema<Output, Input> {
   return {
-    kind: "forge-schema",
+    kind: "kyuu-schema",
     validate: validateFn,
   };
 }
@@ -77,7 +77,7 @@ export async function executeSchemaValidation(
 
   const s = schema as Record<string, unknown>;
 
-  if (s.kind === "forge-schema" && typeof s.validate === "function") {
+  if ((s.kind === "kyuu-schema" || s.kind === "kyuu-schema") && typeof s.validate === "function") {
     return await (
       s as unknown as {
         validate: (input: unknown) => SchemaResult<unknown> | Promise<SchemaResult<unknown>>;
@@ -101,7 +101,7 @@ export async function executeSchemaValidation(
       return { success: true, data: res.data };
     }
     const issues: SchemaIssue[] = (res.error?.issues ?? []).map((i) => ({
-      path: i.path ?? [],
+      path: i.path,
       message: i.message,
       code: i.code,
     }));
@@ -109,7 +109,7 @@ export async function executeSchemaValidation(
   }
 
   if (typeof s.safeParse === "function") {
-    const res = await (
+    const rawRes = (
       s as unknown as {
         safeParse: (input: unknown) =>
           | {
@@ -128,11 +128,14 @@ export async function executeSchemaValidation(
             }>;
       }
     ).safeParse(input);
+
+    const res = rawRes instanceof Promise ? await rawRes : rawRes;
+
     if (res.success) {
       return { success: true, data: res.data };
     }
     const issues: SchemaIssue[] = (res.error?.issues ?? []).map((i) => ({
-      path: i.path ?? [],
+      path: i.path,
       message: i.message,
       code: i.code,
     }));
@@ -140,34 +143,75 @@ export async function executeSchemaValidation(
   }
 
   if (typeof s.validate === "function") {
-    return await (
-      s as unknown as {
-        validate: (input: unknown) => SchemaResult<unknown> | Promise<SchemaResult<unknown>>;
+    try {
+      const rawRes = (
+        s as unknown as {
+          validate: (input: unknown) => unknown;
+        }
+      ).validate(input);
+      const res = rawRes instanceof Promise ? await rawRes : rawRes;
+      if (res && typeof res === "object" && "success" in res) {
+        return res as SchemaResult<unknown>;
       }
-    ).validate(input);
+      return { success: true, data: res };
+    } catch (err) {
+      const issues: SchemaIssue[] = [];
+      const errObj = err as {
+        issues?: Array<{ path?: (string | number)[]; message?: string; code?: string }>;
+      };
+      if (
+        errObj &&
+        typeof errObj === "object" &&
+        "issues" in errObj &&
+        Array.isArray(errObj.issues)
+      ) {
+        for (const i of errObj.issues) {
+          issues.push({
+            path: i.path ?? [],
+            message: i.message ?? "Validation failed",
+            code: i.code,
+          });
+        }
+      } else if (err instanceof Error) {
+        issues.push({ path: [], message: err.message });
+      } else {
+        issues.push({ path: [], message: "Validation failed" });
+      }
+      return { success: false, error: { issues } };
+    }
   }
 
-  if (typeof s.parseAsync === "function" || typeof s.parse === "function") {
+  if (typeof s.parse === "function") {
     try {
-      const data =
-        typeof s.parseAsync === "function"
-          ? await (s as unknown as { parseAsync: (i: unknown) => Promise<unknown> }).parseAsync(
-              input,
-            )
-          : (s as unknown as { parse: (i: unknown) => unknown }).parse(input);
-      return { success: true, data };
-    } catch (err: unknown) {
-      const e = err as {
-        issues?: Array<{ path?: (string | number)[]; message: string; code?: string }>;
-        message?: string;
+      const rawRes = (
+        s as unknown as {
+          parse: (input: unknown) => unknown;
+        }
+      ).parse(input);
+      const res = rawRes instanceof Promise ? await rawRes : rawRes;
+      return { success: true, data: res };
+    } catch (err) {
+      const issues: SchemaIssue[] = [];
+      const errObj = err as {
+        issues?: Array<{ path?: (string | number)[]; message?: string; code?: string }>;
       };
-      const issues: SchemaIssue[] = (e?.issues ?? []).map((i) => ({
-        path: i.path ?? [],
-        message: i.message,
-        code: i.code,
-      }));
-      if (issues.length === 0) {
-        issues.push({ path: [], message: e.message ?? "Validation failed" });
+      if (
+        errObj &&
+        typeof errObj === "object" &&
+        "issues" in errObj &&
+        Array.isArray(errObj.issues)
+      ) {
+        for (const i of errObj.issues) {
+          issues.push({
+            path: i.path ?? [],
+            message: i.message ?? "Validation failed",
+            code: i.code,
+          });
+        }
+      } else if (err instanceof Error) {
+        issues.push({ path: [], message: err.message });
+      } else {
+        issues.push({ path: [], message: "Validation failed" });
       }
       return { success: false, error: { issues } };
     }
@@ -177,7 +221,7 @@ export async function executeSchemaValidation(
 }
 
 export type InferSchemaOutput<S> =
-  S extends ForgeSchema<infer Output, unknown>
+  S extends KyuuSchema<infer Output, unknown>
     ? Output
     : S extends { _output: infer Output }
       ? Output

@@ -76,7 +76,7 @@ describe("Application HTTP runtime", () => {
         {
           hostname: "127.0.0.1",
           port: address.port,
-          path: "/api/greet?name=Forge",
+          path: "/api/greet?name=Kyuu",
           method: "GET",
         },
         (res) => {
@@ -99,7 +99,7 @@ describe("Application HTTP runtime", () => {
 
     expect(response.statusCode).toBe(200);
     expect(response.contentType).toBe("application/json; charset=utf-8");
-    expect(JSON.parse(response.body)).toEqual({ message: "Hello, Forge!" });
+    expect(JSON.parse(response.body)).toEqual({ message: "Hello, Kyuu!" });
 
     await app.close();
   });

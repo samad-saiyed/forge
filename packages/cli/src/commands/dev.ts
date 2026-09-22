@@ -1,6 +1,6 @@
 import { existsSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { findConfigFile } from "@forge/core";
+import { findConfigFile } from "@kyuujs/core";
 import type { BaseCliOptions, CliResult } from "../dispatcher.js";
 import { startDevServer, type DevServerController } from "../runner/dev-runner.js";
 
@@ -15,7 +15,7 @@ export interface DevCommandResult extends CliResult {
 }
 
 /**
- * Handles the "forge dev" command execution pipeline.
+ * Handles the "kyuu dev" command execution pipeline.
  */
 export async function handleDevCommand(
   args: string[] = [],
@@ -33,12 +33,12 @@ export async function handleDevCommand(
 
   if (!configFile && !hasPkgJson) {
     const errText = [
-      "Forge project not found.",
+      "Kyuu project not found.",
       "",
-      "Could not locate forge.config.ts from:",
+      "Could not locate kyuu.config.ts from:",
       `  ${projectRoot}`,
       "",
-      'Run "forge new <name>" to create a new project.',
+      'Run "kyuu new <name>" to create a new project.',
     ].join("\n");
     writeErr(errText);
     return { exitCode: 3, output: errText };

@@ -4,8 +4,8 @@ const app = createApp();
 
 app.get("/", (_req, res) => {
   res.json({
-    framework: "Forge",
-    message: "Welcome to Forge framework!",
+    framework: "Kyuu",
+    message: "Welcome to Kyuu framework!",
     timestamp: new Date().toISOString(),
   });
 });
@@ -25,7 +25,7 @@ app.post("/echo", (req, res) => {
 });
 
 app.listen(3000);
-console.log("🚀 Forge server is running at http://localhost:3000");
+console.log("🚀 Kyuu server is running at http://localhost:3000");
 console.log("Try visiting in browser or curl:");
 console.log("  http://localhost:3000/");
 console.log("  http://localhost:3000/users/42");

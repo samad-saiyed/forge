@@ -44,7 +44,7 @@ describe("Action 72.7 — Zod Integration with Filesystem Routing", () => {
   let tempDir: string;
 
   beforeEach(() => {
-    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "forge-zod-fs-routing-test-"));
+    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "kyuu-zod-fs-routing-test-"));
   });
 
   afterEach(() => {

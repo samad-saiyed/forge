@@ -1,7 +1,7 @@
-# Forge — Project Specification
+# Kyuu — Project Specification
 
 **Status:** Experimental / In Development  
-**Codename:** Forge  
+**Codename:** Kyuu  
 **Project Type:** Node.js Backend Framework  
 **Primary Language:** TypeScript  
 **Runtime:** Node.js
@@ -10,13 +10,13 @@
 
 ## 1. Project Summary
 
-Forge is an experimental Node.js backend framework designed to provide the **simplicity and familiarity of Express.js** while introducing a more opinionated, structured, and scalable application architecture inspired by the developer experience of frameworks such as Next.js and NestJS.
+Kyuu is an experimental Node.js backend framework designed to provide the **simplicity and familiarity of Express.js** while introducing a more opinionated, structured, and scalable application architecture inspired by the developer experience of frameworks such as Next.js and NestJS.
 
 The primary goal is **not to outperform Fastify**.
 
-The primary performance requirement is that Forge should not be meaningfully worse than Express under comparable workloads, while providing significantly more built-in structure and developer tooling.
+The primary performance requirement is that Kyuu should not be meaningfully worse than Express under comparable workloads, while providing significantly more built-in structure and developer tooling.
 
-Forge aims to make it easy to start a small API while also providing conventions that remain useful as an application grows into a large production backend.
+Kyuu aims to make it easy to start a small API while also providing conventions that remain useful as an application grows into a large production backend.
 
 The framework will combine:
 
@@ -44,7 +44,7 @@ The project will be developed incrementally, with performance, developer experie
 
 # 2. Core Vision
 
-Forge should answer a common problem with Node.js backend development:
+Kyuu should answer a common problem with Node.js backend development:
 
 > Express provides an excellent minimal HTTP foundation, but it leaves many architectural decisions entirely to the application developer.
 
@@ -62,7 +62,7 @@ As applications become larger, teams repeatedly need to decide:
 - How applications should be deployed
 - How applications should scale
 
-Forge should provide sensible conventions for these concerns without forcing developers into an unnecessarily complex programming model.
+Kyuu should provide sensible conventions for these concerns without forcing developers into an unnecessarily complex programming model.
 
 The desired experience is:
 
@@ -74,7 +74,7 @@ The desired experience is:
 
 ## 3.1 Express-Like Developer Experience
 
-A developer familiar with Express should immediately understand basic Forge code.
+A developer familiar with Express should immediately understand basic Kyuu code.
 
 The framework should support an API conceptually similar to:
 
@@ -98,17 +98,17 @@ app.post("/users", async (req, res) => {
 app.listen(3000);
 ```
 
-Forge should not introduce unnecessary abstractions simply for the sake of being different.
+Kyuu should not introduce unnecessary abstractions simply for the sake of being different.
 
 ---
 
 ## 3.2 Opinionated Application Architecture
 
-Forge should provide a predictable application structure.
+Kyuu should provide a predictable application structure.
 
 Developers should not need to invent their own project architecture for every project.
 
-A Forge application should eventually resemble:
+A Kyuu application should eventually resemble:
 
 ```text
 src/
@@ -119,7 +119,7 @@ src/
 ├── jobs/
 └── lib/
 
-forge.config.ts
+kyuu.config.ts
 ```
 
 Larger applications may use additional conventions such as:
@@ -140,7 +140,7 @@ The framework should favor **clear conventions over unlimited structural freedom
 
 ## 3.3 Filesystem-Based Conventions
 
-Forge should provide a Next.js-inspired filesystem convention for backend applications.
+Kyuu should provide a Next.js-inspired filesystem convention for backend applications.
 
 Correct folder and file names should have semantic meaning.
 
@@ -173,7 +173,7 @@ The important principle is:
 
 ## 3.4 TypeScript First
 
-Forge will be designed with TypeScript as the recommended development experience.
+Kyuu will be designed with TypeScript as the recommended development experience.
 
 TypeScript should provide:
 
@@ -189,7 +189,7 @@ TypeScript should provide:
 
 JavaScript must remain supported.
 
-Forge should not require TypeScript at runtime.
+Kyuu should not require TypeScript at runtime.
 
 ---
 
@@ -199,7 +199,7 @@ Performance is an explicit project concern.
 
 ## 4.1 Primary Requirement
 
-Forge should **not be meaningfully slower than Express** under comparable workloads.
+Kyuu should **not be meaningfully slower than Express** under comparable workloads.
 
 Fastify-level performance is not a hard requirement.
 
@@ -207,7 +207,7 @@ The project is not primarily intended to become a benchmark-winning HTTP framewo
 
 Instead:
 
-> Forge should provide substantially more developer experience and architecture while retaining good Node.js HTTP performance.
+> Kyuu should provide substantially more developer experience and architecture while retaining good Node.js HTTP performance.
 
 ---
 
@@ -235,18 +235,18 @@ The framework should avoid unnecessary overhead in the HTTP request hot path.
 
 ## 4.3 Benchmarking
 
-Forge will have a dedicated benchmarking package.
+Kyuu will have a dedicated benchmarking package.
 
 Potential package:
 
 ```text
-@forge/benchmark
+@kyuujs/benchmark
 ```
 
 Benchmarking should eventually compare:
 
 ```text
-Forge
+Kyuu
 Express
 Fastify
 ```
@@ -271,7 +271,7 @@ Performance regressions should be detectable during development and potentially 
 
 # 5. Core HTTP Framework
 
-The initial Forge runtime should remain relatively small.
+The initial Kyuu runtime should remain relatively small.
 
 The core should provide:
 
@@ -292,7 +292,7 @@ The underlying HTTP implementation should use Node.js's native HTTP capabilities
 
 # 6. Routing
 
-Forge should support familiar Express-style routing.
+Kyuu should support familiar Express-style routing.
 
 Expected capabilities include:
 
@@ -334,7 +334,7 @@ with appropriate TypeScript support.
 
 # 7. Middleware
 
-Forge should provide an Express-like middleware model.
+Kyuu should provide an Express-like middleware model.
 
 Conceptually:
 
@@ -362,7 +362,7 @@ Middleware performance should be benchmarked because middleware execution occurs
 
 # 8. Request API
 
-Forge should provide a familiar request abstraction.
+Kyuu should provide a familiar request abstraction.
 
 Expected capabilities include:
 
@@ -383,7 +383,7 @@ Where practical, expensive parsing operations should be lazy or otherwise optimi
 
 # 9. Response API
 
-Forge should provide an Express-like response API.
+Kyuu should provide an Express-like response API.
 
 Expected capabilities include:
 
@@ -411,7 +411,7 @@ The framework should correctly handle:
 
 # 10. Error Handling
 
-Forge should provide predictable application error handling.
+Kyuu should provide predictable application error handling.
 
 It should support:
 
@@ -429,18 +429,18 @@ The framework should avoid leaking sensitive internal information in production.
 
 # 11. Configuration
 
-Forge should provide a central configuration file.
+Kyuu should provide a central configuration file.
 
 The intended concept is similar to:
 
 ```text
-forge.config.ts
+kyuu.config.ts
 ```
 
 Example:
 
 ```ts
-import { defineConfig } from "forge";
+import { defineConfig } from "kyuu";
 
 export default defineConfig({
   logging: true,
@@ -476,19 +476,19 @@ The configuration system should be designed so these future capabilities can be 
 
 # 12. CLI
 
-Forge should eventually have a CLI inspired by the developer experience of NestJS and similar frameworks.
+Kyuu should eventually have a CLI inspired by the developer experience of NestJS and similar frameworks.
 
 Potential commands:
 
 ```bash
-forge new my-api
-forge dev
-forge build
-forge start
-forge generate
-forge routes
-forge benchmark
-forge doctor
+kyuu new my-api
+kyuu dev
+kyuu build
+kyuu start
+kyuu generate
+kyuu routes
+kyuu benchmark
+kyuu doctor
 ```
 
 The CLI should automate repetitive work rather than hide important framework behavior.
@@ -497,12 +497,12 @@ The CLI should automate repetitive work rather than hide important framework beh
 
 # 13. Code Generation
 
-Forge should eventually generate common application structures.
+Kyuu should eventually generate common application structures.
 
 Examples:
 
 ```bash
-forge generate resource users
+kyuu generate resource users
 ```
 
 could generate something like:
@@ -529,7 +529,7 @@ Jobs
 Repositories
 ```
 
-Generated structures should follow Forge's current conventions automatically.
+Generated structures should follow Kyuu's current conventions automatically.
 
 ---
 
@@ -537,7 +537,7 @@ Generated structures should follow Forge's current conventions automatically.
 
 Filesystem conventions should not completely replace the traditional programmatic API.
 
-Forge should support both:
+Kyuu should support both:
 
 ### Convention-based
 
@@ -553,7 +553,7 @@ and:
 app.get("/health", healthHandler);
 ```
 
-This allows developers to use Forge's conventions where they are useful while retaining flexibility for special cases.
+This allows developers to use Kyuu's conventions where they are useful while retaining flexibility for special cases.
 
 ---
 
@@ -561,7 +561,7 @@ This allows developers to use Forge's conventions where they are useful while re
 
 Database support should be easy to configure but should not unnecessarily become part of the HTTP runtime core.
 
-Forge should provide conventions and integrations around databases.
+Kyuu should provide conventions and integrations around databases.
 
 Potential structure:
 
@@ -582,7 +582,7 @@ MongoDB
 
 The exact database libraries should be evaluated when this phase is implemented.
 
-Forge should focus on:
+Kyuu should focus on:
 
 - Configuration
 - Lifecycle
@@ -597,12 +597,12 @@ rather than reinventing database drivers or ORMs.
 
 # 16. Redis Integration
 
-Redis should eventually be available as a first-class Forge integration.
+Redis should eventually be available as a first-class Kyuu integration.
 
 Potential package:
 
 ```text
-@forge/redis
+@kyuujs/redis
 ```
 
 Potential responsibilities:
@@ -626,7 +626,7 @@ redis({
 
 # 17. Background Jobs
 
-Forge should provide an opinionated way to organize background jobs.
+Kyuu should provide an opinionated way to organize background jobs.
 
 Potential structure:
 
@@ -649,7 +649,7 @@ defineJob({
 });
 ```
 
-Forge should prefer integrating mature queue technologies rather than reinventing a production queue implementation.
+Kyuu should prefer integrating mature queue technologies rather than reinventing a production queue implementation.
 
 Potential technologies will be evaluated later.
 
@@ -695,7 +695,7 @@ Logging should be designed with performance in mind.
 
 # 19. Docker and Deployment
 
-Forge should be Docker-friendly from the beginning, even though sophisticated Docker tooling will be implemented later.
+Kyuu should be Docker-friendly from the beginning, even though sophisticated Docker tooling will be implemented later.
 
 The framework should eventually be able to generate or assist with:
 
@@ -708,14 +708,14 @@ docker-compose.yml
 Potential CLI functionality:
 
 ```bash
-forge docker
+kyuu docker
 ```
 
 or:
 
 ```bash
-forge add postgres
-forge add redis
+kyuu add postgres
+kyuu add redis
 ```
 
 The goal is to make common development and deployment infrastructure straightforward without hiding Docker itself.
@@ -724,7 +724,7 @@ The goal is to make common development and deployment infrastructure straightfor
 
 # 20. Scaling and Multi-Core Architecture
 
-Scaling is a long-term Forge feature.
+Scaling is a long-term Kyuu feature.
 
 The configuration system should eventually support something conceptually similar to:
 
@@ -745,7 +745,7 @@ workers
 Potential architecture:
 
 ```text
-                 Forge
+                 Kyuu
                    │
               Master Process
                    │
@@ -771,7 +771,7 @@ This should be implemented only after the core runtime is stable.
 
 # 21. Production Readiness
 
-Forge should eventually provide sensible production behavior.
+Kyuu should eventually provide sensible production behavior.
 
 Important areas include:
 
@@ -824,14 +824,14 @@ Security decisions should be based on the actual framework architecture and curr
 
 # 22. Developer Experience
 
-Developer experience is one of Forge's primary goals.
+Developer experience is one of Kyuu's primary goals.
 
 The framework should provide useful feedback during development.
 
 Example:
 
 ```text
-Forge
+Kyuu
 
 ✓ Server started
 ✓ Configuration loaded
@@ -849,7 +849,7 @@ DELETE /users/:id
 
 Errors should be actionable.
 
-A good Forge error should communicate:
+A good Kyuu error should communicate:
 
 ```text
 What happened
@@ -862,10 +862,10 @@ How to fix it
 
 # 23. Route Inspection
 
-Forge should eventually provide a route inspection command:
+Kyuu should eventually provide a route inspection command:
 
 ```bash
-forge routes
+kyuu routes
 ```
 
 Example:
@@ -884,10 +884,10 @@ This should be particularly useful for filesystem-generated routes.
 
 # 24. Project Diagnostics
 
-Forge should eventually provide:
+Kyuu should eventually provide:
 
 ```bash
-forge doctor
+kyuu doctor
 ```
 
 Potential checks:
@@ -909,19 +909,19 @@ The command should help developers identify common setup problems quickly.
 
 # 25. Package Architecture
 
-Forge should be modular.
+Kyuu should be modular.
 
 The core runtime should not contain every feature.
 
 Potential package ecosystem:
 
 ```text
-@forge/core
-@forge/cli
-@forge/benchmark
-@forge/redis
-@forge/postgres
-@forge/jobs
+@kyuujs/core
+@kyuujs/cli
+@kyuujs/benchmark
+@kyuujs/redis
+@kyuujs/postgres
+@kyuujs/jobs
 ```
 
 Additional packages may be created as the project evolves.
@@ -964,7 +964,7 @@ It should emerge after the framework's core extension points become clear.
 
 # 27. Testing Requirements
 
-Every major Forge feature should have automated tests.
+Every major Kyuu feature should have automated tests.
 
 Testing should include:
 
@@ -1024,7 +1024,7 @@ Large middleware chains
 
 # 28. Benchmarking Requirements
 
-Benchmarking is not optional for performance-sensitive Forge components.
+Benchmarking is not optional for performance-sensitive Kyuu components.
 
 Major runtime changes should be evaluated against an established baseline.
 
@@ -1050,7 +1050,7 @@ Benchmark results should not be presented as meaningful unless the testing condi
 
 # 29. Real-World Validation
 
-Forge should not be considered mature solely because its unit tests pass.
+Kyuu should not be considered mature solely because its unit tests pass.
 
 The framework should eventually be used to build real applications.
 
@@ -1083,7 +1083,7 @@ Purpose:
 
 ### Large Application
 
-Use Forge conventions extensively.
+Use Kyuu conventions extensively.
 
 Include:
 
@@ -1103,13 +1103,13 @@ Testing
 
 Purpose:
 
-> Determine whether Forge's architecture remains useful as application complexity increases.
+> Determine whether Kyuu's architecture remains useful as application complexity increases.
 
 ---
 
-# 30. What Forge Is Not
+# 30. What Kyuu Is Not
 
-Forge is not intended to be:
+Kyuu is not intended to be:
 
 - A Fastify clone
 - An Express fork
@@ -1122,17 +1122,17 @@ Forge is not intended to be:
 - A framework that hides Node.js completely
 - A framework that requires every application to use every feature
 
-Forge should integrate with existing technologies where appropriate.
+Kyuu should integrate with existing technologies where appropriate.
 
 ---
 
 # 31. Core Design Philosophy
 
-Forge should follow these principles throughout development.
+Kyuu should follow these principles throughout development.
 
 ### Familiarity
 
-An Express developer should be able to understand basic Forge code immediately.
+An Express developer should be able to understand basic Kyuu code immediately.
 
 ### Convention
 
@@ -1170,7 +1170,7 @@ Performance and architectural decisions should be validated through actual testi
 
 # 32. Non-Goals for Early Development
 
-The early versions of Forge should **not** attempt to implement everything described in this document.
+The early versions of Kyuu should **not** attempt to implement everything described in this document.
 
 In particular, the initial development should focus on:
 
@@ -1186,7 +1186,7 @@ Testing
 Benchmarking
 ```
 
-Only after these foundations are stable should Forge move toward:
+Only after these foundations are stable should Kyuu move toward:
 
 ```text
 Filesystem routing
@@ -1227,18 +1227,18 @@ Complexity should be justified by a concrete requirement.
 
 # 34. Success Criteria
 
-Forge will be successful if a developer can create a backend application and experience the following progression:
+Kyuu will be successful if a developer can create a backend application and experience the following progression:
 
 ### Initial Project
 
 ```bash
-forge new my-api
+kyuu new my-api
 ```
 
 ### Development
 
 ```bash
-forge dev
+kyuu dev
 ```
 
 ### Familiar API
@@ -1275,7 +1275,7 @@ Docker
 ### Performance
 
 ```text
-Forge ≈ Express
+Kyuu ≈ Express
 ```
 
 without requiring developers to manually design every architectural convention themselves.
@@ -1284,12 +1284,12 @@ without requiring developers to manually design every architectural convention t
 
 # 35. Long-Term Vision
 
-The long-term vision for Forge is to become a complete development platform for Node.js backend applications.
+The long-term vision for Kyuu is to become a complete development platform for Node.js backend applications.
 
-A mature Forge project should provide:
+A mature Kyuu project should provide:
 
 ```text
-                    Forge
+                    Kyuu
                       │
        ┌──────────────┼──────────────┐
        │              │              │
@@ -1318,7 +1318,7 @@ The framework should make the **common path extremely easy**, while still allowi
 
 # 36. Current Project Status
 
-**Forge is currently in the planning stage.**
+**Kyuu is currently in the planning stage.**
 
 No implementation has been committed yet.
 
@@ -1328,7 +1328,7 @@ The immediate next objective is:
 
 The first meaningful milestone after that is:
 
-> **A minimal Forge application capable of serving HTTP requests with an Express-like API.**
+> **A minimal Kyuu application capable of serving HTTP requests with an Express-like API.**
 
 The project should grow from that small core rather than attempting to implement the entire vision simultaneously.
 
@@ -1338,9 +1338,9 @@ The project should grow from that small core rather than attempting to implement
 
 This specification defines:
 
-- What Forge is
-- Why Forge exists
-- What Forge should eventually provide
+- What Kyuu is
+- Why Kyuu exists
+- What Kyuu should eventually provide
 - What principles guide development
 - What the framework should and should not attempt to be
 - The intended technical direction

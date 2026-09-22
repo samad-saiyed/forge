@@ -6,13 +6,13 @@ import {
   DEFAULT_CONFIG,
   Application,
   createApp,
-  type ForgeConfigInput,
-  type ResolvedForgeConfig,
+  type KyuuConfigInput,
+  type ResolvedKyuuConfig,
 } from "../../packages/core/src/index.js";
 
 describe("Configuration System Foundation", () => {
   it("accepts valid configuration via defineConfig()", () => {
-    const config: ForgeConfigInput = defineConfig({
+    const config: KyuuConfigInput = defineConfig({
       server: {
         port: 8080,
         host: "0.0.0.0",
@@ -32,7 +32,7 @@ describe("Configuration System Foundation", () => {
   });
 
   it("provides sensible defaults when no config is passed to resolveConfig()", () => {
-    const resolved: ResolvedForgeConfig = resolveConfig();
+    const resolved: ResolvedKyuuConfig = resolveConfig();
 
     expect(resolved).toEqual(DEFAULT_CONFIG);
     expect(resolved.server.port).toBe(3000);
@@ -93,11 +93,11 @@ describe("Configuration System Foundation", () => {
     expect(() => defineConfig({ development: "true" as unknown as boolean })).toThrow(TypeError);
 
     // Unknown options
-    expect(() => defineConfig({ invalidOption: true } as unknown as ForgeConfigInput)).toThrow(
+    expect(() => defineConfig({ invalidOption: true } as unknown as KyuuConfigInput)).toThrow(
       TypeError,
     );
     expect(() =>
-      defineConfig({ server: { invalid: 123 } as unknown as ForgeConfigInput["server"] }),
+      defineConfig({ server: { invalid: 123 } as unknown as KyuuConfigInput["server"] }),
     ).toThrow(TypeError);
   });
 

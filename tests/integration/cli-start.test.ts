@@ -18,7 +18,7 @@ function makeHttpRequest(url: string, method = "GET"): Promise<{ status: number;
   });
 }
 
-describe("Action 70.9 — Production Runtime & 'forge start' CLI Integration Tests", () => {
+describe("Action 70.9 — Production Runtime & 'kyuu start' CLI Integration Tests", () => {
   let tempDir: string;
   let stdoutLogs: string[];
   let stderrLogs: string[];
@@ -29,7 +29,7 @@ describe("Action 70.9 — Production Runtime & 'forge start' CLI Integration Tes
   beforeEach(() => {
     tempDir = join(
       tmpdir(),
-      `forge-cli-start-test-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+      `kyuu-cli-start-test-${Date.now()}-${Math.random().toString(36).slice(2)}`,
     );
     mkdirSync(tempDir, { recursive: true });
     stdoutLogs = [];
@@ -50,7 +50,7 @@ describe("Action 70.9 — Production Runtime & 'forge start' CLI Integration Tes
         join(tempDir, "tsconfig.json"),
         JSON.stringify({ compilerOptions: { target: "ES2022", module: "NodeNext" } }),
       );
-      writeFileSync(join(tempDir, "forge.config.ts"), `export default { server: { port: 5111 } };`);
+      writeFileSync(join(tempDir, "kyuu.config.ts"), `export default { server: { port: 5111 } };`);
       mkdirSync(join(tempDir, "src", "app", "hello"), { recursive: true });
       writeFileSync(
         join(tempDir, "src", "app", "hello", "route.ts"),
@@ -70,7 +70,7 @@ describe("Action 70.9 — Production Runtime & 'forge start' CLI Integration Tes
       });
 
       expect(startRes.exitCode).toBe(0);
-      expect(startRes.output).toContain("Forge production server running at http://");
+      expect(startRes.output).toContain("Kyuu production server running at http://");
       expect(startRes.output).toContain("5111");
 
       try {
@@ -87,7 +87,7 @@ describe("Action 70.9 — Production Runtime & 'forge start' CLI Integration Tes
 
   it("2. Starts valid JavaScript production build and responds to HTTP requests", async () => {
     writeFileSync(join(tempDir, "package.json"), JSON.stringify({ type: "module" }));
-    writeFileSync(join(tempDir, "forge.config.js"), `export default { server: { port: 5112 } };`);
+    writeFileSync(join(tempDir, "kyuu.config.js"), `export default { server: { port: 5112 } };`);
     mkdirSync(join(tempDir, "src", "app", "js-route"), { recursive: true });
     writeFileSync(
       join(tempDir, "src", "app", "js-route", "route.js"),
@@ -116,7 +116,7 @@ describe("Action 70.9 — Production Runtime & 'forge start' CLI Integration Tes
   });
 
   it("3. Serves static, dynamic, and wildcard filesystem routes in production", async () => {
-    writeFileSync(join(tempDir, "forge.config.js"), `export default { server: { port: 5113 } };`);
+    writeFileSync(join(tempDir, "kyuu.config.js"), `export default { server: { port: 5113 } };`);
     mkdirSync(join(tempDir, "src", "app", "users", "[id]"), { recursive: true });
     mkdirSync(join(tempDir, "src", "app", "files", "[...filepath]"), { recursive: true });
 
@@ -162,7 +162,7 @@ describe("Action 70.9 — Production Runtime & 'forge start' CLI Integration Tes
   });
 
   it("4. Supports multiple HTTP methods exported by a single route module", async () => {
-    writeFileSync(join(tempDir, "forge.config.js"), `export default { server: { port: 5114 } };`);
+    writeFileSync(join(tempDir, "kyuu.config.js"), `export default { server: { port: 5114 } };`);
     mkdirSync(join(tempDir, "src", "app", "items"), { recursive: true });
     writeFileSync(
       join(tempDir, "src", "app", "items", "route.js"),
@@ -197,7 +197,7 @@ describe("Action 70.9 — Production Runtime & 'forge start' CLI Integration Tes
   });
 
   it("5. Respects runtime port override via options", async () => {
-    writeFileSync(join(tempDir, "forge.config.js"), `export default { server: { port: 5115 } };`);
+    writeFileSync(join(tempDir, "kyuu.config.js"), `export default { server: { port: 5115 } };`);
     mkdirSync(join(tempDir, "src", "app", "ping"), { recursive: true });
     writeFileSync(
       join(tempDir, "src", "app", "ping", "route.js"),
@@ -235,8 +235,8 @@ describe("Action 70.9 — Production Runtime & 'forge start' CLI Integration Tes
     });
 
     expect(res.exitCode).toBe(1);
-    expect(res.output).toContain("Forge production server failed to start.");
-    expect(res.output).toContain("No production build found. Run `forge build` first.");
+    expect(res.output).toContain("Kyuu production server failed to start.");
+    expect(res.output).toContain("No production build found. Run `kyuu build` first.");
   });
 
   it("7. Fails cleanly when build manifest is corrupted", async () => {
@@ -251,12 +251,12 @@ describe("Action 70.9 — Production Runtime & 'forge start' CLI Integration Tes
     });
 
     expect(res.exitCode).toBe(1);
-    expect(res.output).toContain("Forge production server failed to start.");
+    expect(res.output).toContain("Kyuu production server failed to start.");
     expect(res.output).toContain("manifest is invalid");
   });
 
   it("8. Fails cleanly when referenced route module file is missing", async () => {
-    writeFileSync(join(tempDir, "forge.config.js"), `export default {};`);
+    writeFileSync(join(tempDir, "kyuu.config.js"), `export default {};`);
     mkdirSync(join(tempDir, "src", "app", "ghost"), { recursive: true });
     writeFileSync(join(tempDir, "src", "app", "ghost", "route.js"), `export const GET = () => {};`);
 
@@ -281,7 +281,7 @@ describe("Action 70.9 — Production Runtime & 'forge start' CLI Integration Tes
     });
 
     expect(res.exitCode).toBe(1);
-    expect(res.output).toContain("Forge production server failed to start.");
+    expect(res.output).toContain("Kyuu production server failed to start.");
     expect(res.output).toContain("referenced in manifest.json does not exist");
   });
 });

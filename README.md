@@ -1,14 +1,14 @@
-# Forge
+# Kyuu
 
 > **Temporary codename — the final project name will be decided later.**
 
-Forge is an experimental, TypeScript-first Node.js backend framework designed to provide the simplicity and familiarity of Express.js with a more structured and opinionated application architecture.
+Kyuu is an experimental, TypeScript-first Node.js backend framework designed to provide the simplicity and familiarity of Express.js with a more structured and opinionated application architecture.
 
 The goal is simple:
 
 > **Express-like developer experience with a framework architecture suitable for serious applications.**
 
-Forge is being built from the ground up with performance as a first-class requirement. The framework should perform **at least comparably to Express.js** under comparable workloads, while remaining significantly more structured and extensible.
+Kyuu is being built from the ground up with performance as a first-class requirement. The framework should perform **at least comparably to Express.js** under comparable workloads, while remaining significantly more structured and extensible.
 
 ---
 
@@ -16,7 +16,7 @@ Forge is being built from the ground up with performance as a first-class requir
 
 **Experimental / In Development**
 
-Forge is currently under active development. APIs, architecture, package structure, and conventions may change significantly before the first stable release.
+Kyuu is currently under active development. APIs, architecture, package structure, and conventions may change significantly before the first stable release.
 
 ---
 
@@ -24,7 +24,7 @@ Forge is currently under active development. APIs, architecture, package structu
 
 Node.js makes it easy to build HTTP servers, but larger applications often require developers to repeatedly make the same architectural decisions.
 
-Forge aims to provide sensible conventions for:
+Kyuu aims to provide sensible conventions for:
 
 - HTTP applications
 - Routing
@@ -50,19 +50,19 @@ The framework should make the common path simple without preventing developers f
 
 ### Familiar
 
-Forge's API should closely resemble Express.js wherever possible.
+Kyuu's API should closely resemble Express.js wherever possible.
 
-An Express developer should be able to understand basic Forge code immediately.
+An Express developer should be able to understand basic Kyuu code immediately.
 
 ### Opinionated
 
-Forge should provide conventions for common application architecture instead of forcing every project to invent its own structure.
+Kyuu should provide conventions for common application architecture instead of forcing every project to invent its own structure.
 
 ### Performant
 
 Performance is a core requirement.
 
-Forge should not be meaningfully slower than Express under comparable workloads. Performance-sensitive decisions should be validated through benchmarks rather than assumptions.
+Kyuu should not be meaningfully slower than Express under comparable workloads. Performance-sensitive decisions should be validated through benchmarks rather than assumptions.
 
 ### TypeScript First
 
@@ -80,13 +80,13 @@ Optional functionality such as databases, Redis, background jobs, and benchmarki
 
 Conventions should be predictable, understandable, and discoverable.
 
-Forge should simplify application development without hiding important framework behavior.
+Kyuu should simplify application development without hiding important framework behavior.
 
 ---
 
 ## Development Philosophy
 
-Forge is being developed incrementally.
+Kyuu is being developed incrementally.
 
 The initial implementation will focus on establishing a small, reliable HTTP runtime before adding higher-level framework functionality.
 
@@ -120,7 +120,7 @@ Features planned for later stages will not be implemented prematurely.
 
 ## Initial Technical Direction
 
-Forge currently targets:
+Kyuu currently targets:
 
 - **Runtime:** Node.js
 - **Language:** TypeScript
@@ -138,7 +138,7 @@ The technical implementation may evolve as the project develops and measurements
 The repository is intended to evolve toward a structure similar to:
 
 ```text
-forge/
+kyuu/
 ├── packages/
 │   ├── core/
 │   ├── cli/
@@ -159,7 +159,7 @@ The exact structure will be established during development.
 
 ## Core API Direction
 
-Forge will maintain an Express-like programming model.
+Kyuu will maintain an Express-like programming model.
 
 For example:
 
@@ -181,12 +181,12 @@ The API may introduce carefully considered improvements where they make the fram
 
 ## Performance Target
 
-Performance is one of Forge's most important project constraints.
+Performance is one of Kyuu's most important project constraints.
 
 The primary target is:
 
 ```text
-Forge ≈ Express
+Kyuu ≈ Express
 ```
 
 Fastify may be used as a higher-performance reference point, but matching Fastify is **not** the primary objective.
@@ -194,7 +194,7 @@ Fastify may be used as a higher-performance reference point, but matching Fastif
 Benchmarking will eventually compare:
 
 ```text
-Forge
+Kyuu
 Express
 Fastify
 ```
@@ -217,7 +217,7 @@ Important measurements will include:
 
 ## Roadmap
 
-Forge is being developed according to a dedicated master development roadmap.
+Kyuu is being developed according to a dedicated master development roadmap.
 
 The major development phases are:
 
@@ -266,17 +266,17 @@ Each implementation step should:
 
 ---
 
-## How Forge Is Built
+## How Kyuu Is Built
 
 Throughout development, important implementation details, decisions, experiments, benchmarks, and milestones will be recorded separately.
 
-This will eventually become a **"How Forge Was Built"** document describing the development of the framework from its initial repository setup through the first stable release.
+This will eventually become a **"How Kyuu Was Built"** document describing the development of the framework from its initial repository setup through the first stable release.
 
 ---
 
 ## Contributing
 
-Forge is currently experimental and under active development.
+Kyuu is currently experimental and under active development.
 
 Contribution guidelines will be established as the project approaches a stage where external contributions are appropriate.
 
@@ -288,6 +288,6 @@ License information will be added once the project's licensing decision has been
 
 ---
 
-**Forge is currently experimental.**
+**Kyuu is currently experimental.**
 
 The framework is being built from the ground up, one foundation at a time.

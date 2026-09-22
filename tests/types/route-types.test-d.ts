@@ -226,7 +226,7 @@ import {
   type ApplicationContext,
   type FileRouteHandler,
   type RouteContext as AppRouteContext,
-  type ResolvedForgeConfig,
+  type ResolvedKyuuConfig,
   createApplicationContext,
 } from "../../packages/core/src/index.js";
 
@@ -253,7 +253,7 @@ export const checkApplicationContext: AssertEqual<
   ApplicationContext,
   {
     app: Application;
-    config: ResolvedForgeConfig;
+    config: ResolvedKyuuConfig;
   }
 > = true;
 

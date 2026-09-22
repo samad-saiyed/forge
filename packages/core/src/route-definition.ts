@@ -89,9 +89,9 @@ export function isRouteDefinition(value: unknown): value is RouteDefinition {
 
 import type { Request } from "./request.js";
 import {
-  isForgeSchema,
+  isKyuuSchema,
   executeSchemaValidation,
-  ForgeValidationError,
+  KyuuValidationError,
   type ValidationIssue,
   type ValidationSource,
   type SchemaIssue,
@@ -118,38 +118,38 @@ export async function executeRouteValidation(
   }
 
   // 1. params
-  if (validate.params && isForgeSchema(validate.params)) {
+  if (validate.params && isKyuuSchema(validate.params)) {
     const result = await executeSchemaValidation(validate.params, request.params);
     if (!result.success) {
-      throw new ForgeValidationError(formatValidationIssues("params", result.error.issues));
+      throw new KyuuValidationError(formatValidationIssues("params", result.error.issues));
     }
     request.params = result.data as Record<string, string>;
   }
 
   // 2. query
-  if (validate.query && isForgeSchema(validate.query)) {
+  if (validate.query && isKyuuSchema(validate.query)) {
     const result = await executeSchemaValidation(validate.query, request.query);
     if (!result.success) {
-      throw new ForgeValidationError(formatValidationIssues("query", result.error.issues));
+      throw new KyuuValidationError(formatValidationIssues("query", result.error.issues));
     }
     request.query = result.data as Record<string, string | string[]>;
   }
 
   // 3. headers
-  if (validate.headers && isForgeSchema(validate.headers)) {
+  if (validate.headers && isKyuuSchema(validate.headers)) {
     const result = await executeSchemaValidation(validate.headers, request.headers);
     if (!result.success) {
-      throw new ForgeValidationError(formatValidationIssues("headers", result.error.issues));
+      throw new KyuuValidationError(formatValidationIssues("headers", result.error.issues));
     }
     request.headers = result.data as unknown as import("node:http").IncomingHttpHeaders;
   }
 
   // 4. body
-  if (validate.body && isForgeSchema(validate.body)) {
+  if (validate.body && isKyuuSchema(validate.body)) {
     const rawBody = await request.body;
     const result = await executeSchemaValidation(validate.body, rawBody);
     if (!result.success) {
-      throw new ForgeValidationError(formatValidationIssues("body", result.error.issues));
+      throw new KyuuValidationError(formatValidationIssues("body", result.error.issues));
     }
     request.body = result.data;
   }

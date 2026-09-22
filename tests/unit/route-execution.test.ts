@@ -66,7 +66,7 @@ describe("Filesystem Route Execution & Context Wiring (Action 51)", () => {
   let tmpDir: string;
 
   beforeEach(async () => {
-    tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "forge-exec-test-"));
+    tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "kyuu-exec-test-"));
   });
 
   afterEach(async () => {

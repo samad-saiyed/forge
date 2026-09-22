@@ -2,7 +2,7 @@ import type { EventEmitter } from "node:events";
 import { request as httpRequest, type RequestOptions } from "node:http";
 import express from "express";
 import { z } from "zod";
-import { createApp, defineRoute } from "@forge/core";
+import { createApp, defineRoute, type KyuuRequest, type KyuuResponse } from "@kyuujs/core";
 import { runBodyParserBenchmark } from "./body-parser.js";
 import { runMiddlewareBenchmark } from "./middleware.js";
 import { runRouterBenchmark } from "./router.js";
@@ -210,14 +210,14 @@ async function runPostBenchmarkForUrl(
 }
 
 async function runHttpBenchmark(): Promise<void> {
-  console.log("Starting Forge vs Express Benchmark Baseline...\n");
+  console.log("Starting Kyuu vs Express Benchmark Baseline...\n");
 
-  // 1. Setup Forge Server
-  const forgeApp = createApp();
-  forgeApp.get("/json", (_req, res) => {
+  // 1. Setup Kyuu Server
+  const kyuuApp = createApp();
+  kyuuApp.get("/json", (_req: KyuuRequest, res: KyuuResponse) => {
     res.json({ message: "Hello World" });
   });
-  forgeApp.post("/json", async (req, res) => {
+  kyuuApp.post("/json", async (req: KyuuRequest, res: KyuuResponse) => {
     await req.parseBody();
     res.json({ message: "Hello World" });
   });
@@ -232,25 +232,28 @@ async function runHttpBenchmark(): Promise<void> {
     message: z.string(),
   });
 
-  forgeApp.post(
+  kyuuApp.post(
     "/validated-json",
-    defineRoute({ validate: { body: BodyZodSchema } }, async (req, res) => {
-      const body = await req.body;
-      res.json(body);
-    }),
+    defineRoute(
+      { validate: { body: BodyZodSchema } },
+      async (req: KyuuRequest, res: KyuuResponse) => {
+        const body = await req.body;
+        res.json(body);
+      },
+    ),
   );
 
-  forgeApp.get(
+  kyuuApp.get(
     "/response-schema-json",
-    defineRoute({ response: ResponseZodSchema }, (_req, res) => {
+    defineRoute({ response: ResponseZodSchema }, (_req: KyuuRequest, res: KyuuResponse) => {
       res.json({ message: "Hello World" });
     }),
   );
-  const forgeServer = forgeApp.listen(0);
-  await new Promise<void>((resolve) => forgeServer.once("listening", resolve));
-  const forgeAddress = forgeServer.address();
-  if (!forgeAddress || typeof forgeAddress === "string") {
-    throw new Error("Failed to get Forge server port");
+  const kyuuServer = kyuuApp.listen(0);
+  await new Promise<void>((resolve) => kyuuServer.once("listening", resolve));
+  const kyuuAddress = kyuuServer.address();
+  if (!kyuuAddress || typeof kyuuAddress === "string") {
+    throw new Error("Failed to get Kyuu server port");
   }
 
   // 2. Setup Express Server
@@ -266,38 +269,38 @@ async function runHttpBenchmark(): Promise<void> {
   }
 
   try {
-    const forgeUrl = `http://127.0.0.1:${forgeAddress.port}/json`;
+    const kyuuUrl = `http://127.0.0.1:${kyuuAddress.port}/json`;
     const expressUrl = `http://127.0.0.1:${expressAddress.port}/json`;
 
-    const forgeResponseUrl = `http://127.0.0.1:${forgeAddress.port}/response-schema-json`;
+    const kyuuResponseUrl = `http://127.0.0.1:${kyuuAddress.port}/response-schema-json`;
 
-    console.log(`Running Forge benchmark at ${forgeUrl}...`);
-    const forgeResults = await runBenchmarkForUrl("Forge", forgeUrl);
+    console.log(`Running Kyuu benchmark at ${kyuuUrl}...`);
+    const kyuuResults = await runBenchmarkForUrl("Kyuu", kyuuUrl);
 
-    console.log(`Running Forge (Response Schema) benchmark at ${forgeResponseUrl}...`);
-    const forgeResponseResults = await runBenchmarkForUrl("Forge (Resp Schema)", forgeResponseUrl);
+    console.log(`Running Kyuu (Response Schema) benchmark at ${kyuuResponseUrl}...`);
+    const kyuuResponseResults = await runBenchmarkForUrl("Kyuu (Resp Schema)", kyuuResponseUrl);
 
     console.log(`Running Express benchmark at ${expressUrl}...\n`);
     const expressResults = await runBenchmarkForUrl("Express", expressUrl);
 
     console.table([
       {
-        Framework: forgeResults.name,
-        "Req/Sec": Math.round(forgeResults.requestsPerSec),
-        "Avg Latency (ms)": forgeResults.avgLatencyMs.toFixed(3),
-        "p50 (ms)": forgeResults.p50Ms.toFixed(3),
-        "p95 (ms)": forgeResults.p95Ms.toFixed(3),
-        "p99 (ms)": forgeResults.p99Ms.toFixed(3),
-        Errors: forgeResults.errorCount,
+        Framework: kyuuResults.name,
+        "Req/Sec": Math.round(kyuuResults.requestsPerSec),
+        "Avg Latency (ms)": kyuuResults.avgLatencyMs.toFixed(3),
+        "p50 (ms)": kyuuResults.p50Ms.toFixed(3),
+        "p95 (ms)": kyuuResults.p95Ms.toFixed(3),
+        "p99 (ms)": kyuuResults.p99Ms.toFixed(3),
+        Errors: kyuuResults.errorCount,
       },
       {
-        Framework: forgeResponseResults.name,
-        "Req/Sec": Math.round(forgeResponseResults.requestsPerSec),
-        "Avg Latency (ms)": forgeResponseResults.avgLatencyMs.toFixed(3),
-        "p50 (ms)": forgeResponseResults.p50Ms.toFixed(3),
-        "p95 (ms)": forgeResponseResults.p95Ms.toFixed(3),
-        "p99 (ms)": forgeResponseResults.p99Ms.toFixed(3),
-        Errors: forgeResponseResults.errorCount,
+        Framework: kyuuResponseResults.name,
+        "Req/Sec": Math.round(kyuuResponseResults.requestsPerSec),
+        "Avg Latency (ms)": kyuuResponseResults.avgLatencyMs.toFixed(3),
+        "p50 (ms)": kyuuResponseResults.p50Ms.toFixed(3),
+        "p95 (ms)": kyuuResponseResults.p95Ms.toFixed(3),
+        "p99 (ms)": kyuuResponseResults.p99Ms.toFixed(3),
+        Errors: kyuuResponseResults.errorCount,
       },
       {
         Framework: expressResults.name,
@@ -311,56 +314,56 @@ async function runHttpBenchmark(): Promise<void> {
     ]);
 
     const body = JSON.stringify({
-      name: "Forge",
+      name: "Kyuu",
       version: 1,
       framework: true,
     });
 
     console.log(
-      "\nRunning Forge JSON body benchmark (without validation vs with Zod validation)...",
+      "\nRunning Kyuu JSON body benchmark (without validation vs with Zod validation)...",
     );
 
-    const forgeBodyResults = await runPostBenchmarkForUrl(
-      "Forge JSON Body (No Val)",
-      forgeUrl,
+    const kyuuBodyResults = await runPostBenchmarkForUrl(
+      "Kyuu JSON Body (No Val)",
+      kyuuUrl,
       body,
     );
 
-    const forgeZodUrl = `http://127.0.0.1:${forgeAddress.port}/validated-json`;
-    const forgeZodResults = await runPostBenchmarkForUrl(
-      "Forge JSON Body (Zod Val)",
-      forgeZodUrl,
+    const kyuuZodUrl = `http://127.0.0.1:${kyuuAddress.port}/validated-json`;
+    const kyuuZodResults = await runPostBenchmarkForUrl(
+      "Kyuu JSON Body (Zod Val)",
+      kyuuZodUrl,
       body,
     );
 
     console.table([
       {
-        Benchmark: forgeBodyResults.name,
-        "Req/Sec": Math.round(forgeBodyResults.requestsPerSec),
-        "Avg Latency (ms)": forgeBodyResults.avgLatencyMs.toFixed(3),
-        "p50 (ms)": forgeBodyResults.p50Ms.toFixed(3),
-        "p95 (ms)": forgeBodyResults.p95Ms.toFixed(3),
-        "p99 (ms)": forgeBodyResults.p99Ms.toFixed(3),
-        Errors: forgeBodyResults.errorCount,
+        Benchmark: kyuuBodyResults.name,
+        "Req/Sec": Math.round(kyuuBodyResults.requestsPerSec),
+        "Avg Latency (ms)": kyuuBodyResults.avgLatencyMs.toFixed(3),
+        "p50 (ms)": kyuuBodyResults.p50Ms.toFixed(3),
+        "p95 (ms)": kyuuBodyResults.p95Ms.toFixed(3),
+        "p99 (ms)": kyuuBodyResults.p99Ms.toFixed(3),
+        Errors: kyuuBodyResults.errorCount,
       },
       {
-        Benchmark: forgeZodResults.name,
-        "Req/Sec": Math.round(forgeZodResults.requestsPerSec),
-        "Avg Latency (ms)": forgeZodResults.avgLatencyMs.toFixed(3),
-        "p50 (ms)": forgeZodResults.p50Ms.toFixed(3),
-        "p95 (ms)": forgeZodResults.p95Ms.toFixed(3),
-        "p99 (ms)": forgeZodResults.p99Ms.toFixed(3),
-        Errors: forgeZodResults.errorCount,
+        Benchmark: kyuuZodResults.name,
+        "Req/Sec": Math.round(kyuuZodResults.requestsPerSec),
+        "Avg Latency (ms)": kyuuZodResults.avgLatencyMs.toFixed(3),
+        "p50 (ms)": kyuuZodResults.p50Ms.toFixed(3),
+        "p95 (ms)": kyuuZodResults.p95Ms.toFixed(3),
+        "p99 (ms)": kyuuZodResults.p99Ms.toFixed(3),
+        Errors: kyuuZodResults.errorCount,
       },
     ]);
   } finally {
-    await forgeApp.close();
+    await kyuuApp.close();
     await new Promise<void>((resolve) => expressServer.close(() => resolve()));
   }
 }
 
 async function main() {
-  // 1. HTTP Server Baseline Benchmark (Forge vs Express GET & POST JSON Body)
+  // 1. HTTP Server Baseline Benchmark (Kyuu vs Express GET & POST JSON Body)
   await runHttpBenchmark();
   // 2. Body Parser / Multipart Benchmark
   await runBodyParserBenchmark();

@@ -1,5 +1,5 @@
 import { performance } from "node:perf_hooks";
-import { Router } from "@forge/core";
+import { Router } from "@kyuujs/core";
 
 interface LookupStats {
   lookupTimeMs: number;

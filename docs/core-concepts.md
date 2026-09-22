@@ -1,6 +1,6 @@
 # Core Concepts
 
-This document details the core runtime abstractions provided by `@forge/core`.
+This document details the core runtime abstractions provided by `@kyuujs/core`.
 
 ---
 
@@ -8,10 +8,10 @@ This document details the core runtime abstractions provided by `@forge/core`.
 
 ### Creating an Application
 
-The primary entry point to Forge is the `createApp()` factory function:
+The primary entry point to Kyuu is the `createApp()` factory function:
 
 ```typescript
-import { createApp } from "@forge/core";
+import { createApp } from "@kyuujs/core";
 
 const app = createApp();
 ```
@@ -40,7 +40,7 @@ app.get("/search", (req, res) => {
   // HTTP Method (e.g. "GET")
   const method = req.method;
 
-  // Raw URL path (e.g. "/search?q=forge")
+  // Raw URL path (e.g. "/search?q=kyuu")
   const url = req.url;
 
   // Headers map
@@ -69,7 +69,7 @@ app.get("/json", (req, res) => {
   res.status(200);
 
   // Set response headers
-  res.setHeader("X-Custom-Header", "Forge");
+  res.setHeader("X-Custom-Header", "Kyuu");
 
   // Send JSON payload (sets Content-Type: application/json)
   return res.json({ success: true });
@@ -77,7 +77,7 @@ app.get("/json", (req, res) => {
 
 app.get("/text", (req, res) => {
   // Send plain text / buffer response
-  return res.send("Hello from Forge!");
+  return res.send("Hello from Kyuu!");
 });
 ```
 
@@ -87,7 +87,7 @@ To prevent header mutations after responses have completed, `Response` guards ag
 
 ## Error Handling
 
-Forge provides centralized error handling for both synchronous and asynchronous route handlers:
+Kyuu provides centralized error handling for both synchronous and asynchronous route handlers:
 
 ```typescript
 // Synchronous handler throwing an error

@@ -1,9 +1,9 @@
-# Forge Documentation
+# Kyuu Documentation
 
-Welcome to the documentation for **Forge** — an experimental, TypeScript-first Node.js backend framework designed to provide the simplicity and developer experience of Express.js alongside structured application architecture and performance.
+Welcome to the documentation for **Kyuu** — an experimental, TypeScript-first Node.js backend framework designed to provide the simplicity and developer experience of Express.js alongside structured application architecture and performance.
 
 > **Current Status:** Phases 0–2 Implemented (Core HTTP Runtime & Router)  
-> **Codename:** Forge (Temporary project codename)
+> **Codename:** Kyuu (Temporary project codename)
 
 ---
 
@@ -19,7 +19,7 @@ Welcome to the documentation for **Forge** — an experimental, TypeScript-first
   Detailed guide on HTTP method routing, route parameter extraction (`:id`), wildcards (`*`), and precedence scoring.
 
 - [**Benchmarking**](./benchmarking.md)  
-  Overview of the `@forge/benchmark` package, running benchmark tests, and tracking performance baselines against Express.
+  Overview of the `@kyuujs/benchmark` package, running benchmark tests, and tracking performance baselines against Express.
 
 - [**Roadmap Overview**](./roadmap-overview.md)  
   Summary of completed development phases (Phases 0–2) and upcoming planned phases (Phases 3–21) based on [`SPEC.md`](../SPEC.md) and [`ROADMAP.md`](../ROADMAP.md).

@@ -1,4 +1,4 @@
-import type { ForgeSchema, SchemaIssue, SchemaValidationError } from "@forge/core";
+import type { KyuuSchema, SchemaIssue, SchemaValidationError } from "@kyuujs/core";
 import type { z, ZodError, ZodTypeAny } from "zod";
 
 export function formatZodError(error: ZodError): SchemaValidationError {
@@ -10,9 +10,9 @@ export function formatZodError(error: ZodError): SchemaValidationError {
   return { issues };
 }
 
-export function zodSchema<T extends ZodTypeAny>(schema: T): ForgeSchema<z.output<T>, z.input<T>> {
+export function zodSchema<T extends ZodTypeAny>(schema: T): KyuuSchema<z.output<T>, z.input<T>> {
   return {
-    kind: "forge-schema",
+    kind: "kyuu-schema",
     validate(input: z.input<T>) {
       const result = schema.safeParse(input);
       if (result.success) {

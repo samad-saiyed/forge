@@ -1,6 +1,6 @@
 # Benchmarking
 
-Forge includes a dedicated benchmarking package (`@forge/benchmark`) located in [`packages/benchmark`](../packages/benchmark).
+Kyuu includes a dedicated benchmarking package (`@kyuujs/benchmark`) located in [`packages/benchmark`](../packages/benchmark).
 
 The benchmark package measures framework overhead and compares performance against Express.js under equivalent workloads.
 
@@ -34,5 +34,5 @@ The benchmark suite tracks:
 
 ## Performance Targets
 
-- **Express Baseline:** Forge must maintain throughput and latency at least comparable to Express.js under equivalent workloads.
+- **Express Baseline:** Kyuu must maintain throughput and latency at least comparable to Express.js under equivalent workloads.
 - **Hot-Path Optimization:** Allocations during request dispatch, route matching, and header generation are minimized to avoid unnecessary garbage collection overhead.

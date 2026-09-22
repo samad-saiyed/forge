@@ -44,7 +44,7 @@ describe("Action 72.8 — Response Schema Integration with Filesystem Routing", 
   let tempDir: string;
 
   beforeEach(() => {
-    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "forge-response-fs-test-"));
+    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "kyuu-response-fs-test-"));
   });
 
   afterEach(() => {

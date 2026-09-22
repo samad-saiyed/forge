@@ -100,7 +100,7 @@ export async function startDevServer(options: DevServerOptions): Promise<DevServ
         execArgv: execArgs,
         env: {
           ...process.env,
-          FORGE_PROJECT_ROOT: projectRoot,
+          KYUU_PROJECT_ROOT: projectRoot,
           NODE_ENV: "development",
         },
         stdio: ["inherit", "pipe", "pipe", "ipc"],
@@ -133,7 +133,7 @@ export async function startDevServer(options: DevServerOptions): Promise<DevServ
             currentUrl = payload.url;
 
             const banner = [
-              "Forge",
+              "Kyuu",
               "",
               "✓ Configuration loaded",
               "✓ Routes loaded",
@@ -145,7 +145,7 @@ export async function startDevServer(options: DevServerOptions): Promise<DevServ
             res(true);
           } else if (payload.type === "error") {
             handled = true;
-            writeErr(`Unable to start Forge server.\n\n${payload.error}`);
+            writeErr(`Unable to start Kyuu server.\n\n${payload.error}`);
             res(false);
           }
         }
@@ -167,7 +167,7 @@ export async function startDevServer(options: DevServerOptions): Promise<DevServ
     writeOut("\nFile change detected. Restarting application...");
     const success = await spawnChild();
     if (!success) {
-      writeErr("\n✗ Failed to restart Forge application.\nWaiting for changes...");
+      writeErr("\n✗ Failed to restart Kyuu application.\nWaiting for changes...");
     }
   };
 
@@ -199,7 +199,7 @@ export async function startDevServer(options: DevServerOptions): Promise<DevServ
     };
 
     try {
-      // Watch project root for forge.config changes
+      // Watch project root for kyuu.config changes
       const rootWatcher = fsWatch(projectRoot, { recursive: false }, handleFileChange);
       watchers.push(rootWatcher);
 
